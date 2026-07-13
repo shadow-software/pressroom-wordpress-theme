@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<ruleset name="Digest">
+	<description>
+		Coding standards for the Digest theme.
+
+		WordPress-Extra + WordPress-Docs, plus the WordPress Theme Review sniffs,
+		which are what the WordPress.org Theme Directory actually runs against a
+		submission. Passing this locally is the cheapest way to not be rejected.
+	</description>
+
+	<file>shadow-software-digest-theme-for-wordpress</file>
+
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/assets/fonts/*</exclude-pattern>
+
+	<arg value="ps"/>
+	<arg name="colors"/>
+	<arg name="parallel" value="8"/>
+	<arg name="extensions" value="php"/>
+
+	<rule ref="WordPress-Extra"/>
+	<rule ref="WordPress-Docs"/>
+
+	<!--
+		The Theme Review sniffs. These are the rules the .org reviewers apply:
+		no file operations, no direct database queries, no hidden admin menus,
+		correct escaping, correct enqueueing, no bundled plugins, and so on.
+	-->
+	<rule ref="WPThemeReview"/>
+
+	<!--
+		Text domain enforcement: every translatable string in the theme must use
+		the theme's own text domain, which must match the directory name. The
+		Theme Directory rejects a mismatch outright.
+	-->
+	<config name="text_domain" value="shadow-software-digest-theme-for-wordpress"/>
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="shadow-software-digest-theme-for-wordpress"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!--
+		Prefix enforcement. Every function, class, constant and global the theme
+		defines must carry one of these prefixes, so a theme can never collide
+		with a plugin or with core.
+	-->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="shadow_digest"/>
+				<element value="SHADOW_DIGEST"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- The minimum versions declared in style.css. -->
+	<config name="minimum_wp_version" value="6.6"/>
+	<config name="testVersion" value="8.0-"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<!--
+		blocks.asset.php is a dependency manifest that returns an array. It is not
+		a class file and has no side effects; the filename sniff does not apply.
+	-->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>*/assets/js/blocks.asset.php</exclude-pattern>
+	</rule>
+</ruleset>

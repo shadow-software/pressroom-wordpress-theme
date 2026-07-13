@@ -1,0 +1,41 @@
+# Files excluded from the WordPress.org theme package.
+#
+# Everything here is development tooling or repo presentation. A theme submission
+# must contain ONLY what runs on a user's site — the Theme Directory rejects
+# packages carrying build config, tests, or dotfiles.
+
+# Repo meta
+/.git
+/.github
+/.gitignore
+/.gitattributes
+/.distignore
+/.editorconfig
+/.stylelintrc.json
+
+# Dev tooling
+/composer.json
+/composer.lock
+/vendor
+/node_modules
+/package.json
+/package-lock.json
+/phpcs.xml.dist
+/phpunit.xml.dist
+
+# Tests and local sandbox
+/tests
+/scripts
+/.local-wp
+/.phpunit.cache
+
+# Docs (readme.txt IS the user-facing one and must NOT be ignored)
+/docs
+/README.md
+/CONTRIBUTING.md
+
+# Artefacts
+*.zip
+*.log
+.DS_Store
+Thumbs.db

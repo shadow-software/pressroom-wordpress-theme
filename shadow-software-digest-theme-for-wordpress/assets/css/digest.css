@@ -1,0 +1,1384 @@
+/**
+ * Digest — the printed sheet.
+ *
+ * theme.json owns the design tokens (colour, type scale, spacing) and the block
+ * styles. This file owns everything theme.json cannot express: the halftone
+ * paper, the folio rules, the drop cap, the multi-column lead story, and the
+ * editorial blocks.
+ *
+ * It is loaded on the front end AND inside the block editor, so an editor
+ * composing an article sees the same drop cap and the same rules a reader will.
+ *
+ * Every colour here is a custom property that resolves to either a theme.json
+ * preset or a Customizer override (see inc/customizer.php). There are no literal
+ * brand colours in this file — that is what lets one stylesheet dress two
+ * different publications.
+ *
+ * @package Digest
+ * @since   1.0.0
+ */
+
+/* -------------------------------------------------------------------------- *
+ * 1. The sheet
+ * -------------------------------------------------------------------------- */
+
+.wp-site-blocks {
+	/* The desk the paper sits on. */
+	background-color: var(--wp--preset--color--paper-shade);
+	padding-block: clamp(0px, 3vw, 34px) 70px;
+	padding-inline: 16px;
+}
+
+/*
+ * The printed sheet.
+ *
+ * A block theme has no single wrapper element to hang this on — the header, the
+ * main and the footer are siblings inside .wp-site-blocks. So the sheet is drawn
+ * with a pseudo-element behind them: a paper-coloured, softly shadowed panel,
+ * centred at the wide width, that all three sit on top of.
+ *
+ * The box-shadow lifts it off the desk; the radial gradient is the halftone dot
+ * screen, toggleable from the Customizer.
+ */
+.wp-site-blocks {
+	position: relative;
+	isolation: isolate;
+}
+
+.wp-site-blocks::before {
+	content: "";
+	position: absolute;
+	inset-block: 0;
+	inset-inline: 50%;
+	translate: -50% 0;
+	width: min(100%, var(--wp--style--global--wide-size));
+	background-color: var(--wp--preset--color--paper);
+	background-image: var(--digest-texture, none);
+	background-size: 3px 3px;
+	box-shadow: var(--wp--preset--shadow--sheet);
+	z-index: -1;
+}
+
+/*
+ * Every top-level region — masthead, main, footer — is inset to the sheet's
+ * width and given the sheet's horizontal padding, so they line up over the
+ * pseudo-element behind them.
+ */
+.wp-site-blocks > * {
+	max-width: var(--wp--style--global--wide-size);
+	margin-inline: auto;
+	padding-inline: clamp(16px, 4vw, 40px);
+}
+
+.digest-sheet__inner {
+	padding-block: 26px 44px;
+	padding-inline: 0;
+}
+
+::selection {
+	background-color: var(--wp--preset--color--accent);
+	color: var(--wp--preset--color--paper);
+}
+
+/* -------------------------------------------------------------------------- *
+ * 2. Shared editorial primitives
+ * -------------------------------------------------------------------------- */
+
+/*
+ * Small uppercase type is the connective tissue of a newspaper — it appears in
+ * the utility bar, the folio, the kickers, the section heads and the bylines.
+ * Defining it once and composing it is what keeps this stylesheet short.
+ */
+.digest-utility,
+.digest-folio,
+.digest-nav,
+.digest-kicker,
+.digest-eyebrow,
+.digest-byline,
+.digest-rail__title,
+.digest-section-head,
+.digest-footer,
+.digest-newsletter__eyebrow,
+.digest-newsletter__count,
+.digest-newsletter__button {
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+	font-size: var(--wp--preset--font-size--utility);
+	line-height: 1.4;
+}
+
+.digest-rule {
+	border-top: 1px solid var(--wp--preset--color--ink);
+	border-bottom: 3px double var(--wp--preset--color--ink);
+}
+
+.digest-kicker {
+	display: block;
+	font-size: var(--wp--preset--font-size--micro);
+	letter-spacing: 0.16em;
+	font-weight: 700;
+	color: var(--wp--preset--color--kicker);
+	text-decoration: none;
+	margin-bottom: 5px;
+}
+
+.digest-kicker:hover,
+.digest-kicker:focus-visible {
+	color: var(--wp--preset--color--ink);
+}
+
+.digest-eyebrow {
+	color: var(--wp--preset--color--accent);
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.2em;
+	margin: 0 0 12px;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 3. Masthead
+ * -------------------------------------------------------------------------- */
+
+.digest-utility {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 16px;
+	flex-wrap: wrap;
+	color: var(--wp--preset--color--ink-ghost);
+	padding-bottom: 12px;
+	border-bottom: 2px solid var(--wp--preset--color--ink);
+}
+
+.digest-utility__strapline {
+	color: var(--wp--preset--color--accent);
+	font-weight: 600;
+	text-align: center;
+}
+
+.digest-utility__est abbr {
+	text-decoration: none;
+	border: 0;
+}
+
+.digest-utility__menu {
+	display: flex;
+	gap: 14px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.digest-utility__menu a {
+	color: var(--wp--preset--color--ink-ghost);
+}
+
+/* The nameplate, flanked by its two ears. */
+.digest-masthead {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: end;
+	gap: 18px;
+	padding: 20px 0 12px;
+}
+
+.digest-ear {
+	font-size: var(--wp--preset--font-size--meta);
+	line-height: 1.5;
+	color: var(--wp--preset--color--ink-faded);
+}
+
+.digest-ear--right {
+	text-align: right;
+}
+
+.digest-ear__title {
+	font-family: var(--wp--preset--font-family--body);
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	font-size: var(--wp--preset--font-size--eyebrow);
+	margin: 0;
+}
+
+.digest-ear__body {
+	margin: 4px 0 0;
+	font-style: italic;
+	/* The Customizer stores these as multi-line text; honour the line breaks. */
+	white-space: pre-line;
+}
+
+.digest-nameplate {
+	font-family: var(--digest-wordmark-font, var(--wp--preset--font-family--masthead));
+	font-weight: 400;
+	font-size: var(--wp--preset--font-size--masthead);
+	line-height: 0.9;
+	letter-spacing: 0.5px;
+	text-align: center;
+	margin: 0;
+}
+
+.digest-nameplate a {
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+}
+
+.digest-nameplate a:hover,
+.digest-nameplate a:focus-visible {
+	text-decoration: none;
+}
+
+.digest-nameplate img {
+	max-height: 120px;
+	width: auto;
+	margin-inline: auto;
+}
+
+.digest-nameplate--compact {
+	font-size: 26px;
+	line-height: 1;
+	text-align: left;
+}
+
+/* The folio rule: volume, dateline, motto. */
+.digest-folio {
+	border-top: 1px solid var(--wp--preset--color--ink);
+	border-bottom: 3px double var(--wp--preset--color--ink);
+	padding: 7px 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.1em;
+	color: var(--wp--preset--color--ink-muted);
+}
+
+.digest-folio__dateline {
+	font-weight: 600;
+}
+
+/* Section navigation. */
+.digest-nav {
+	display: flex;
+	justify-content: center;
+	gap: 26px;
+	flex-wrap: wrap;
+	padding: 11px 0 4px;
+	color: var(--wp--preset--color--ink-muted);
+}
+
+.digest-nav ul {
+	display: flex;
+	justify-content: center;
+	gap: 26px;
+	flex-wrap: wrap;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.digest-nav a {
+	color: var(--wp--preset--color--ink-muted);
+	text-decoration: none;
+}
+
+.digest-nav a:hover,
+.digest-nav a:focus-visible,
+.digest-nav .current-menu-item > a {
+	color: var(--wp--preset--color--accent);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+/* The compact masthead used above articles. */
+.digest-masthead--compact {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 20px;
+	flex-wrap: wrap;
+	padding: 16px 0;
+	border-bottom: 2px solid var(--wp--preset--color--ink);
+}
+
+/* -------------------------------------------------------------------------- *
+ * 4. Front page — the three-column lead grid
+ * -------------------------------------------------------------------------- */
+
+.digest-lead {
+	display: grid;
+	grid-template-columns: 1fr 2.1fr 1.35fr;
+	margin-top: 14px;
+}
+
+.digest-lead__rail {
+	padding-right: 24px;
+	border-right: 1px solid var(--wp--preset--color--rule);
+}
+
+.digest-lead__main {
+	padding-inline: 26px;
+}
+
+.digest-lead__aside {
+	padding-left: 24px;
+	border-left: 1px solid var(--wp--preset--color--rule);
+}
+
+.digest-rail__title {
+	text-align: center;
+	font-family: var(--wp--preset--font-family--body);
+	font-weight: 400;
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.22em;
+	color: var(--wp--preset--color--accent);
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	padding-bottom: 7px;
+	margin: 0 0 14px;
+}
+
+/* A brief in the left rail. */
+.digest-brief {
+	padding-bottom: 15px;
+	margin-bottom: 15px;
+	border-bottom: 1px dotted var(--wp--preset--color--rule);
+}
+
+.digest-brief:last-child {
+	border-bottom: 0;
+}
+
+.digest-brief__head {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 18px;
+	line-height: 1.18;
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+	display: block;
+}
+
+.digest-brief__sum {
+	font-size: var(--wp--preset--font-size--small);
+	color: var(--wp--preset--color--ink-faded);
+	margin: 5px 0 0;
+	line-height: 1.42;
+}
+
+/* The lead story. */
+.digest-lead__label {
+	text-align: center;
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--accent);
+	margin-bottom: 12px;
+}
+
+.digest-lead__title {
+	font-family: var(--wp--preset--font-family--display);
+	font-weight: 400;
+	font-size: var(--wp--preset--font-size--lead);
+	line-height: 1.01;
+	text-align: center;
+	margin: 0 0 14px;
+}
+
+.digest-lead__title a {
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+}
+
+.digest-lead__deck {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 19px;
+	line-height: 1.4;
+	text-align: center;
+	color: var(--wp--preset--color--ink-muted);
+	font-style: italic;
+	margin: 0 auto 16px;
+	max-width: var(--wp--custom--measure--deck);
+}
+
+.digest-byline {
+	text-align: center;
+	color: var(--wp--preset--color--ink-ghost);
+	letter-spacing: 0.12em;
+	border-top: 1px solid var(--wp--preset--color--rule);
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	padding: 7px 0;
+	margin-bottom: 18px;
+}
+
+.digest-byline a {
+	color: var(--wp--preset--color--ink-ghost);
+}
+
+/*
+ * Two-column body text, the way a broadsheet sets its lead. Collapses to one
+ * column on narrow screens — two columns on a phone would be unreadable.
+ */
+.digest-columns {
+	columns: 2;
+	column-gap: 26px;
+	column-rule: 1px solid var(--wp--preset--color--rule-faint);
+}
+
+.digest-columns > p {
+	margin: 0 0 12px;
+	font-size: var(--wp--preset--font-size--base);
+	line-height: 1.6;
+	text-align: justify;
+	hyphens: auto;
+}
+
+/* The jump line at the foot of the lead story. */
+.digest-lead__more {
+	display: inline-block;
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--accent);
+	font-weight: 700;
+	text-decoration: none;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 5. The drop cap
+ * -------------------------------------------------------------------------- */
+
+.digest-dropcap::first-letter {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 4.4em;
+	line-height: 0.78;
+	float: left;
+	padding: 6px 10px 0 0;
+	color: var(--wp--preset--color--accent);
+}
+
+/*
+ * In the article body the drop cap is slightly smaller, because the surrounding
+ * type is larger there than in the front-page columns.
+ */
+.digest-prose > p:first-of-type.digest-dropcap::first-letter {
+	font-size: 4.2em;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 6. The article
+ * -------------------------------------------------------------------------- */
+
+.digest-breadcrumb {
+	padding: 14px 0;
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.06em;
+	color: var(--wp--preset--color--ink-ghost);
+}
+
+.digest-breadcrumb a {
+	color: var(--wp--preset--color--ink-ghost);
+	text-decoration: none;
+}
+
+.digest-breadcrumb__sep {
+	margin-inline: 8px;
+	color: #b3a992;
+}
+
+.digest-article__header {
+	max-width: 760px;
+	margin-inline: auto;
+	padding-top: 14px;
+}
+
+.digest-article__deck {
+	font-family: var(--wp--preset--font-family--display);
+	font-style: italic;
+	font-size: var(--wp--preset--font-size--deck);
+	line-height: 1.36;
+	color: var(--wp--preset--color--ink-muted);
+	margin: 0 0 26px;
+}
+
+/* The byline block, with its author avatar and reviewed-by line. */
+.digest-byline-block {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	border-top: 1px solid var(--wp--preset--color--rule);
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	padding: 16px 0;
+	flex-wrap: wrap;
+	text-transform: none;
+	letter-spacing: normal;
+}
+
+.digest-byline-block__avatar {
+	flex: none;
+	width: 52px;
+	height: 52px;
+	border-radius: 50%;
+	border: 1px solid rgba(28, 26, 23, 0.35);
+	overflow: hidden;
+}
+
+.digest-byline-block__avatar img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/*
+ * The monogram: what an author with no uploaded portrait gets instead of a
+ * broken Gravatar. Set in the display serif on the tinted panel, it reads as a
+ * house style rather than a missing image.
+ */
+.digest-monogram {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	background-color: var(--wp--preset--color--paper-tint);
+	color: var(--wp--preset--color--accent);
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 0.44em;
+	line-height: 1;
+	letter-spacing: 0.02em;
+}
+
+.digest-byline-block__avatar .digest-monogram {
+	font-size: 22px;
+}
+
+.digest-author-bio__avatar .digest-monogram {
+	font-size: 30px;
+}
+
+.digest-byline-block__who {
+	flex: 1;
+	min-width: 220px;
+	font-size: var(--wp--preset--font-size--base);
+}
+
+.digest-byline-block__who a {
+	font-weight: 700;
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+}
+
+.digest-byline-block__when {
+	font-size: var(--wp--preset--font-size--meta);
+	color: var(--wp--preset--color--ink-ghost);
+	text-align: right;
+	line-height: 1.55;
+}
+
+/* The article body. */
+.digest-prose {
+	max-width: 680px;
+	margin: 36px auto 0;
+}
+
+.digest-prose > p {
+	margin: 0 0 20px;
+	font-size: var(--wp--preset--font-size--prose);
+	line-height: 1.72;
+}
+
+.digest-prose a {
+	color: var(--wp--preset--color--accent);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	text-decoration-thickness: 1px;
+}
+
+.digest-prose a:hover,
+.digest-prose a:focus-visible {
+	color: var(--wp--preset--color--ink);
+}
+
+.digest-prose :is(h2, h3, h4) {
+	scroll-margin-top: 20px;
+}
+
+.digest-prose h2 {
+	margin: 38px 0 14px;
+}
+
+.digest-prose h3 {
+	margin: 30px 0 12px;
+}
+
+/* The editorial-standards footnote. */
+.digest-standards {
+	max-width: 760px;
+	margin: 20px auto 0;
+	font-size: var(--wp--preset--font-size--caption);
+	font-style: italic;
+	color: var(--wp--preset--color--ink-ghost);
+	line-height: 1.6;
+	border-top: 1px solid var(--wp--preset--color--rule);
+	padding-top: 16px;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 7. Editorial blocks
+ * -------------------------------------------------------------------------- */
+
+/* Short answer — the AEO box. */
+.wp-block-digest-short-answer {
+	max-width: 760px;
+	margin: 26px auto 0;
+	background-color: var(--wp--preset--color--paper-tint);
+	border: 1px solid rgba(28, 26, 23, 0.28);
+	border-left: 4px solid var(--wp--preset--color--accent);
+	padding: 20px 24px;
+}
+
+.wp-block-digest-short-answer__label {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--accent);
+	font-weight: 700;
+	margin: 0 0 8px;
+}
+
+.wp-block-digest-short-answer__body {
+	margin: 0;
+	font-size: var(--wp--preset--font-size--reading);
+	line-height: 1.6;
+	color: var(--wp--preset--color--ink-soft);
+}
+
+/* Key takeaways and the table of contents sit side by side. */
+.wp-block-digest-takeaways,
+.wp-block-digest-toc {
+	border: 1px solid rgba(28, 26, 23, 0.22);
+	padding: 18px 20px;
+}
+
+.wp-block-digest-takeaways__label,
+.wp-block-digest-toc__label {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink-muted);
+	font-weight: 700;
+	margin: 0 0 10px;
+}
+
+.wp-block-digest-takeaways__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.wp-block-digest-takeaways__item {
+	display: flex;
+	gap: 9px;
+	font-size: var(--wp--preset--font-size--compact);
+	line-height: 1.45;
+	color: var(--wp--preset--color--ink-soft);
+	padding: 5px 0;
+}
+
+.wp-block-digest-takeaways__item::before {
+	content: "→";
+	color: var(--wp--preset--color--accent);
+	font-weight: 700;
+	flex: none;
+}
+
+.wp-block-digest-toc__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	counter-reset: none;
+}
+
+.wp-block-digest-toc__list a {
+	display: block;
+	font-size: var(--wp--preset--font-size--compact);
+	line-height: 1.4;
+	color: var(--wp--preset--color--accent);
+	text-decoration: none;
+	padding: 5px 0;
+	border-bottom: 1px dotted var(--wp--preset--color--rule);
+}
+
+.wp-block-digest-toc__list li:last-child a {
+	border-bottom: 0;
+}
+
+/* Nested headings indent, so an h3 reads as a child of the h2 above it. */
+.wp-block-digest-toc__list .is-h3 a {
+	padding-left: 14px;
+	font-size: var(--wp--preset--font-size--small);
+	color: var(--wp--preset--color--ink-faded);
+}
+
+/* FAQ. */
+.wp-block-digest-faq {
+	max-width: 760px;
+	margin: 44px auto 0;
+	scroll-margin-top: 20px;
+}
+
+.wp-block-digest-faq__title {
+	font-family: var(--wp--preset--font-family--display);
+	font-weight: 400;
+	font-size: var(--wp--preset--font-size--headline);
+	line-height: 1.1;
+	margin: 0 0 6px;
+}
+
+.wp-block-digest-faq__rule {
+	border-bottom: 3px double var(--wp--preset--color--ink);
+	margin-bottom: 8px;
+}
+
+.wp-block-digest-faq__item {
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	padding: 18px 0;
+}
+
+.wp-block-digest-faq__q {
+	font-family: var(--wp--preset--font-family--display);
+	font-weight: 400;
+	font-size: 21px;
+	line-height: 1.25;
+	margin: 0 0 8px;
+}
+
+.wp-block-digest-faq__a {
+	margin: 0;
+	font-size: var(--wp--preset--font-size--reading);
+	line-height: 1.62;
+	color: var(--wp--preset--color--ink-muted);
+}
+
+/* Sources. */
+.wp-block-digest-sources {
+	max-width: 760px;
+	margin: 40px auto 0;
+}
+
+.wp-block-digest-sources__label {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink-muted);
+	font-weight: 700;
+	margin: 0 0 12px;
+}
+
+.wp-block-digest-sources__list {
+	margin: 0;
+	padding-left: 22px;
+	font-size: var(--wp--preset--font-size--compact);
+	line-height: 1.6;
+	color: var(--wp--preset--color--ink-faded);
+}
+
+.wp-block-digest-sources__list li {
+	margin-bottom: 8px;
+}
+
+/* Author bio. */
+.wp-block-digest-author-bio,
+.digest-author-bio {
+	max-width: 760px;
+	margin: 38px auto 0;
+	background-color: var(--wp--preset--color--paper-tint);
+	border: 1px solid rgba(28, 26, 23, 0.28);
+	padding: 24px 28px;
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 20px;
+	align-items: start;
+	scroll-margin-top: 20px;
+}
+
+.digest-author-bio__avatar {
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	border: 1px solid rgba(28, 26, 23, 0.35);
+	overflow: hidden;
+}
+
+.digest-author-bio__avatar img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.digest-author-bio__label {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--accent);
+	font-weight: 700;
+	margin: 0 0 4px;
+}
+
+.digest-author-bio__name {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 24px;
+	margin: 0 0 6px;
+}
+
+.digest-author-bio__text {
+	margin: 0 0 10px;
+	font-size: var(--wp--preset--font-size--base);
+	line-height: 1.6;
+	color: var(--wp--preset--color--ink-muted);
+}
+
+/* The disclosure table (affiliate / gear). */
+.wp-block-digest-disclosure-table {
+	max-width: 840px;
+	margin-inline: auto;
+}
+
+.wp-block-digest-disclosure-table__table {
+	width: 100%;
+	border: 1px solid rgba(28, 26, 23, 0.3);
+	border-collapse: collapse;
+}
+
+.wp-block-digest-disclosure-table__table thead {
+	background-color: var(--wp--preset--color--ink);
+	color: var(--wp--preset--color--paper);
+}
+
+.wp-block-digest-disclosure-table__table th {
+	padding: 11px 16px;
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	font-weight: 400;
+	text-align: left;
+}
+
+.wp-block-digest-disclosure-table__table td {
+	padding: 14px 16px;
+	border-top: 1px solid var(--wp--preset--color--rule);
+	vertical-align: middle;
+}
+
+.wp-block-digest-disclosure-table__table td:first-child {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 18px;
+}
+
+.wp-block-digest-disclosure-table__table td:nth-child(2) {
+	font-size: var(--wp--preset--font-size--compact);
+	line-height: 1.45;
+	color: var(--wp--preset--color--ink-muted);
+}
+
+.wp-block-digest-disclosure-table__table td:last-child,
+.wp-block-digest-disclosure-table__table th:last-child {
+	text-align: right;
+}
+
+.wp-block-digest-disclosure-table__partner {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	font-weight: 700;
+	color: var(--wp--preset--color--accent);
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.wp-block-digest-disclosure-table__note {
+	font-size: var(--wp--preset--font-size--caption);
+	font-style: italic;
+	color: var(--wp--preset--color--ink-ghost);
+	margin: 10px 2px 0;
+	line-height: 1.5;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 8. Section grid — "Inside This Week's Edition"
+ * -------------------------------------------------------------------------- */
+
+.digest-section-head {
+	margin: 36px 0 0;
+	font-family: var(--wp--preset--font-family--body);
+	font-weight: 400;
+	text-align: center;
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.24em;
+	color: var(--wp--preset--color--accent);
+	border-bottom: 3px double var(--wp--preset--color--ink);
+	padding-bottom: 8px;
+}
+
+.digest-sections {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+}
+
+.digest-section {
+	padding: 22px 24px;
+	border-right: 1px solid var(--wp--preset--color--rule);
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+}
+
+.digest-section__name {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 22px;
+	color: var(--wp--preset--color--ink);
+	border-bottom: 2px solid var(--wp--preset--color--ink);
+	padding-bottom: 7px;
+	margin: 0 0 12px;
+}
+
+.digest-section__link {
+	display: block;
+	font-size: 14.5px;
+	line-height: 1.3;
+	color: var(--wp--preset--color--ink-soft);
+	text-decoration: none;
+	padding: 6px 0;
+	border-bottom: 1px dotted var(--wp--preset--color--rule);
+}
+
+.digest-section__link:last-child {
+	border-bottom: 0;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 9. Newsletter
+ * -------------------------------------------------------------------------- */
+
+.digest-newsletter {
+	margin-top: 34px;
+	border: 3px double var(--wp--preset--color--ink);
+	background-color: var(--wp--preset--color--ink);
+	color: var(--wp--preset--color--paper);
+	padding: 30px clamp(20px, 4vw, 40px);
+	display: grid;
+	grid-template-columns: 1.4fr 1fr;
+	gap: 36px;
+	align-items: center;
+}
+
+/*
+ * When no signup endpoint is configured the theme renders no form — see
+ * shadow_digest_newsletter(). The panel should then be a single, centred column rather
+ * than a two-column grid holding open an empty half.
+ */
+.digest-newsletter:not(:has(.digest-newsletter__form)) {
+	grid-template-columns: 1fr;
+	text-align: center;
+	justify-items: center;
+}
+
+.digest-newsletter:not(:has(.digest-newsletter__form)) .digest-newsletter__blurb {
+	margin-inline: auto;
+}
+
+.digest-newsletter__eyebrow {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.26em;
+	color: var(--wp--preset--color--accent-soft);
+	margin: 0 0 10px;
+}
+
+.digest-newsletter__name {
+	font-family: var(--wp--preset--font-family--display);
+	font-weight: 400;
+	font-size: clamp(34px, 4vw, 50px);
+	line-height: 1;
+	margin: 0 0 12px;
+	color: var(--wp--preset--color--paper);
+}
+
+.digest-newsletter__blurb {
+	font-size: var(--wp--preset--font-size--reading);
+	line-height: 1.5;
+	color: #d8d1c2;
+	margin: 0;
+	max-width: var(--wp--custom--measure--prose);
+	font-style: italic;
+}
+
+.digest-newsletter__count {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.12em;
+	color: #9a9285;
+	margin: 0 0 8px;
+}
+
+.digest-newsletter__form {
+	display: flex;
+	border: 1px solid var(--wp--preset--color--paper);
+}
+
+.digest-newsletter__input {
+	flex: 1;
+	min-width: 0;
+	background: transparent;
+	border: 0;
+	outline: 0;
+	color: var(--wp--preset--color--paper);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--base);
+	padding: 13px 14px;
+}
+
+.digest-newsletter__input::placeholder {
+	color: #9a9285;
+	opacity: 1;
+}
+
+.digest-newsletter__input:focus-visible {
+	outline: 2px solid var(--wp--preset--color--accent-soft);
+	outline-offset: -2px;
+}
+
+.digest-newsletter__button {
+	background-color: var(--wp--preset--color--accent);
+	color: var(--wp--preset--color--paper);
+	border: 0;
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	font-weight: 700;
+	padding: 0 22px;
+	cursor: pointer;
+}
+
+.digest-newsletter__button:hover,
+.digest-newsletter__button:focus-visible {
+	background-color: var(--wp--preset--color--ink-soft);
+}
+
+.digest-newsletter__note {
+	font-size: var(--wp--preset--font-size--meta);
+	color: #9a9285;
+	margin: 9px 0 0;
+	font-style: italic;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 10. Related stories
+ * -------------------------------------------------------------------------- */
+
+.digest-related {
+	max-width: 960px;
+	margin: 44px auto 0;
+}
+
+.digest-related__grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+}
+
+.digest-related__item {
+	display: block;
+	text-decoration: none;
+	padding-inline: 22px;
+	border-right: 1px solid var(--wp--preset--color--rule);
+}
+
+.digest-related__item:last-child {
+	border-right: 0;
+}
+
+/*
+ * The related card is an <a> containing three <span>s. Spans are inline by
+ * default, so without this they run together into one paragraph of mixed type
+ * sizes — kicker, headline and summary with no line breaks between them. Each
+ * needs to be a block in its own right.
+ */
+.digest-related__item > * {
+	display: block;
+}
+
+.digest-related__head {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 22px;
+	line-height: 1.14;
+	color: var(--wp--preset--color--ink);
+	margin: 0 0 8px;
+}
+
+.digest-related__sum {
+	font-size: 13.5px;
+	line-height: 1.45;
+	color: var(--wp--preset--color--ink-faded);
+	margin: 0;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 11. Footer
+ * -------------------------------------------------------------------------- */
+
+.digest-footer {
+	margin-top: 34px;
+	border-top: 2px solid var(--wp--preset--color--ink);
+	padding-top: 14px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	color: var(--wp--preset--color--ink-ghost);
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.digest-footer__wordmark {
+	font-family: var(--digest-wordmark-font, var(--wp--preset--font-family--masthead));
+	text-transform: none;
+	letter-spacing: 0;
+	font-size: 20px;
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+	margin: 0;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 12. Accessibility
+ * -------------------------------------------------------------------------- */
+
+/*
+ * The Theme Directory's accessibility-ready tag requires a working skip link and
+ * a visible focus style on every interactive element. Both are below.
+ */
+
+.screen-reader-text {
+	border: 0;
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+	word-wrap: normal !important;
+}
+
+.skip-link:focus,
+.screen-reader-text:focus {
+	background-color: var(--wp--preset--color--paper);
+	border: 2px solid var(--wp--preset--color--accent);
+	clip-path: none;
+	color: var(--wp--preset--color--ink);
+	display: block;
+	font-size: var(--wp--preset--font-size--compact);
+	font-weight: 700;
+	height: auto;
+	left: 6px;
+	line-height: normal;
+	padding: 14px 22px;
+	text-decoration: none;
+	top: 6px;
+	width: auto;
+	z-index: 100000;
+}
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+	outline: 2px solid var(--wp--preset--color--accent);
+	outline-offset: 2px;
+}
+
+/* Honour a reader who has asked the operating system for less motion. */
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 13. Responsive
+ *
+ * A broadsheet is a wide-format object. Rather than shrink it, Digest unstacks
+ * it: the three-column lead becomes one column, the two-column body becomes one,
+ * and the rules that separated columns become rules that separate stacked
+ * sections.
+ * -------------------------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+	.digest-lead {
+		grid-template-columns: 1fr 1.6fr;
+	}
+
+	/* The photo rail drops below the lead rather than squeezing it. */
+	.digest-lead__aside {
+		grid-column: 1 / -1;
+		padding-left: 0;
+		border-left: 0;
+		border-top: 1px solid var(--wp--preset--color--rule);
+		margin-top: 24px;
+		padding-top: 24px;
+	}
+
+	.digest-sections,
+	.digest-related__grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (max-width: 760px) {
+	.wp-site-blocks {
+		padding-inline: 0;
+		padding-block-start: 0;
+	}
+
+	.digest-sheet {
+		box-shadow: none;
+	}
+
+	/* The nameplate ears are broadsheet furniture; on a phone they are noise. */
+	.digest-masthead {
+		grid-template-columns: 1fr;
+	}
+
+	.digest-ear {
+		display: none;
+	}
+
+	.digest-utility,
+	.digest-folio {
+		justify-content: center;
+		text-align: center;
+	}
+
+	.digest-lead {
+		grid-template-columns: 1fr;
+	}
+
+	.digest-lead__rail,
+	.digest-lead__main,
+	.digest-lead__aside {
+		padding-inline: 0;
+		border: 0;
+	}
+
+	.digest-lead__rail {
+		border-bottom: 1px solid var(--wp--preset--color--rule);
+		padding-bottom: 20px;
+		margin-bottom: 24px;
+	}
+
+	.digest-lead__main {
+		padding-bottom: 24px;
+	}
+
+	/* Two columns of justified text on a 375px screen is unreadable. */
+	.digest-columns {
+		columns: 1;
+	}
+
+	.digest-columns > p {
+		text-align: left;
+		hyphens: manual;
+	}
+
+	.digest-sections,
+	.digest-related__grid {
+		grid-template-columns: 1fr;
+	}
+
+	.digest-section,
+	.digest-related__item {
+		border-right: 0;
+	}
+
+	.digest-related__item {
+		border-bottom: 1px solid var(--wp--preset--color--rule);
+		padding: 0 0 20px;
+		margin-bottom: 20px;
+	}
+
+	.digest-newsletter {
+		grid-template-columns: 1fr;
+		gap: 20px;
+	}
+
+	/* Side-by-side takeaways + TOC stack. */
+	.digest-furniture {
+		grid-template-columns: 1fr !important;
+	}
+
+	.digest-byline-block__when {
+		text-align: left;
+	}
+
+	.digest-author-bio,
+	.wp-block-digest-author-bio {
+		grid-template-columns: 1fr;
+	}
+
+	.digest-footer {
+		justify-content: center;
+		text-align: center;
+	}
+
+	/* A drop cap on a narrow column eats the paragraph. Keep it, but tame it. */
+	.digest-dropcap::first-letter {
+		font-size: 3.4em;
+	}
+}
+
+/* The takeaways/TOC pair. */
+.digest-furniture {
+	max-width: 760px;
+	margin: 22px auto 0;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 22px;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 14. Print
+ *
+ * A newspaper theme that prints badly is a joke with no punchline.
+ * -------------------------------------------------------------------------- */
+
+@media print {
+	.wp-site-blocks {
+		background: none;
+		padding: 0;
+	}
+
+	.digest-sheet {
+		box-shadow: none;
+		background-image: none;
+		max-width: none;
+	}
+
+	.digest-newsletter,
+	.digest-nav,
+	.digest-utility__links,
+	.skip-link {
+		display: none;
+	}
+
+	.digest-prose a::after {
+		content: " (" attr(href) ")";
+		font-size: 0.8em;
+		color: #555;
+	}
+}

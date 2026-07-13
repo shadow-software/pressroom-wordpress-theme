@@ -1,0 +1,29 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "shadow-digest/lead-body",
+	"title": "Lead Story Body",
+	"category": "shadow-software-digest-theme-for-wordpress",
+	"icon": "editor-alignleft",
+	"description": "The opening paragraphs of the lead story, set in two justified columns with a drop cap — the way a broadsheet sets its front page. Links on to the full article.",
+	"keywords": [ "lead", "front page", "columns", "excerpt", "opening" ],
+	"textdomain": "shadow-software-digest-theme-for-wordpress",
+	"supports": {
+		"html": false,
+		"reusable": false,
+		"spacing": {
+			"margin": [ "top", "bottom" ]
+		}
+	},
+	"attributes": {
+		"paragraphs": {
+			"type": "number",
+			"default": 4
+		},
+		"moreText": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"style": "shadow-software-digest-theme-for-wordpress"
+}

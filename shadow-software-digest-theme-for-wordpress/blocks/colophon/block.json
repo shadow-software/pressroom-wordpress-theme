@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "shadow-digest/colophon",
+	"title": "Colophon",
+	"category": "shadow-software-digest-theme-for-wordpress",
+	"icon": "info-outline",
+	"description": "The footer line: the wordmark, the domain and founding year, and the copyright in Roman numerals. All of it derived — there is no year to forget to update.",
+	"keywords": [ "footer", "copyright", "colophon", "founded" ],
+	"textdomain": "shadow-software-digest-theme-for-wordpress",
+	"supports": {
+		"html": false,
+		"reusable": false,
+		"multiple": false,
+		"spacing": {
+			"margin": [ "top", "bottom" ]
+		}
+	},
+	"attributes": {},
+	"style": "shadow-software-digest-theme-for-wordpress"
+}

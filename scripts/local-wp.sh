@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+#
+# Stand up a throwaway local WordPress to test the Digest theme.
+#
+# WHY THIS EXISTS: on 2026-07-13 this theme was deployed straight to a live
+# shared VPS without ever having been run anywhere. It contained an infinite
+# recursion, which hung every PHP-FPM worker on the box and took down seven
+# sites — including a live marketplace that had nothing to do with this theme.
+# See docs/INCIDENT-2026-07-13-vps-outage.md.
+#
+# Nothing in this theme goes near a server again until it has rendered every
+# template here first.
+#
+# The sandbox is deliberately hostile to the bug that caused that outage:
+#
+#   * max_execution_time = 10, enforced by the CLI SAPI (unlike FPM, the CLI
+#     server DOES honour it), so a runaway request dies in ten seconds instead
+#     of forever.
+#   * memory_limit = 256M, so a recursion exhausts its own memory and fatals
+#     with a readable stack trace rather than swallowing the machine's RAM.
+#   * xdebug.max_nesting_level, if xdebug is present, turns infinite recursion
+#     into an immediate, named error.
+#
+# A recursion here produces a stack trace in a second. The same recursion on the
+# VPS produced a forty-minute outage. That is the whole argument for this file.
+#
+# Usage:
+#   ./scripts/local-wp.sh up        # build the site and start it on :8080
+#   ./scripts/local-wp.sh down      # tear it all down
+#   ./scripts/local-wp.sh reset     # down, then up
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+WP="$ROOT/.local-wp"
+PORT=8080
+THEME_SRC="$ROOT/shadow-software-digest-theme-for-wordpress"
+THEME_DST="$WP/wp-content/themes/shadow-software-digest-theme-for-wordpress"
+
+# The guardrails. These are the difference between "a bug" and "an outage".
+PHP_FLAGS=(
+  -d max_execution_time=10
+  -d memory_limit=256M
+  -d error_reporting=E_ALL
+  -d display_errors=1
+  -d log_errors=1
+)
+
+wp_cli() {
+  php "${PHP_FLAGS[@]}" "$(command -v wp)" --path="$WP" --allow-root "$@"
+}
+
+cmd_down() {
+  echo "── stopping any running server"
+  pkill -f "php.*-S.*:$PORT" 2>/dev/null || true
+  echo "── removing $WP"
+  rm -rf "$WP"
+  echo "── done"
+}
+
+cmd_up() {
+  if [ -d "$WP" ]; then
+    echo "!! $WP already exists — run './scripts/local-wp.sh reset' to rebuild"
+    exit 1
+  fi
+
+  mkdir -p "$WP"
+  cd "$WP"
+
+  echo "── downloading WordPress core"
+  wp_cli core download --version=latest --skip-content
+
+  echo "── configuring for SQLite (no MySQL daemon, nothing to leak)"
+  # The SQLite integration is an official WordPress plugin; it lets core run
+  # against a file instead of a database server.
+  mkdir -p wp-content/{plugins,themes,mu-plugins,database}
+  wp_cli config create \
+    --dbname=wordpress \
+    --dbuser=root \
+    --dbpass='' \
+    --skip-check \
+    --extra-php <<'PHP'
+define( 'WP_DEBUG', true );
+define( 'WP_DEBUG_LOG', true );
+define( 'WP_DEBUG_DISPLAY', true );
+define( 'SCRIPT_DEBUG', true );
+// Surface every notice. A theme that is noisy locally is quiet in production.
+@ini_set( 'display_errors', '1' );
+PHP
+
+  echo "── installing the SQLite database drop-in"
+  curl -sL -o /tmp/sqlite-plugin.zip \
+    https://downloads.wordpress.org/plugin/sqlite-database-integration.zip
+  unzip -qo /tmp/sqlite-plugin.zip -d wp-content/plugins/
+  cp wp-content/plugins/sqlite-database-integration/db.copy wp-content/db.php
+  # Point the drop-in at our paths.
+  sed -i "s|{SQLITE_IMPLEMENTATION_FOLDER_PATH}|$WP/wp-content/plugins/sqlite-database-integration|g" wp-content/db.php
+  sed -i "s|{SQLITE_PLUGIN}|sqlite-database-integration/load.php|g" wp-content/db.php
+  rm -f /tmp/sqlite-plugin.zip
+
+  echo "── installing WordPress"
+  wp_cli core install \
+    --url="http://localhost:$PORT" \
+    --title="Digest — local test" \
+    --admin_user=admin \
+    --admin_password=admin \
+    --admin_email=raywinkelman@gmail.com \
+    --skip-email
+
+  echo "── linking the theme (a symlink, so edits are live)"
+  ln -sfn "$THEME_SRC" "$THEME_DST"
+  wp_cli theme activate shadow-software-digest-theme-for-wordpress
+
+  echo "── seeding content that EXERCISES THE BUG"
+  # The article page is the one that brought the server down. It must exist here,
+  # with the table-of-contents block in it, or this sandbox proves nothing.
+  wp_cli eval-file "$ROOT/scripts/local-seed.php"
+
+  echo
+  echo "── starting the server on http://localhost:$PORT"
+  echo "   (max_execution_time=10 — a recursion dies in 10s, not forever)"
+  php "${PHP_FLAGS[@]}" -S "localhost:$PORT" -t "$WP" "$WP/index.php" \
+    > "$ROOT/.local-wp.log" 2>&1 &
+  echo "   pid $! — logging to .local-wp.log"
+
+  sleep 2
+  echo
+  echo "── ready:"
+  echo "     site:  http://localhost:$PORT/"
+  echo "     admin: http://localhost:$PORT/wp-admin/  (admin / admin)"
+}
+
+case "${1:-up}" in
+  up)    cmd_up ;;
+  down)  cmd_down ;;
+  reset) cmd_down; cmd_up ;;
+  *)     echo "usage: $0 {up|down|reset}"; exit 1 ;;
+esac

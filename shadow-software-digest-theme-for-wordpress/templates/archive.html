@@ -1,0 +1,53 @@
+<!-- wp:template-part {"slug":"masthead","tagName":"div","area":"header"} /-->
+
+<!-- wp:group {"tagName":"main","className":"digest-sheet__inner","layout":{"type":"constrained"}} -->
+<main class="wp-block-group digest-sheet__inner">
+
+	<!-- wp:group {"layout":{"type":"constrained"}} -->
+	<div class="wp-block-group">
+
+		<!-- wp:query-title {"type":"archive","className":"digest-section-head","fontFamily":"body"} /-->
+
+		<!-- wp:term-description {"textAlign":"center","fontSize":"reading","style":{"typography":{"fontStyle":"italic"}}} /-->
+
+	</div>
+	<!-- /wp:group -->
+
+	<!-- wp:query {"queryId":20,"query":{"perPage":12,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","inherit":true}} -->
+	<div class="wp-block-query">
+
+		<!-- wp:post-template {"layout":{"type":"grid","columnCount":3}} -->
+
+			<!-- wp:group {"tagName":"article","className":"digest-card","layout":{"type":"default"}} -->
+			<article class="wp-block-group digest-card">
+				<!-- wp:post-featured-image {"aspectRatio":"4/3","sizeSlug":"medium_large","isLink":true} /-->
+				<!-- wp:post-terms {"term":"category","className":"digest-kicker"} /-->
+				<!-- wp:post-title {"level":2,"isLink":true,"fontFamily":"display","style":{"typography":{"fontSize":"22px","lineHeight":"1.14"}}} /-->
+				<!-- wp:post-excerpt {"excerptLength":22,"showMoreOnNewLine":false,"fontSize":"small"} /-->
+				<!-- wp:post-date {"fontSize":"meta","textColor":"ink-ghost"} /-->
+			</article>
+			<!-- /wp:group -->
+
+		<!-- /wp:post-template -->
+
+		<!-- wp:query-pagination {"layout":{"type":"flex","justifyContent":"space-between"}} -->
+			<!-- wp:query-pagination-previous /-->
+			<!-- wp:query-pagination-numbers /-->
+			<!-- wp:query-pagination-next /-->
+		<!-- /wp:query-pagination -->
+
+		<!-- wp:query-no-results -->
+			<!-- wp:paragraph -->
+			<p>Nothing has been filed in this section yet.</p>
+			<!-- /wp:paragraph -->
+		<!-- /wp:query-no-results -->
+
+	</div>
+	<!-- /wp:query -->
+
+	<!-- wp:template-part {"slug":"newsletter","tagName":"div"} /-->
+
+</main>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","tagName":"div","area":"footer"} /-->

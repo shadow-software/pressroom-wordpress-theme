@@ -1,0 +1,31 @@
+# The local WordPress sandbox. Disposable — rebuild it with ./scripts/local-wp.sh up
+/.local-wp/
+/.local-wp.log
+
+# Dependency managers
+/vendor/
+/node_modules/
+composer.lock
+package-lock.json
+
+# Build artefacts
+/build/
+/dist/
+*.zip
+
+# Tooling caches
+/.phpunit.cache/
+.phpunit.result.cache
+/.phpcs-cache
+
+# The design mockups this theme was built from. Kept out of the theme package,
+# but see docs/ — they are the source of truth for the design.
+*.dc.html
+support.js
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

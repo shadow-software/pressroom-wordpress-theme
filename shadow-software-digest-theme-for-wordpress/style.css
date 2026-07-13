@@ -1,0 +1,35 @@
+/*
+Theme Name: Digest
+Theme URI: https://github.com/shadow-software/shadow-software-digest-theme-for-wordpress
+Author: Shadow Software LLC
+Author URI: https://shadowsoftware.com/
+Description: A block theme for news publications and journals of record. Digest dresses a modern WordPress site as a broadsheet newspaper: a blackletter masthead, a folio rule, a three-column lead grid, and a long-read article layout with editorial furniture — a short-answer box, key takeaways, a table of contents, an FAQ, and a sources list. Every colour, rule and section name is a Customizer setting, so one codebase can dress two mastheads without a single hard-coded brand.
+Requires at least: 6.6
+Tested up to: 7.0
+Requires PHP: 8.0
+Version: 1.0.2
+License: GNU General Public License v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: shadow-software-digest-theme-for-wordpress
+Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
+
+Digest is free software distributed under the terms of the GNU General Public
+License version 2 or (at your option) any later version. A copy of the licence
+ships with this theme in LICENSE.
+
+Digest bundles no third-party code. The typefaces it recommends (UnifrakturMaguntia,
+Libre Caslon Display and Source Serif 4) are licensed under the SIL Open Font
+License 1.1 and are documented, with their licences, in readme.txt.
+*/
+
+/*
+ * This file exists to carry the theme header above and to satisfy WordPress's
+ * requirement that every theme ship a style.css. Digest is a block theme: its
+ * design tokens live in theme.json and its layout in templates/ and parts/.
+ *
+ * Front-end CSS that cannot be expressed in theme.json — the drop cap, the
+ * column rules, the halftone paper texture — lives in assets/css/digest.css,
+ * which is enqueued from inc/setup.php. Keeping it out of this file means the
+ * editor and the front end load exactly the same stylesheet, so what an editor
+ * sees is what a reader gets.
+ */

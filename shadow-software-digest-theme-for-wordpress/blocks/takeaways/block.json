@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "shadow-digest/takeaways",
+	"title": "Key Takeaways",
+	"category": "shadow-software-digest-theme-for-wordpress",
+	"icon": "yes-alt",
+	"description": "The three or four things a reader should leave with, set in a bordered box beside the table of contents.",
+	"keywords": [ "takeaways", "summary", "key points", "bullets" ],
+	"textdomain": "shadow-software-digest-theme-for-wordpress",
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"spacing": {
+			"margin": [ "top", "bottom" ]
+		}
+	},
+	"attributes": {
+		"label": {
+			"type": "string",
+			"default": ""
+		},
+		"items": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "string"
+			}
+		}
+	},
+	"editorScript": "file:../../assets/js/blocks.js",
+	"style": "shadow-software-digest-theme-for-wordpress"
+}

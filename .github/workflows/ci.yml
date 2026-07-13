@@ -1,0 +1,175 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+
+  # ---------------------------------------------------------------------------
+  # The guard that matters most.
+  #
+  # On 2026-07-13 this theme took down a shared production server because a block
+  # render callback rendered the post content — which re-rendered every block in
+  # that content, including itself, forever. See
+  # docs/INCIDENT-2026-07-13-vps-outage.md.
+  #
+  # This job fails the build if that construct ever comes back. It is first, it
+  # is fast, and it is not negotiable.
+  # ---------------------------------------------------------------------------
+  no-recursion:
+    name: No content rendering in render callbacks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject any live do_blocks() call
+        run: |
+          if grep -rnE '^[^*/]*[^a-z_]do_blocks\s*\(' digest --include='*.php' | grep -vE '^\s*\*|//'; then
+            echo "::error::A live do_blocks() call is present in the theme."
+            echo "::error::This is the construct that caused the 2026-07-13 outage."
+            echo "::error::Nothing in this theme may render post content. Read the blocks in raw."
+            exit 1
+          fi
+          echo "OK — no render callback renders post content."
+
+      - name: Reject apply_filters( 'the_content' ) in a render path
+        run: |
+          if grep -rnE "apply_filters\(\s*'the_content'" digest --include='*.php' | grep -vE '^\s*\*|//'; then
+            echo "::error::apply_filters('the_content') renders the post — same recursion hazard."
+            exit 1
+          fi
+          echo "OK."
+
+  lint:
+    name: Lint (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '8.0', '8.3', '8.5' ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer
+
+      - name: PHP syntax
+        run: find digest -name '*.php' -print0 | xargs -0 -n1 -P4 php -l
+
+      - name: JSON syntax
+        run: |
+          for f in $(find digest -name '*.json'); do
+            python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f" || { echo "bad JSON: $f"; exit 1; }
+          done
+
+      - name: JavaScript syntax
+        run: node --check digest/assets/js/blocks.js
+
+  phpcs:
+    name: WordPress Coding Standards + Theme Review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer, cs2pr
+
+      - name: Install standards
+        run: |
+          composer global require --dev \
+            wp-coding-standards/wpcs:^3 \
+            phpcompatibility/phpcompatibility-wp:^2 \
+            wptrt/wpthemereview:^0.2 \
+            dealerdirect/phpcodesniffer-composer-installer:^1 \
+            --no-interaction
+          echo "$(composer -n config --global home)/vendor/bin" >> "$GITHUB_PATH"
+
+      - name: Run phpcs
+        run: phpcs -q --report=checkstyle | cs2pr
+
+  theme-check:
+    name: Theme Directory requirements
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Required files exist
+        run: |
+          fail=0
+          for f in digest/style.css digest/index.php digest/readme.txt \
+                   digest/screenshot.png digest/LICENSE digest/theme.json; do
+            [ -f "$f" ] || { echo "::error::missing required file: $f"; fail=1; }
+          done
+          exit $fail
+
+      - name: Screenshot is exactly 1200x900
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq file
+          dims=$(file digest/screenshot.png | grep -oE '[0-9]+ x [0-9]+' | head -1)
+          echo "screenshot: $dims"
+          [ "$dims" = "1200 x 900" ] || { echo "::error::screenshot.png must be 1200x900, got $dims"; exit 1; }
+
+      - name: Version is in lockstep across style.css, functions.php and readme.txt
+        run: |
+          v_style=$(grep -oP '^Version:\s*\K[0-9.]+' digest/style.css)
+          v_func=$(grep -oP "DIGEST_VERSION', '\K[0-9.]+" digest/functions.php)
+          v_readme=$(grep -oP '^Stable tag:\s*\K[0-9.]+' digest/readme.txt)
+          echo "style.css=$v_style functions.php=$v_func readme.txt=$v_readme"
+          if [ "$v_style" != "$v_func" ] || [ "$v_style" != "$v_readme" ]; then
+            echo "::error::version mismatch — these three must always agree, or asset caches never bust"
+            exit 1
+          fi
+
+      - name: No bundled minified or third-party code
+        run: |
+          if find digest -name '*.min.js' -o -name '*.min.css' | grep -q .; then
+            echo "::error::the Theme Directory requires unminified source"
+            exit 1
+          fi
+          echo "OK."
+
+  # ---------------------------------------------------------------------------
+  # The test that would have prevented the outage: actually run the theme, on a
+  # real WordPress, and assert the pages are CORRECT — not merely alive.
+  #
+  # A liveness check is not enough. The re-entrancy guard makes a recursion render
+  # fast-but-wrong instead of hanging, so a smoke test would pass on broken code.
+  # This job asserts what the pages must CONTAIN.
+  # ---------------------------------------------------------------------------
+  render:
+    name: Render the theme and assert correctness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: sqlite3, pdo_sqlite, mysqli, gd, zip
+          coverage: none
+          tools: wp-cli
+
+      - name: Build the sandbox and start it
+        run: |
+          ./scripts/local-wp.sh up
+
+      - name: Smoke — every template renders, fast, no fatals
+        run: ./scripts/local-smoke.sh
+
+      - name: Assert — the pages are correct
+        run: php scripts/local-assert.php
+
+      - name: Show the log on failure
+        if: failure()
+        run: tail -100 .local-wp.log || true
