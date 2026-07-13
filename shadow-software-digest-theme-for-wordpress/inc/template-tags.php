@@ -162,9 +162,68 @@ function shadow_digest_utility_bar(): void {
 					)
 				);
 			}
+
+			shadow_digest_shop_links();
 			?>
 		</span>
 	</div>
+	<?php
+}
+
+/**
+ * Echo the WooCommerce account and cart links, in the utility bar.
+ *
+ * They go in the utility bar's third cell, which is otherwise EMPTY on both live
+ * sites: it exists to hold a "utility" nav menu, and neither site has ever
+ * assigned one. (That empty cell is also why the strapline used to sit 98px right
+ * of centre — see the grid note on .digest-utility in digest.css.)
+ *
+ * EVERY WooCommerce call here is guarded, and the whole function is a no-op when
+ * the plugin is absent. That is not defensiveness for its own sake: this theme is
+ * going to the WordPress.org Theme Directory, which requires that it work on stock
+ * WordPress with NO plugins installed. A theme that fatals — or even warns —
+ * without WooCommerce could not be submitted at all. So:
+ *
+ *   - `class_exists( 'WooCommerce' )` gates the entire block.
+ *   - wc_get_cart_url() / wc_get_page_permalink() are only ever called inside it.
+ *   - The cart count comes from WC()->cart, which is null on some requests (REST,
+ *     cron, and the admin), so it is null-checked rather than assumed.
+ *
+ * @since 1.0.10
+ * @return void
+ */
+function shadow_digest_shop_links(): void {
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+
+	$account_url = wc_get_page_permalink( 'myaccount' );
+	$cart_url    = wc_get_cart_url();
+
+	// WC()->cart is not instantiated on every request — notably in the admin and
+	// during REST/cron — so this must never be assumed to exist.
+	$count = ( WC()->cart instanceof WC_Cart ) ? WC()->cart->get_cart_contents_count() : 0;
+	?>
+	<span class="digest-shop">
+		<?php if ( $account_url ) : ?>
+			<a class="digest-shop__link" href="<?php echo esc_url( $account_url ); ?>">
+				<?php
+				echo is_user_logged_in()
+					? esc_html__( 'My Account', 'shadow-software-digest-theme-for-wordpress' )
+					: esc_html__( 'Log In', 'shadow-software-digest-theme-for-wordpress' );
+				?>
+			</a>
+		<?php endif; ?>
+
+		<?php if ( $cart_url ) : ?>
+			<a class="digest-shop__link digest-shop__cart" href="<?php echo esc_url( $cart_url ); ?>">
+				<?php esc_html_e( 'Cart', 'shadow-software-digest-theme-for-wordpress' ); ?>
+				<?php if ( $count > 0 ) : ?>
+					<span class="digest-shop__count"><?php echo esc_html( (string) $count ); ?></span>
+				<?php endif; ?>
+			</a>
+		<?php endif; ?>
+	</span>
 	<?php
 }
 

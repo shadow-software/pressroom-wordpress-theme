@@ -112,7 +112,7 @@ function shadow_digest_shape_image( string $path, int $w, int $h, array $rgb ): 
 $shapes = array(
 	array( 'portrait', 1600, 2400, array( 63, 58, 51 ) ),
 	array( 'panorama', 2400, 800, array( 110, 103, 92 ) ),
-	array( 'square', 1800, 1800, array( 63, 58, 51 ) ),
+	array( 'square', 1024, 1024, array( 63, 58, 51 ) ),
 	array( 'tiny', 320, 180, array( 110, 103, 92 ) ),
 	array( 'tall', 1200, 2400, array( 63, 58, 51 ) ),
 );

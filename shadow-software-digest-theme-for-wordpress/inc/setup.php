@@ -204,82 +204,38 @@ function shadow_digest_register_sidebars(): void {
 add_action( 'widgets_init', 'shadow_digest_register_sidebars' );
 
 /**
- * Hand the featured image's true aspect ratio to CSS.
+ * Keep WooCommerce's Customer Account block out of the masthead.
  *
- * WHY: templates/single.html taming of the hero (assets/css/digest.css, "THE
- * HERO") clamps the image's proportions into a band — wide panoramas stop being
- * letterbox slits, tall portraits stop being two-screen walls — while leaving
- * anything already reasonable completely untouched. To leave it untouched, the
- * CSS has to KNOW the image's real ratio, and CSS cannot read it: attr() is not
- * usable in arbitrary properties in any shipping browser, and the alternative —
- * hard-coding a fallback ratio — would silently force every image to that one
- * shape, which is the exact opposite of the intent.
+ * WHY: on activation, WooCommerce auto-injects a `woocommerce/customer-account`
+ * block into a block theme's header — at runtime, through its own template
+ * registry, and NOT by writing to the database (there is no wp_template_part row
+ * to edit; that was checked before writing this). On Digest it surfaced as a
+ * stray, unstyled person-icon floating below the section navigation, outside the
+ * masthead's grid and belonging to nothing.
  *
- * PHP already knows the dimensions, so it prints them as a custom property and
- * lets clamp() do the rest. No JavaScript, no layout shift: the ratio is in the
- * HTML on first paint, so the box reserves its final height before the image
- * has loaded a single byte. That is a CLS win, not just a cosmetic one.
+ * Digest already renders account and cart links, deliberately placed and styled
+ * to match, in the utility bar — see shadow_digest_shop_links(). Two account
+ * links in one header, one of them uninvited and misplaced, is worse than either
+ * alone.
  *
- * SAFETY: this reads attachment METADATA only. It never touches post content,
- * so it cannot re-enter the block parser — the failure that took the VPS down
- * on 2026-07-13 (see docs/INCIDENT-2026-07-13-vps-outage.md, and gate 2 of
- * scripts/deploy.sh, which greps for exactly that).
+ * This drops the block wherever it renders, which is the honest thing to write:
+ * WooCommerce only ever auto-inserts it into the header, and Digest's own header
+ * is the only place it has ever appeared. Should an editor one day want the block
+ * on a page deliberately, this is the one line to revisit.
  *
- * @since 1.0.9
+ * Harmless with no WooCommerce installed: the block name simply never appears.
+ *
+ * @since 1.0.10
  *
  * @param string $block_content The block's rendered HTML.
  * @param array  $block         The parsed block.
- * @return string The block HTML, with --digest-hero-natural set on the figure.
+ * @return string Empty for WooCommerce's account block; the content untouched otherwise.
  */
-function shadow_digest_hero_ratio( string $block_content, array $block ): string {
-	if ( ( $block['blockName'] ?? '' ) !== 'core/post-featured-image' ) {
-		return $block_content;
+function shadow_digest_drop_woo_account_block( string $block_content, array $block ): string {
+	if ( ( $block['blockName'] ?? '' ) === 'woocommerce/customer-account' ) {
+		return '';
 	}
 
-	if ( '' === trim( $block_content ) || ! is_singular() ) {
-		return $block_content;
-	}
-
-	$thumbnail_id = get_post_thumbnail_id();
-
-	if ( ! $thumbnail_id ) {
-		return $block_content;
-	}
-
-	$meta = wp_get_attachment_metadata( $thumbnail_id );
-
-	$width  = (int) ( $meta['width'] ?? 0 );
-	$height = (int) ( $meta['height'] ?? 0 );
-
-	if ( $width < 1 || $height < 1 ) {
-		return $block_content;
-	}
-
-	$ratio = round( $width / $height, 4 );
-
-	// Only the <figure> is targeted, and only its first occurrence — the block
-	// renders exactly one. Merge onto any style attribute the block already
-	// carries rather than clobbering it.
-	$processor = new WP_HTML_Tag_Processor( $block_content );
-
-	if ( ! $processor->next_tag( array( 'tag_name' => 'FIGURE' ) ) ) {
-		return $block_content;
-	}
-
-	$existing = (string) $processor->get_attribute( 'style' );
-
-	// The intrinsic width goes out too, so CSS can refuse to upscale. A 320x180
-	// thumbnail was being stretched across the full 1120px sheet — a 3.5x blow-up,
-	// visibly soft — and nothing stopped it, because CSS has no way to ask an
-	// image how big it really is.
-	$declaration = '--digest-hero-natural:' . $ratio . ';'
-		. '--digest-hero-natural-w:' . $width . 'px;';
-
-	$processor->set_attribute(
-		'style',
-		'' === trim( $existing ) ? $declaration : rtrim( $existing, '; ' ) . ';' . $declaration
-	);
-
-	return $processor->get_updated_html();
+	return $block_content;
 }
-add_filter( 'render_block', 'shadow_digest_hero_ratio', 10, 2 );
+add_filter( 'render_block', 'shadow_digest_drop_woo_account_block', 10, 2 );

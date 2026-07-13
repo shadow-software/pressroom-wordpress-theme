@@ -3,7 +3,7 @@ Contributors: shadowsoftware
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.0.9
+Stable tag: 1.0.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
@@ -144,6 +144,29 @@ Shadow Software LLC and licensed GPLv2 or later. It contains no third-party
 imagery.
 
 == Changelog ==
+
+= 1.0.10 =
+* The featured image is no longer a slab between the headline and the article. It
+  is now a BACKDROP: bled to the edges of the sheet behind the eyebrow, headline,
+  deck and byline, faded down into the paper and dissolved out on all four sides.
+  The reader meets the headline first, with the photograph behind it, and the
+  article body begins immediately underneath — there is nothing to scroll past.
+  (1.0.9 clamped the slab's proportions and capped it at 88vh, which turned a
+  1120px square into a 1120x792 letterbox: smaller, but still most of a screen of
+  picture standing between the headline and the first word. Taming the slab was
+  the wrong idea; the slab was the problem.)
+* Verified: worst-case contrast behind the headline measures 9.77:1 against the
+  darkest pixel of the backdrop — comfortably past WCAG AA. The treatment is
+  removed entirely under prefers-contrast: more.
+* WooCommerce account and cart links in the utility bar, in the cell that has
+  always been empty on both sites. Entirely optional: renders nothing at all when
+  WooCommerce is not installed, so the theme still works on stock WordPress.
+* Fixed: the section grid ("Inside this week's edition") had no left border. The
+  cells drew only their right and bottom edges, so the box closed on three sides
+  by coincidence and the left was simply never drawn.
+* Fixed: the masthead ears are now optically balanced. They were both bottom-
+  aligned, but the left ear runs to three lines against the right's two, so the
+  taller one started higher and read as though only one were centred.
 
 = 1.0.9 =
 * Tamed the featured image on single posts and pages. It previously had no styling

@@ -256,6 +256,56 @@
 	padding: 0;
 }
 
+/*
+ * The WooCommerce account/cart links, in the utility bar's third cell — which is
+ * otherwise empty on both sites (it holds a "utility" nav menu, and neither site
+ * has ever assigned one). Rendered by shadow_digest_shop_links(), which is a
+ * complete no-op when WooCommerce is not installed, so nothing here ever applies
+ * on a stock WordPress.
+ *
+ * They inherit the utility bar's small-caps meta styling rather than introducing
+ * a new one: this is furniture at the top of a newspaper, not a shop's header.
+ */
+.digest-shop {
+	display: inline-flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.digest-shop__link {
+	color: inherit;
+	text-decoration: none;
+	white-space: nowrap;
+	border-bottom: 1px solid transparent;
+	transition: border-color 120ms ease;
+}
+
+.digest-shop__link:hover,
+.digest-shop__link:focus-visible {
+	border-bottom-color: currentColor;
+}
+
+.digest-shop__cart {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 6px;
+}
+
+/* The count only renders when the cart is non-empty, so it never sits there as
+   a lonely "0" — an empty cart should look like no cart. */
+.digest-shop__count {
+	display: inline-block;
+	min-width: 1.5em;
+	padding: 1px 5px;
+	border-radius: 999px;
+	background: var(--wp--preset--color--ink);
+	color: var(--wp--preset--color--paper);
+	font-size: 0.85em;
+	line-height: 1.4;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
 .digest-utility__menu a {
 	color: var(--wp--preset--color--ink-ghost);
 }
@@ -269,10 +319,23 @@
 	padding: 20px 0 12px;
 }
 
+/*
+ * The ears are centred against the nameplate; the nameplate itself keeps sitting
+ * on the baseline (align-items: end, above).
+ *
+ * They used to inherit that `end`, which bottom-aligned all three. Both ears were
+ * in fact aligned identically — but the left ear carries a three-line weather
+ * note against the right ear's two-line strapline, so bottom-aligning the taller
+ * one made it START higher, and it read as though one ear were top-aligned and
+ * the other centred. Aligning the ears to the centre of the row makes the two
+ * blocks balance regardless of how many lines the Customizer copy runs to, which
+ * is the point: this text is user-editable and its height is not knowable here.
+ */
 .digest-ear {
 	font-size: var(--wp--preset--font-size--meta);
 	line-height: 1.5;
 	color: var(--wp--preset--color--ink-faded);
+	align-self: center;
 }
 
 .digest-ear--right {
@@ -716,264 +779,180 @@ body:has(.digest-single) .wp-site-blocks::before {
 }
 
 /* ---------------------------------------------------------------------------
- * THE HERO (post-featured-image)
+ * THE HERO — the featured image as a BACKDROP, not a slab.
  *
- * Before this block, the featured image had NO styling whatsoever — not one
- * rule in this file mentioned it. The figure was simply `width: 100%` of the
- * 1120px sheet and its height was whatever the upload's aspect ratio produced.
- * Measured, that meant an 800x1600 portrait rendered 2240px tall on a 1440x900
- * desktop: 249% of the viewport, two and a half screens of image before the
- * first word of the article. A 2400x800 panorama, meanwhile, came in at 373px —
- * a letterbox slit. The page's whole vertical rhythm was being dictated by
- * whatever shape the photographer's camera happened to be held in.
+ * History, because this is the third attempt and the first two were wrong:
  *
- * The fix is not "add object-fit: cover". WordPress ALREADY sets cover on this
- * image, and it was doing precisely nothing, because `cover` can only crop when
- * the box has a height decided independently of the image. Here the box height
- * WAS the image's height, so there was never anything to crop against. Give the
- * figure its own aspect-ratio and cover suddenly means what it says.
+ *   v1.0.8 and earlier — no styling at all. The figure was width:100% of the
+ *   sheet and its height was whatever the upload happened to be, so an 800x1600
+ *   portrait rendered 2,240px tall on a 1440x900 desktop: 249% of the viewport.
  *
- * But a single fixed ratio is the wrong cure. Force everything to 16:9 and a
- * portrait gets guillotined down to a fifth of itself — tamed, and ruined. So
- * the ratio is CLAMPED INTO A BAND instead: an image whose proportions are
- * already reasonable is left alone, and only a pathological one is overridden.
+ *   v1.0.9 — clamped the ratio into a band and capped the height at 88vh. That
+ *   turned a 1120px SQUARE into a 1120x792 letterbox. Measurably better, and
+ *   still wrong: 88vh is "almost an entire screen of picture" standing between
+ *   the headline and the first word of the article. Taming the slab does not
+ *   help, because THE SLAB ITSELF IS THE PROBLEM. A broadsheet does not put a
+ *   full-bleed photograph between its headline and its lede.
  *
- *   wider than 2.4:1  ->  pinned to 2.4:1  (panoramas stop being letterbox slits)
- *   between           ->  its own shape, untouched
- *   taller than 4:5   ->  pinned to 4:5    (portraits stop being walls)
+ * So the image stops being a block in the flow and becomes the ground the
+ * masthead furniture is printed on: it sits BEHIND the eyebrow, the headline,
+ * the deck and the byline, bled to the edges of the sheet, faded down into the
+ * paper. The reader sees the headline first, with the photograph behind it, and
+ * the article body begins immediately underneath. Nothing is scrolled past.
  *
- * `aspect-ratio` cannot itself be clamped, so the band is enforced with
- * min-height/max-height expressed in *percentages of the figure's own width* —
- * padding-style percentage sizing, which resolves against the inline axis. That
- * is the modern, single-element equivalent of the old padding-top ratio hack,
- * and it needs no wrapper div and no JavaScript.
+ * This is possible at all because the images are generated (see the n8n RSS
+ * bloggers) and NEVER CONTAIN TEXT — the user confirmed this. A photograph with
+ * its own headline burned into it could not be used this way.
+ *
+ * The image is moved into .digest-article__header in single.html/page.html, so
+ * it is a sibling of the type rather than a block after it.
  * ------------------------------------------------------------------------- */
-.digest-single .wp-block-post-featured-image {
+
+.digest-single .digest-article__header {
+	position: relative;
+	isolation: isolate;
+
 	/*
-	 * The band, as ratios. 2.4 = widest allowed; 1.3333 (4:3) = tallest allowed.
-	 *
-	 * The tall bound started at 0.8 (4:5, the classic portrait crop) and that was
-	 * simply wrong for a sheet this wide. The arithmetic decides it — on 1120px
-	 * of paper, a given ratio costs this much height:
-	 *
-	 *     2.4  (bound)  ->  467px
-	 *     16:9          ->  630px
-	 *     4:3  (bound)  ->  840px
-	 *     1:1           -> 1120px
-	 *     4:5           -> 1400px      <- the original bound
-	 *
-	 * ...against a viewport cap that is only ~790px on a 900px-tall laptop. At
-	 * 4:5 the cap therefore BOUND ON EVERY DESKTOP, and portrait, square and 1:2
-	 * all came out as an identical 1120x702 box: three different photographs,
-	 * one identical shape. The band was doing nothing; the cap was doing
-	 * everything, and doing it bluntly.
-	 *
-	 * 4:3 is the tallest bound whose worst case (840px) still clears a laptop
-	 * viewport. So the BAND governs — each shape keeps its own character — and
-	 * the cap goes back to being the backstop it was meant to be. On a wide sheet
-	 * the hero is FURNITURE, not a poster: it sits under the headline rather than
-	 * replacing the page.
+	 * The type needs air around it now that it is sitting ON something — and the
+	 * backdrop needs room to actually be a backdrop. The first pass used 44px top
+	 * and the header came out 356px tall, which is a BAND, not a ground: the
+	 * photograph had no space to establish itself before the type landed on it.
+	 * The generous top padding is what turns it from a strip into a stage.
 	 */
-	--digest-hero-ratio-wide: 2.4;
-	--digest-hero-ratio-tall: 1.3333;
+	padding: 88px 40px 44px;
 
-	margin: 30px auto 0;
+	/* Bleed the backdrop to the sheet's edges, cancelling the header's own
+	   prose measure. The type inside stays on the measure (see below). */
+	max-width: none;
+}
+
+/*
+ * The image itself: absolutely positioned to fill the header box, behind
+ * everything. object-fit: cover crops it to whatever shape the HEADLINE decides
+ * — which is the right way round. The picture now serves the type instead of the
+ * page reflowing around the picture.
+ */
+.digest-single .digest-article__header .wp-block-post-featured-image {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	margin: 0;
 	overflow: hidden;
+
+	/*
+	 * max-width: none is LOAD-BEARING, not tidying. The header is a constrained
+	 * group, so WordPress's own `.is-layout-constrained > *` rule puts a
+	 * max-width of the content size (760px) on every child — including this one.
+	 * Measured: the figure was `position: absolute; inset: 0` yet still only
+	 * 760px wide, so the backdrop stopped at the prose measure and read as an
+	 * inset panel rather than as the ground the type is printed on. inset: 0
+	 * cannot win against an explicit max-width; it has to be released.
+	 *
+	 * No aspect-ratio, no height cap, no ratio band, no clamp. The box is the
+	 * header; the image simply fills it. Every one of those mechanisms existed to
+	 * stop a slab being too tall, and there is no slab any more.
+	 */
+	max-width: none;
 }
 
-/*
- * The figure carries the ratio, the image fills it.
- *
- * The obvious-looking version of this — min-height/max-height in percentages on
- * the img — DOES NOT WORK, and measuring proved it: every number came back
- * byte-identical to the unstyled page. A percentage height resolves against the
- * PARENT'S HEIGHT, and the parent here is height:auto, so both bounds computed
- * to auto and silently evaporated. (Percentages resolve against the inline axis
- * for `padding` and `aspect-ratio` — not for `height`. That asymmetry is what
- * the old padding-top hack existed to exploit.)
- *
- * So the ratio goes on the FIGURE, where `aspect-ratio` gives it a definite
- * height derived from its width, and the image is told to fill that box. Now
- * the box's shape and the image's shape are decided independently — which is
- * the precondition `object-fit: cover` needs in order to crop anything at all.
- */
-/*
- * --digest-hero-natural is printed onto this figure by PHP
- * (shadow_digest_hero_ratio() in inc/setup.php) as the image's true width/height.
- * CSS cannot read an image's intrinsic size on its own — attr() is not usable in
- * arbitrary properties in any shipping browser — and hard-coding a fallback
- * ratio here would force EVERY image to that one shape, destroying exactly the
- * variety this band exists to preserve. So if the property is absent, the rule
- * is simply skipped (@supports-style, via the invalid-at-computed-value trick of
- * an unset custom property) and the image keeps its natural proportions.
- *
- * clamp() then does the work: natural ratio in the middle, bounds at the edges.
- * Only a pathological image is ever overridden.
- */
-.digest-single .wp-block-post-featured-image[style*="--digest-hero-natural"] {
-	aspect-ratio: clamp(
-		var(--digest-hero-ratio-tall),
-		var(--digest-hero-natural),
-		var(--digest-hero-ratio-wide)
-	);
-}
-
-.digest-single .wp-block-post-featured-image img {
+.digest-single .digest-article__header .wp-block-post-featured-image img {
 	display: block;
 	width: 100%;
 	height: 100%;
-
-	/* NOW this does something. The figure's box is a different shape than the
-	   image whenever a bound bites, so cover crops it — from the centre, so a
-	   subject framed in the middle survives the crop. */
 	object-fit: cover;
 	object-position: center;
+
+	/*
+	 * Fade the photograph into the paper rather than laying it on at a flat
+	 * opacity. A flat 50% over a warm-white sheet leaves a grey rectangle with a
+	 * visible edge; what is wanted is a print effect, where the ink thins out and
+	 * the page shows through.
+	 *
+	 * Three things together do that:
+	 *   opacity  — thin the ink
+	 *   grayscale — pull the photo's colour out of the palette's way, so it reads
+	 *               as tone rather than as a competing picture
+	 *   contrast  — flatten it so no dark passage fights the black type
+	 */
+	opacity: 0.2;
+	filter: grayscale(0.7) contrast(0.75) brightness(1.06);
+
+	/*
+	 * ...and dissolve it into the paper on EVERY side, not just the bottom.
+	 *
+	 * The first version masked only `to bottom`, which left a hard rectangular
+	 * edge down both sides and across the top: the photograph read as a pasted-in
+	 * panel with a visible boundary, which is precisely the "slab" character the
+	 * whole redesign exists to get rid of. A backdrop has to have no edges at all
+	 * or it is just a smaller slab.
+	 *
+	 * Two masks composited (intersected via mask-composite) fade the horizontal
+	 * and vertical axes independently, so the image bleeds off into paper on all
+	 * four sides — like ink soaking out into the sheet.
+	 */
+	-webkit-mask-image:
+		linear-gradient(to bottom, transparent 0%, #000 22%, #000 58%, transparent 100%),
+		linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+	mask-image:
+		linear-gradient(to bottom, transparent 0%, #000 22%, #000 58%, transparent 100%),
+		linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+	-webkit-mask-composite: source-in;
+	mask-composite: intersect;
 }
 
 /*
- * Never upscale an undersized upload.
- *
- * A 320x180 thumbnail was being stretched across the full 1120px sheet — a 3.5x
- * blow-up, soft and mushy, and nothing stopped it. The small image should just
- * sit centred at its true size, sharp, on the paper. That is what a picture desk
- * would do with it, rather than blowing it up and hoping nobody looks closely.
- *
- * WHY THIS IS ONE PROPERTY AND NOT A max-width: the inline axis is pinned by
- * `min-width` above (see the probe results — nothing else stops aspect-ratio
- * collapsing the width), and in CSS **min-width always beats max-width**. So a
- * `max-width: 320px` here computed correctly and was then simply overruled by
- * the 100% min-width, and the image upscaled anyway. Measured, confirmed:
- * max-width resolved to 320px, min-width to 1120px, used width 1120px.
- *
- * Two rules fighting over one property is fragile even when you win, so the
- * fight is removed instead. There is now exactly ONE rule that sets the inline
- * axis, and it sets `min-width` to the same value it sets `width` to.
- *
- * The value is NOT `min(100%, natural-width)`. That was tried, and it made
- * things worse in a way only measuring caught: it declines to upscale *at all*,
- * so a 900px photo on an 1120px sheet stopped 220px short, and the hero came out
- * NARROWER THAN THE PROSE COLUMN BENEATH IT, floating off-centre with nothing on
- * the page aligning to anything. A picture that does not reach its own margins
- * looks like a mistake even when it is pixel-perfect.
- *
- * The honest threshold is not "never upscale", it is "never upscale VISIBLY".
- * A 900px image stretched to 1120px is a 1.24x blow-up and nobody can see it; a
- * 320px image stretched to 1120px is 3.5x and everybody can. So the figure is
- * allowed to upscale up to --digest-hero-upscale-max (1.5x, comfortably past the
- * point where softness is perceptible) and refuses beyond it. Real editorial
- * photography — 1600px and up — always fills the sheet and never touches this
- * path at all; only a genuinely undersized upload does, which is exactly the
- * case worth protecting against.
+ * The type sits on the prose measure, centred, ON TOP of the bled backdrop.
+ * (The header itself has had its max-width released above so the image can reach
+ * the sheet's edges, so the measure has to be re-imposed on the children.)
  */
-.digest-single .wp-block-post-featured-image[style*="--digest-hero-natural"] {
-	--digest-hero-upscale-max: 1.5;
-
-	width: min(
-		100%,
-		calc(var(--digest-hero-natural-w, 100vw) * var(--digest-hero-upscale-max))
-	);
-	min-width: min(
-		100%,
-		calc(var(--digest-hero-natural-w, 100vw) * var(--digest-hero-upscale-max))
-	);
+.digest-single .digest-article__header > :not(.wp-block-post-featured-image) {
+	position: relative;
+	max-width: var(--digest-measure-prose);
 	margin-inline: auto;
 }
 
 /*
- * The caption is furniture, not picture. It belongs on the prose measure even
- * though the image above it is wide — a caption running the full 1120px is
- * unreadable, and no newspaper has ever set one that way.
+ * A page with no featured image must not keep the padding it needed for one —
+ * it would sit in a mysterious pocket of empty space. :has() lets the header
+ * revert cleanly when the block renders nothing.
  */
-.digest-single .wp-block-post-featured-image figcaption {
-	max-width: var(--digest-measure-prose);
-	margin: 10px auto 0;
-	font-size: var(--wp--preset--font-size--caption);
-	font-style: italic;
-	line-height: 1.5;
-	color: var(--wp--preset--color--ink-ghost);
-	text-align: left;
+.digest-single .digest-article__header:not(:has(.wp-block-post-featured-image img)) {
+	padding: 14px 0 0;
 }
 
-/*
- * Tablet and below: the sheet has narrowed to roughly the prose measure, so the
- * hero is no longer "wide" relative to anything. Tighten the band — a portrait
- * that is 125% of a 1120px sheet is 1400px tall, but 125% of a 326px phone is
- * only 408px, which is fine. It is the DESKTOP that needs the hard ceiling.
- * Loosen the tall bound on small screens so a portrait keeps more of itself.
- */
-@media (max-width: 900px) {
-	.digest-single .wp-block-post-featured-image {
-		/*
-		 * A phone column is only ~326px wide, so a tall ratio costs very little
-		 * absolute height — 0.8 is just 408px of image, well under a screen. The
-		 * band can therefore be MUCH more permissive here than on the desktop
-		 * sheet, and a portrait photograph gets to stay a portrait instead of
-		 * being cropped into a letterbox on the one device where a tall image
-		 * actually reads well. It is the WIDE sheet that needs the discipline,
-		 * not the narrow one.
-		 */
-		--digest-hero-ratio-tall: 0.8;
-		margin-top: 22px;
+@media (max-width: 760px) {
+	.digest-single .digest-article__header {
+		padding: 28px 18px 22px;
+	}
+
+	/* A phone screen is mostly headline, so the backdrop has less room to be
+	   subtle in. Thin it further so the type stays unambiguously legible. */
+	.digest-single .digest-article__header .wp-block-post-featured-image img {
+		opacity: 0.12;
 	}
 }
 
 /*
- * The band fixes the hero's SHAPE. This fixes its SCALE.
- *
- * They are different problems. A 4:5 portrait is a perfectly tasteful shape, but
- * at 4:5 on an 1120px sheet it is still 1400px tall — taller than most laptop
- * viewports, so the reader STILL meets a wall of picture before a word of text.
- *
- * The cap goes on BLOCK-SIZE, not max-height, and this distinction is the whole
- * ballgame. `max-height: 78vh` on a box that also has an `aspect-ratio` does NOT
- * crop it — the browser honours the ratio by back-solving a NARROWER WIDTH. It
- * was measured doing exactly that: the portrait hero shrank to 562px wide and
- * went visibly narrower than the 760px prose column beneath it, floating
- * off-centre on the sheet. A picture narrower than its own caption text is worse
- * than the wall it replaced.
- *
- * The construction below was arrived at by PROBING A BROWSER, not by reasoning,
- * because two plausible-sounding fixes both silently failed. Measured, in a
- * 1120px column, asking for a 400px ceiling on a 4:5 box:
- *
- *   aspect-ratio + max-height          ->  320 x 400   width collapsed
- *   aspect-ratio + max-block-size      ->  320 x 400   (it is the same property)
- *   aspect-ratio + explicit height     ->  320 x 400   width collapsed anyway
- *   aspect-ratio + max-height + MIN-WIDTH -> 1120 x 400   correct
- *
- * The last one is the only one that works, and the reason is subtle: `width:
- * 100%` is merely a PREFERRED size, which the aspect-ratio is free to shrink in
- * order to satisfy its own constraint. `min-width` is not negotiable. Pin the
- * inline axis and the ratio has nowhere to give but the block axis — so the box
- * gets shorter, and object-fit: cover crops the image further to fill it. Which
- * is exactly what was wanted all along.
+ * Respect a reader who has asked for less. A faint photograph behind body copy
+ * is exactly the kind of decoration that makes text hard to read for some
+ * people; if they have asked the OS to reduce it, remove it entirely rather
+ * than merely soften it.
  */
-.digest-single .wp-block-post-featured-image[style*="--digest-hero-natural"] {
-	/*
-	 * The backstop. The band fixes the hero's SHAPE; this fixes its SCALE, and
-	 * they are genuinely different problems: 4:3 is a tasteful shape, but 4:3 of
-	 * an 1120px sheet is 840px of picture, which on a short laptop is still most
-	 * of the screen.
-	 *
-	 * 88vh is chosen so the cap DEFERS TO THE BAND WHEREVER IT CAN. Measured:
-	 *
-	 *   1920x1200  cap = 1056px  ->  never binds; the band governs. Portrait,
-	 *                                square and 1:2 all land on the 1.33 bound,
-	 *                                panorama on the 2.40 bound. Four shapes.
-	 *   1440x900   cap =  792px  ->  binds on the tall end only (840 > 792), so
-	 *                                tall images converge; panorama (467px) and
-	 *                                16:9 (630px) are untouched.
-	 *
-	 * That convergence on short screens is not a bug and should not be "fixed".
-	 * A 900px-tall viewport genuinely cannot show more than ~790px of picture and
-	 * still have an article under it — a picture editor would crop all three to
-	 * the same depth for exactly that reason. The cap flattens only the tall end,
-	 * which is the end that ought to flatten.
-	 */
-	max-height: 88vh;
+@media (prefers-contrast: more) {
+	.digest-single .digest-article__header .wp-block-post-featured-image {
+		display: none;
+	}
 }
 
-.digest-article__header {
+/*
+ * The base header measure, for any context that is NOT the article page. On the
+ * article page (.digest-single) the header is deliberately released to full sheet
+ * width so the featured-image backdrop can bleed to the edges, and the measure is
+ * re-imposed on its children instead — see "THE HERO" above. Scoping this rule
+ * with :not() keeps the two from contradicting each other, rather than relying on
+ * a specificity accident to decide which wins.
+ */
+.digest-article__header:not(.digest-single .digest-article__header) {
 	max-width: var(--digest-measure-prose, 760px);
 	margin-inline: auto;
 	padding-top: 14px;
@@ -1427,20 +1406,48 @@ body:has(.digest-single) .wp-site-blocks::before {
 	padding-bottom: 8px;
 }
 
+/*
+ * The section grid. The CONTAINER draws the box; the cells draw only the
+ * internal dividers.
+ *
+ * Before this, each cell drew its own border-right and border-bottom and nothing
+ * drew a frame. The grid therefore closed on the right (the last column's
+ * border-right happened to fall on the outer edge) and on the top (the double
+ * rule under the section head sits there anyway) — but THE LEFT EDGE WAS SIMPLY
+ * OPEN. Nothing ever drew it. The missing line was easy to miss in review
+ * precisely because the other three sides looked deliberate.
+ *
+ * Drawing the frame once, on the container, means an edge cannot go missing: it
+ * no longer depends on which cell happens to land last in a row.
+ */
 .digest-sections {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	gap: 0;
+	border: 1px solid var(--wp--preset--color--rule);
+
+	/* Clips the cells' overhanging edge borders — see below. */
+	overflow: hidden;
 }
 
 /*
- * The cells are divided by their own borders, not by gutters, so the 20px
- * blockGap that theme.json hands every sibling block is not wanted here — it
- * opened a band between the grid's two rows and another under the last one.
- * See the equivalent note on .digest-lead.
+ * margin-block: 0 — the cells are divided by their own borders, not by gutters,
+ * so the 20px blockGap theme.json hands every sibling block is not wanted here;
+ * it opened a band between the grid's two rows and another under the last one.
+ * (See the equivalent note on .digest-lead.)
+ *
+ * The negative right/bottom margins pull each cell 1px past the frame so that a
+ * cell border falling on an edge is clipped by the overflow above, leaving only
+ * the frame. The obvious alternative — :nth-child(3n) { border-right: 0 } — is
+ * WRONG here, and quietly so: this grid is 3 columns on desktop, 2 at <=1024px
+ * and 1 on a phone, so a rule keyed to "every third cell" would strip the border
+ * off a MIDDLE cell at the narrower breakpoints while leaving the real edge
+ * doubled. Clipping works at ANY column count with no rule to keep in sync.
  */
 .digest-sections > * {
 	margin-block: 0;
+	margin-right: -1px;
+	margin-bottom: -1px;
 }
 
 .digest-section {
