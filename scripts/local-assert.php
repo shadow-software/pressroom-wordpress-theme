@@ -183,9 +183,24 @@ check(
 
 echo "\n── Structured data\n";
 
+/*
+ * FAQPage must ALWAYS be emitted by the theme, whether or not an SEO plugin is
+ * present.
+ *
+ * This nearly went wrong on the live sites: the FAQ schema used the same "is an
+ * SEO plugin active?" check as the article schema, so with Rank Math installed
+ * the theme suppressed its FAQPage — and Rank Math, which has no idea this
+ * theme's FAQ block exists, never emitted one either. The FAQ, which is the
+ * single piece of content most likely to win a rich result, carried no structured
+ * data at all. Nobody was in charge.
+ *
+ * The article graph SHOULD defer to an SEO plugin (two NewsArticle nodes is worse
+ * than one). The FAQ graph should not, because nothing else can produce it.
+ */
 check(
 	str_contains( $html, '"@type":"FAQPage"' ) || str_contains( $html, '"@type": "FAQPage"' ),
-	'FAQ emits FAQPage JSON-LD'
+	'FAQ emits FAQPage JSON-LD',
+	'the FAQ block is the only thing that knows these questions exist — it must always emit'
 );
 
 check(

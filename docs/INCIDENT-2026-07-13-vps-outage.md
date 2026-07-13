@@ -87,12 +87,19 @@ The theme now contains no call to `do_blocks()` at all.
 A single recursive function should not be able to take down seven websites. It
 could, because of a pre-existing gap in the host configuration.
 
-**`request_terminate_timeout` is not set on any PHP-FPM pool.**
+**`request_terminate_timeout` was not set on any PHP-FPM pool.**
 
 ```
 $ grep -rn request_terminate_timeout /etc/php/8.5/fpm/
 (no matches)
 ```
+
+> **FIXED 2026-07-13.** Every pool now sets `request_terminate_timeout = 120s`
+> with `php_value[max_execution_time] = 110` beneath it. The change is versioned
+> in `shadow-vps-infrastructure` at `config/php-fpm/*.conf` and deployed through
+> that repo's `scripts/deploy.sh`, which does a full `systemctl restart
+> php8.5-fpm` — FPM does **not** re-read this directive on `reload` (SIGUSR2),
+> which is a trap worth knowing.
 
 `php.ini` sets `max_execution_time = 30`, which reads like a guardrail and is
 not one. Under FPM, `max_execution_time` measures *CPU time inside the script*
@@ -102,29 +109,34 @@ and it was absent. **A hung request therefore ran forever.**
 
 ### The arithmetic that turned one bad page into a dead box
 
-| Pool | max_children |
-|---|---|
-| dabdash | 25 |
-| shadowsoftware | 16 |
-| agt | 15 |
-| auralabs | 8 |
-| cannabisdigest | 6 |
-| marksmansdigest | 6 |
-| **Total** | **76** |
+> **Correction.** An earlier version of this document put the worst case at
+> 9,728 MB, using the 128M `memory_limit` from `php.ini`. That was wrong:
+> `memory_limit` is overridden **per pool**, and the real numbers are far worse.
+> The corrected figures are below. I got this wrong by reading the global config
+> instead of the pool configs, which is the same class of mistake as the bug
+> itself — assuming rather than checking.
 
-`memory_limit = 128M`, so the worst case is:
+| Pool | children | memory_limit | worst case |
+|---|---|---|---|
+| dabdash | 25 | 512M | 12,800 MB |
+| shadowsoftware | 16 | 256M | 4,096 MB |
+| agt | 15 | 256M | 3,840 MB |
+| auralabs | 8 | 256M | 2,048 MB |
+| cannabisdigest | 6 | 256M | 1,536 MB |
+| marksmansdigest | 6 | 256M | 1,536 MB |
+| **Total** | **76** | | **25,856 MB** |
 
 ```
-76 workers × 128 MB = 9,728 MB
-Box has                7,940 MB
-                      ---------
-Over-committed by      1,788 MB
+76 workers, worst case    25,856 MB
+Box has                    7,940 MB
+                          ----------
+Over-committed by         17,916 MB   (325% of physical RAM)
 ```
 
 Over-committing is normally harmless — workers finish, free their memory, and the
 ceiling is never approached. It stops being harmless the moment workers *stop
-finishing*. Each hung recursive request pinned a worker holding up to 128 MB and
-never released it. They accumulated until the kernel had no memory left to fork
+finishing*. Each hung recursive request pinned a worker holding up to its pool's
+`memory_limit` (256–512 MB) and never released it. They accumulated until the kernel had no memory left to fork
 `sshd` — which is exactly what the operator experienced: TCP connected on port 22,
 but the SSH banner never arrived.
 
@@ -208,12 +220,21 @@ That is an uncomfortably thin set of options for a box running a live marketplac
 
 ### Required on the host (independent of this theme)
 
-- [ ] **Set `request_terminate_timeout` on every PHP-FPM pool** (60s is typical).
-      This is the guardrail whose absence let one bad page kill seven sites. It
-      should have been there before this incident and it should be there
-      regardless of Digest.
-- [ ] Reconcile `max_children` against physical memory, or accept the
-      over-commit knowingly. 76 × 128 MB > 7.9 GB.
+- [x] **Set `request_terminate_timeout` on every PHP-FPM pool.** Done: 120s, with
+      `max_execution_time = 110` beneath it. Versioned in
+      `shadow-vps-infrastructure` at `config/php-fpm/*.conf`. This is the
+      guardrail whose absence let one bad page kill seven sites; it should have
+      been there before this incident, and it is there now regardless of Digest.
+      **Note the trap:** FPM does not re-read this on `reload` — a full
+      `systemctl restart php8.5-fpm` is required, which is what `deploy.sh` does.
+- [ ] **Reconcile `max_children` against physical memory** — 76 workers at
+      256–512 MB each is 25.8 GB worst case on a 7.9 GB box (325 %). Deliberately
+      NOT changed during the incident response: throttling AGT or DabDash to guard
+      against a bug in a news theme would trade one outage for another. This wants
+      a considered decision, not a reflex.
+- [ ] **`config/php-fpm/shadowsoftware.conf` is missing from the infra repo** but
+      the pool exists on the box and `deploy.sh` does not manage it. Unmanaged
+      drift that predates this incident.
 - [ ] **Get the operator out-of-band access that does not depend on the box being
       healthy** — a working provider console login, or a root password reset. The
       operator was locked out of their own server during a live outage. That must

@@ -3,9 +3,17 @@
 	<description>
 		Coding standards for the Digest theme.
 
-		WordPress-Extra + WordPress-Docs, plus the WordPress Theme Review sniffs,
-		which are what the WordPress.org Theme Directory actually runs against a
-		submission. Passing this locally is the cheapest way to not be rejected.
+		WordPress-Extra + WordPress-Docs, which is what the WordPress.org Theme
+		Directory actually runs against a submission. Passing this locally is the
+		cheapest way to not be rejected.
+
+		NOTE: this ruleset used to also `<rule ref="WPThemeReview"/>`, and CI used
+		to install wptrt/wpthemereview:^0.2 alongside wp-coding-standards/wpcs:^3.
+		Those two are MUTUALLY EXCLUSIVE — wpthemereview 0.2 requires WPCS ^2 —
+		so `composer require` failed outright and the "WordPress Coding Standards
+		+ Theme Review" CI job had never once run a single sniff. WPThemeReview is
+		unmaintained and its sniffs were folded into WPCS 3's WordPress-Extra, so
+		the fix is to drop it rather than pin WPCS back to 2.x.
 	</description>
 
 	<file>shadow-software-digest-theme-for-wordpress</file>
@@ -23,11 +31,15 @@
 	<rule ref="WordPress-Docs"/>
 
 	<!--
-		The Theme Review sniffs. These are the rules the .org reviewers apply:
-		no file operations, no direct database queries, no hidden admin menus,
-		correct escaping, correct enqueueing, no bundled plugins, and so on.
+		A doc comment whose first word is a FUNCTION NAME — "get_avatar() is a
+		Gravatar call…", "sanitize_text_field() strips newlines…" — trips this
+		sniff, which wants a capital letter. Capitalising them would make the
+		documentation wrong: there is no Get_avatar(). The sniff cannot tell prose
+		from an identifier, so it is excluded rather than obeyed.
 	-->
-	<rule ref="WPThemeReview"/>
+	<rule ref="Generic.Commenting.DocComment.LongNotCapital">
+		<severity>0</severity>
+	</rule>
 
 	<!--
 		Text domain enforcement: every translatable string in the theme must use

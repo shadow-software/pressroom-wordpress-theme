@@ -100,16 +100,23 @@ echo "  canary post: {$canary} (contains digest/toc + headings — the recursion
 
 // A few more so the front page grid, the briefs rail and the related block have
 // something to chew on.
+//
+// Titles here must not collide with local-seed-front.php's section headlines:
+// wp_insert_post() has no natural dedupe, so a shared title used to produce
+// this post under the wrong category (Features, via $cat_id, instead of its
+// real section) with generic filler copy — local-seed-front.php's
+// get_page_by_title() check then saw the title already existed and silently
+// skipped seeding its properly-categorised version. Six titles here used to
+// match six of local-seed-front.php's, so four out of six of these posts (and
+// their excerpts) were duplicated in that sense across every reseed.
 $filler = array(
-	'Senate Panel Weighs Suppressor Reclassification',
-	'The Springfield That Won Camp Perry',
-	'A New Generation of Rangefinding Optics',
-	'Nationals Return to the Ohio Ranges',
-	"A Marksman's Eye, at Ninety-Four",
-	'Reading Mirage Without a Spotting Scope',
+	"A Marksman's Eye, at Ninety-Four"          => 'A profile of the oldest competitor still shooting Camp Perry.',
+	'Reading Mirage Without a Spotting Scope'   => 'A field method for reading wind when you cannot afford a spotting scope.',
 );
 
-foreach ( $filler as $i => $title ) {
+$i = 0;
+
+foreach ( $filler as $title => $excerpt ) {
 	wp_insert_post(
 		array(
 			'post_title'    => $title,
@@ -117,11 +124,13 @@ foreach ( $filler as $i => $title ) {
 			'post_type'     => 'post',
 			'post_author'   => $author_id,
 			'post_category' => array( $cat_id ),
-			'post_excerpt'  => 'From the Digest newsroom.',
+			'post_excerpt'  => $excerpt,
 			'post_content'  => '<!-- wp:paragraph --><p>Reported copy.</p><!-- /wp:paragraph -->',
 			'post_date'     => gmdate( 'Y-m-d H:i:s', strtotime( '-' . ( $i + 2 ) . ' days' ) ),
 		)
 	);
+
+	++$i;
 }
 
 // Give the theme its identity so the masthead renders like the real sites.
@@ -141,7 +150,13 @@ foreach ( $mods as $k => $v ) {
 }
 
 update_option( 'blogname', "Marksman's Digest" );
-update_option( 'permalink_structure', '/%postname%/' );
-flush_rewrite_rules( false );
 
-echo "  seeded " . ( count( $filler ) + 1 ) . " posts, theme mods, permalinks\n";
+// Permalinks are set and flushed once, in local-wp.sh, after every seed script
+// has run — not here. Flushing this early produced a rewrite_rules option with
+// no flat postname rule at all (WordPress fell through to the page catch-all
+// for every /%postname%/ URL, 404ing every post), and only a second flush,
+// once local-seed-front.php's terms and posts also existed, produced a correct
+// rule set. Rather than depend on exactly when in the seeding sequence that
+// settles, flush once at the very end when everything already exists.
+
+echo "  seeded " . ( count( $filler ) + 1 ) . " posts, theme mods\n";

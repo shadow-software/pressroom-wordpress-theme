@@ -52,6 +52,7 @@ function shadow_digest_register_masthead_blocks(): void {
 		register_block_type(
 			$dir,
 			array(
+
 				/*
 				 * Guarded, like every Digest block — see shadow_digest_guard().
 				 *

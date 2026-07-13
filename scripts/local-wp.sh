@@ -116,10 +116,39 @@ PHP
   # with the table-of-contents block in it, or this sandbox proves nothing.
   wp_cli eval-file "$ROOT/scripts/local-seed.php"
 
+  echo "── seeding a full front page (six sections, three posts each)"
+  # Without this the sandbox front page has one category and four posts against
+  # a live site's six of each — a layout can only be judged against the content
+  # it was designed for.
+  wp_cli eval-file "$ROOT/scripts/local-seed-front.php"
+
+  echo "── attaching a featured image to every post"
+  # post-featured-image is wired into templates/single.html and the front-page
+  # lead grid; with nothing to show it, no audit here ever exercises responsive
+  # image markup, srcset, or image-delivery performance — the same class of gap
+  # that let the front page look "fine" while genuinely broken during the outage.
+  wp_cli eval-file "$ROOT/scripts/local-seed-images.php"
+
+  echo "── setting permalinks and flushing rewrite rules"
+  # Deliberately last, after every post/term the seed scripts create. Flushing
+  # earlier — this used to happen inside local-seed.php, before
+  # local-seed-front.php's terms and posts existed — produced a rewrite_rules
+  # option with NO flat /%postname%/ rule for posts at all: every single article
+  # 404'd, silently, with the homepage still rendering "fine". That is the same
+  # shape of failure as the outage this sandbox exists to catch (a page that
+  # looks fine hiding one that is completely broken), just triggered by rewrite
+  # rules instead of a render callback.
+  wp_cli option update permalink_structure '/%postname%/'
+  wp_cli rewrite flush --hard
+
   echo
   echo "── starting the server on http://localhost:$PORT"
   echo "   (max_execution_time=10 — a recursion dies in 10s, not forever)"
-  php "${PHP_FLAGS[@]}" -S "localhost:$PORT" -t "$WP" "$WP/index.php" \
+  # NOTE: the router is scripts/local-router.php, NOT WordPress's index.php.
+  # Passing index.php here routes *every* request through WordPress, including
+  # ones for real files — so no CSS, JS or font ever loads and every page in the
+  # sandbox renders unstyled. See the header of local-router.php.
+  php "${PHP_FLAGS[@]}" -S "localhost:$PORT" -t "$WP" "$ROOT/scripts/local-router.php" \
     > "$ROOT/.local-wp.log" 2>&1 &
   echo "   pid $! — logging to .local-wp.log"
 

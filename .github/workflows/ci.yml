@@ -29,7 +29,7 @@ jobs:
 
       - name: Reject any live do_blocks() call
         run: |
-          if grep -rnE '^[^*/]*[^a-z_]do_blocks\s*\(' digest --include='*.php' | grep -vE '^\s*\*|//'; then
+          if grep -rnE '^[^*/]*[^a-z_]do_blocks\s*\(' shadow-software-digest-theme-for-wordpress --include='*.php' | grep -vE '^\s*\*|//'; then
             echo "::error::A live do_blocks() call is present in the theme."
             echo "::error::This is the construct that caused the 2026-07-13 outage."
             echo "::error::Nothing in this theme may render post content. Read the blocks in raw."
@@ -39,7 +39,7 @@ jobs:
 
       - name: Reject apply_filters( 'the_content' ) in a render path
         run: |
-          if grep -rnE "apply_filters\(\s*'the_content'" digest --include='*.php' | grep -vE '^\s*\*|//'; then
+          if grep -rnE "apply_filters\(\s*'the_content'" shadow-software-digest-theme-for-wordpress --include='*.php' | grep -vE '^\s*\*|//'; then
             echo "::error::apply_filters('the_content') renders the post — same recursion hazard."
             exit 1
           fi
@@ -62,16 +62,16 @@ jobs:
           tools: composer
 
       - name: PHP syntax
-        run: find digest -name '*.php' -print0 | xargs -0 -n1 -P4 php -l
+        run: find shadow-software-digest-theme-for-wordpress -name '*.php' -print0 | xargs -0 -n1 -P4 php -l
 
       - name: JSON syntax
         run: |
-          for f in $(find digest -name '*.json'); do
+          for f in $(find shadow-software-digest-theme-for-wordpress -name '*.json'); do
             python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f" || { echo "bad JSON: $f"; exit 1; }
           done
 
       - name: JavaScript syntax
-        run: node --check digest/assets/js/blocks.js
+        run: node --check shadow-software-digest-theme-for-wordpress/assets/js/blocks.js
 
   phpcs:
     name: WordPress Coding Standards + Theme Review
@@ -87,10 +87,16 @@ jobs:
 
       - name: Install standards
         run: |
+          # NOTE: wptrt/wpthemereview:^0.2 used to be in this list and made the
+          # whole command UNRESOLVABLE — it requires wp-coding-standards/wpcs ^2,
+          # which conflicts with the ^3 pinned above. composer failed, the step
+          # failed, and this job had never once actually run a sniff. WPThemeReview
+          # is unmaintained; its sniffs live in WPCS 3's WordPress-Extra now.
+          composer global config --no-plugins \
+            allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer global require --dev \
             wp-coding-standards/wpcs:^3 \
             phpcompatibility/phpcompatibility-wp:^2 \
-            wptrt/wpthemereview:^0.2 \
             dealerdirect/phpcodesniffer-composer-installer:^1 \
             --no-interaction
           echo "$(composer -n config --global home)/vendor/bin" >> "$GITHUB_PATH"
@@ -107,8 +113,8 @@ jobs:
       - name: Required files exist
         run: |
           fail=0
-          for f in digest/style.css digest/index.php digest/readme.txt \
-                   digest/screenshot.png digest/LICENSE digest/theme.json; do
+          for f in shadow-software-digest-theme-for-wordpress/style.css shadow-software-digest-theme-for-wordpress/index.php shadow-software-digest-theme-for-wordpress/readme.txt \
+                   shadow-software-digest-theme-for-wordpress/screenshot.png shadow-software-digest-theme-for-wordpress/LICENSE shadow-software-digest-theme-for-wordpress/theme.json; do
             [ -f "$f" ] || { echo "::error::missing required file: $f"; fail=1; }
           done
           exit $fail
@@ -116,15 +122,15 @@ jobs:
       - name: Screenshot is exactly 1200x900
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq file
-          dims=$(file digest/screenshot.png | grep -oE '[0-9]+ x [0-9]+' | head -1)
+          dims=$(file shadow-software-digest-theme-for-wordpress/screenshot.png | grep -oE '[0-9]+ x [0-9]+' | head -1)
           echo "screenshot: $dims"
           [ "$dims" = "1200 x 900" ] || { echo "::error::screenshot.png must be 1200x900, got $dims"; exit 1; }
 
       - name: Version is in lockstep across style.css, functions.php and readme.txt
         run: |
-          v_style=$(grep -oP '^Version:\s*\K[0-9.]+' digest/style.css)
-          v_func=$(grep -oP "DIGEST_VERSION', '\K[0-9.]+" digest/functions.php)
-          v_readme=$(grep -oP '^Stable tag:\s*\K[0-9.]+' digest/readme.txt)
+          v_style=$(grep -oP '^Version:\s*\K[0-9.]+' shadow-software-digest-theme-for-wordpress/style.css)
+          v_func=$(grep -oP "DIGEST_VERSION', '\K[0-9.]+" shadow-software-digest-theme-for-wordpress/functions.php)
+          v_readme=$(grep -oP '^Stable tag:\s*\K[0-9.]+' shadow-software-digest-theme-for-wordpress/readme.txt)
           echo "style.css=$v_style functions.php=$v_func readme.txt=$v_readme"
           if [ "$v_style" != "$v_func" ] || [ "$v_style" != "$v_readme" ]; then
             echo "::error::version mismatch — these three must always agree, or asset caches never bust"
@@ -133,7 +139,7 @@ jobs:
 
       - name: No bundled minified or third-party code
         run: |
-          if find digest -name '*.min.js' -o -name '*.min.css' | grep -q .; then
+          if find shadow-software-digest-theme-for-wordpress -name '*.min.js' -o -name '*.min.css' | grep -q .; then
             echo "::error::the Theme Directory requires unminified source"
             exit 1
           fi

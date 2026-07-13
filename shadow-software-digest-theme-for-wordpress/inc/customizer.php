@@ -33,9 +33,11 @@ defined( 'ABSPATH' ) || exit;
 function shadow_digest_settings(): array {
 	$settings = array(
 
-		/* ---------------------------------------------------------------- *
+		/*
+		 * ----------------------------------------------------------------
 		 * Identity — who the publication is.
-		 * ---------------------------------------------------------------- */
+		 * ----------------------------------------------------------------
+		 */
 
 		'shadow_digest_strapline'          => array(
 			'default'   => __( 'The Journal of Record', 'shadow-software-digest-theme-for-wordpress' ),
@@ -87,9 +89,11 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		/* ---------------------------------------------------------------- *
+		/*
+		 * ----------------------------------------------------------------
 		 * Masthead — the two ears either side of the nameplate.
-		 * ---------------------------------------------------------------- */
+		 * ----------------------------------------------------------------
+		 */
 
 		'shadow_digest_ear_left_title'     => array(
 			'default'   => __( 'Weekend Field Report', 'shadow-software-digest-theme-for-wordpress' ),
@@ -164,9 +168,11 @@ function shadow_digest_settings(): array {
 			),
 		),
 
-		/* ---------------------------------------------------------------- *
+		/*
+		 * ----------------------------------------------------------------
 		 * Colour — the one setting that most changes the theme's character.
-		 * ---------------------------------------------------------------- */
+		 * ----------------------------------------------------------------
+		 */
 
 		'shadow_digest_accent'             => array(
 			'default'   => '#6b1f1f',
@@ -237,9 +243,11 @@ function shadow_digest_settings(): array {
 			'help'     => __( 'A faint dot screen over the sheet, like newsprint under a loupe. Costs nothing — it is a CSS gradient, not an image.', 'shadow-software-digest-theme-for-wordpress' ),
 		),
 
-		/* ---------------------------------------------------------------- *
+		/*
+		 * ----------------------------------------------------------------
 		 * Newsletter — presentation only. See inc/template-tags.php.
-		 * ---------------------------------------------------------------- */
+		 * ----------------------------------------------------------------
+		 */
 
 		'shadow_digest_newsletter_enable'  => array(
 			'default'  => true,
@@ -318,9 +326,11 @@ function shadow_digest_settings(): array {
 			'help'     => __( 'The name attribute of the email input. Whatever your endpoint expects — most want “email”.', 'shadow-software-digest-theme-for-wordpress' ),
 		),
 
-		/* ---------------------------------------------------------------- *
+		/*
+		 * ----------------------------------------------------------------
 		 * Article furniture.
-		 * ---------------------------------------------------------------- */
+		 * ----------------------------------------------------------------
+		 */
 
 		'shadow_digest_dropcap'            => array(
 			'default'  => true,
@@ -567,13 +577,15 @@ function shadow_digest_custom_properties(): string {
 	return apply_filters( 'shadow_digest_custom_properties', $css );
 }
 
-/* -------------------------------------------------------------------------- *
+/*
+ * --------------------------------------------------------------------------
  * Sanitisers.
  *
  * Every setting above names one of these. The Theme Directory requires that no
  * Customizer value reach the database unsanitised, and these are the callbacks
  * that guarantee it.
- * -------------------------------------------------------------------------- */
+ * --------------------------------------------------------------------------
+ */
 
 /**
  * Sanitise a checkbox to a real boolean.

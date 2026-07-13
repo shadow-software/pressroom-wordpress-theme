@@ -3,7 +3,7 @@ Contributors: shadowsoftware
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.0.2
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
@@ -144,6 +144,37 @@ Shadow Software LLC and licensed GPLv2 or later. It contains no third-party
 imagery.
 
 == Changelog ==
+
+= 1.0.9 =
+* Tamed the featured image on single posts and pages. It previously had no styling
+  at all, so its height was dictated entirely by whatever the editor uploaded: a
+  tall portrait rendered 2,240px high on a 1440x900 desktop — 249% of the viewport,
+  two and a half screens of picture before the first word of the article — while a
+  panoramic crop came out as a 373px letterbox slit.
+* The hero's proportions are now clamped into a band (no wider than 2.4:1, no taller
+  than 4:3 on desktop / 4:5 on phones). An image whose shape is already reasonable
+  is left completely untouched — an ordinary 16:9 photo passes through with no crop
+  at all — and only a pathological one is overridden, cropped from the centre.
+* A hero is now capped at 88vh, so the top of the article body is always within
+  reach no matter how tall the source image.
+* Undersized uploads are no longer blown up. A 320px-wide image was being stretched
+  across the full 1120px sheet (a 3.5x upscale, visibly soft); it now sits centred
+  at its true size, sharp.
+* No layout shift: the aspect ratio is printed server-side, so the box reserves its
+  final height before the image has loaded a single byte.
+
+= 1.0.8 =
+* Added a meta description to every page (singular posts/pages, category and tag
+  archives, author archives, the front page) — stock WordPress prints none, which
+  left every page's search-result snippet to chance.
+* Added a canonical link to the front page and every category, tag and author
+  archive (including their paginated pages). WordPress core's rel_canonical()
+  only ever covers singular posts and pages; every other page type was silently
+  uncanonicalised.
+* Stopped enqueueing style.css as a front-end stylesheet. It carries only the
+  theme header comment and no CSS rules; WordPress reads the header directly and
+  never required the file be loaded in the browser, so this was a render-blocking
+  HTTP request that improved nothing.
 
 = 1.0.1 =
 * **Fixed a fatal infinite recursion in the table-of-contents block.** It rendered

@@ -111,6 +111,7 @@ function shadow_digest_register_blocks(): void {
 		register_block_type(
 			$dir,
 			array(
+
 				/*
 				 * Guarded, so no Digest block can recurse into itself — see
 				 * shadow_digest_guard() and docs/INCIDENT-2026-07-13-vps-outage.md.
@@ -153,13 +154,13 @@ function shadow_digest_block_category( array $categories ): array {
 }
 add_filter( 'block_categories_all', 'shadow_digest_block_category' );
 
-/* -------------------------------------------------------------------------- *
+/*
  * Render callbacks.
  *
  * Each one escapes on output. None of them trusts an attribute — attributes come
  * from post content, which an Author-level user can write, so they are treated
  * as untrusted input.
- * -------------------------------------------------------------------------- */
+ */
 
 /**
  * The short-answer box: a direct, quotable answer at the top of the article.
@@ -379,20 +380,22 @@ function shadow_digest_add_heading_anchors( string $content ): string {
 
 	$result = preg_replace_callback(
 		'#<h([23])\b([^>]*)>(.*?)</h\1>#is',
-		static function ( array $match ) use ( &$seen ): string {
-			$level = (string) $match[1];
-			$attrs = (string) $match[2];
-			$inner = (string) $match[3];
+		// $matched, not $match: `match` is a reserved keyword as of PHP 8, and
+		// WPCS flags it as a parameter name even where it is still legal.
+		static function ( array $matched ) use ( &$seen ): string {
+			$level = (string) $matched[1];
+			$attrs = (string) $matched[2];
+			$inner = (string) $matched[3];
 
 			// Already anchored — leave it exactly as the editor wrote it.
 			if ( preg_match( '#\bid=["\'][^"\']+["\']#i', $attrs ) ) {
-				return $match[0];
+				return $matched[0];
 			}
 
 			$text = trim( wp_strip_all_tags( $inner ) );
 
 			if ( '' === $text ) {
-				return $match[0];
+				return $matched[0];
 			}
 
 			$anchor = sanitize_title( $text );
@@ -508,11 +511,42 @@ function shadow_digest_collect_faq( ?array $add = null ): array {
 /**
  * Print the FAQPage JSON-LD for whatever FAQ blocks the page rendered.
  *
- * @since 1.0.0
+ * NOTE — this deliberately does NOT defer to an SEO plugin, unlike the article
+ * schema in inc/schema.php. The two are different questions:
+ *
+ *   - The ARTICLE graph (NewsArticle, Organization, BreadcrumbList) is something
+ *     every SEO plugin emits from post data. If Rank Math or Yoast is active,
+ *     they own it and the theme must stay quiet, or the page carries two
+ *     competing NewsArticle nodes and a search engine picks one at random.
+ *
+ *   - The FAQ graph is derived from THIS THEME'S OWN BLOCK. Rank Math has no idea
+ *     the block exists and will never emit FAQPage for it.
+ *
+ * Deferring here was a bug: with Rank Math active, the theme suppressed its FAQ
+ * schema and Rank Math never supplied one, so the FAQ — the single piece of
+ * content most likely to win a rich result — emitted no structured data at all.
+ * Nobody was in charge.
+ *
+ * There is no conflict to avoid: an SEO plugin only emits FAQPage from its own
+ * FAQ block, which is a different block. If a publisher somehow ends up with
+ * both, the shadow_digest_emit_faq_schema filter switches this off.
+ *
+ * @since 1.0.3
  * @return void
  */
 function shadow_digest_print_faq_schema(): void {
-	if ( ! shadow_digest_should_emit_schema() ) {
+
+	/**
+	 * Filters whether the theme emits FAQPage structured data.
+	 *
+	 * Set to false only if something else on the site already emits FAQPage for
+	 * these same questions — which, since the questions come from this theme's
+	 * own block, is unlikely.
+	 *
+	 * @since 1.0.3
+	 * @param bool $emit Whether to emit the FAQ schema.
+	 */
+	if ( ! apply_filters( 'shadow_digest_emit_faq_schema', true ) ) {
 		return;
 	}
 
@@ -812,10 +846,10 @@ function shadow_digest_render_related( array $attributes ): string {
  * @return string The rendered HTML.
  */
 function shadow_digest_render_section_grid( array $attributes ): string {
-	$columns     = isset( $attributes['columns'] ) ? absint( $attributes['columns'] ) : 6;
-	$per_column  = isset( $attributes['perColumn'] ) ? absint( $attributes['perColumn'] ) : 3;
-	$columns     = max( 1, min( 12, $columns ) );
-	$per_column  = max( 1, min( 10, $per_column ) );
+	$columns    = isset( $attributes['columns'] ) ? absint( $attributes['columns'] ) : 6;
+	$per_column = isset( $attributes['perColumn'] ) ? absint( $attributes['perColumn'] ) : 3;
+	$columns    = max( 1, min( 12, $columns ) );
+	$per_column = max( 1, min( 10, $per_column ) );
 
 	$categories = get_categories(
 		array(
