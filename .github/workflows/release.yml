@@ -76,7 +76,7 @@ jobs:
         run: |
           ver="${GITHUB_REF_NAME#v}"
           {
-            echo "## Digest ${ver}"
+            echo "## Pressroom ${ver}"
             echo
             awk -v v="= ${ver} =" '
               $0 == v      { on = 1; next }
@@ -97,7 +97,7 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" \
             build/*.zip \
-            --title "Digest ${GITHUB_REF_NAME#v}" \
+            --title "Pressroom ${GITHUB_REF_NAME#v}" \
             --notes-file NOTES.md
 
       - name: Show the log on failure
