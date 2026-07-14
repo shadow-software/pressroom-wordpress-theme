@@ -452,23 +452,23 @@ function shadow_digest_customize_register( WP_Customize_Manager $wp_customize ):
 	);
 
 	$sections = array(
-		'shadow_digest_identity'                => array(
+		'shadow_digest_identity'   => array(
 			'title'       => __( 'Identity', 'broadside' ),
 			'description' => __( 'Who the publication is, and what it prints on its folio rule.', 'broadside' ),
 		),
-		'shadow_digest_masthead'                => array(
+		'shadow_digest_masthead'   => array(
 			'title'       => __( 'Masthead', 'broadside' ),
 			'description' => __( 'The nameplate and the two “ears” either side of it.', 'broadside' ),
 		),
-		'shadow_digest_colour'                  => array(
+		'shadow_digest_colour'     => array(
 			'title'       => __( 'Colour & paper', 'broadside' ),
 			'description' => __( 'The accent colour does most of the work. Everything else is the paper it is printed on.', 'broadside' ),
 		),
-		'shadow_digest_newsletter'              => array(
+		'shadow_digest_newsletter' => array(
 			'title'       => __( 'Newsletter', 'broadside' ),
 			'description' => __( 'Broadside renders the signup form. It does not store subscribers or send mail — point the form at your own service.', 'broadside' ),
 		),
-		'shadow_digest_article'                 => array(
+		'shadow_digest_article'    => array(
 			'title'       => __( 'Article furniture', 'broadside' ),
 			'description' => __( 'The details of the long-read layout.', 'broadside' ),
 		),
