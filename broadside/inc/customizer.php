@@ -39,7 +39,7 @@ function shadow_digest_settings(): array {
 		 * ----------------------------------------------------------------
 		 */
 
-		'shadow_digest_strapline'          => array(
+		'shadow_digest_strapline'               => array(
 			'default'   => __( 'The Journal of Record', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
@@ -49,7 +49,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_founded'            => array(
+		'shadow_digest_founded'                 => array(
 			'default'   => '1926',
 			'sanitize'  => 'shadow_digest_sanitize_year',
 			'type'      => 'number',
@@ -59,7 +59,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_city'               => array(
+		'shadow_digest_city'                    => array(
 			'default'   => __( 'New York', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
@@ -69,7 +69,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_motto'              => array(
+		'shadow_digest_motto'                   => array(
 			'default'   => __( 'Steady Hands, Straight Talk', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
@@ -79,7 +79,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_cover_price'        => array(
+		'shadow_digest_cover_price'             => array(
 			'default'   => '$4.00',
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
@@ -112,7 +112,7 @@ function shadow_digest_settings(): array {
 		 * nationality, and this one dresses two publications that have nothing in
 		 * common. See the DRY rule in CLAUDE.md.
 		 */
-		'shadow_digest_masthead_device'    => array(
+		'shadow_digest_masthead_device'         => array(
 			'default'   => '',
 			'sanitize'  => 'esc_url_raw',
 			'type'      => 'image',
@@ -132,7 +132,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_ear_left_title'     => array(
+		'shadow_digest_ear_left_title'          => array(
 			'default'   => __( 'Weekend Field Report', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
@@ -142,7 +142,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_ear_left_body'      => array(
+		'shadow_digest_ear_left_body'           => array(
 			'default'   => __( "Clear, wind 4–7 mph out of the west.\nIdeal conditions across the Northeast ranges.", 'broadside' ),
 			'sanitize'  => 'shadow_digest_sanitize_multiline',
 			'type'      => 'textarea',
@@ -152,7 +152,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_ear_right_title'    => array(
+		'shadow_digest_ear_right_title'         => array(
 			'default'   => __( 'One Hundredth Year', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
@@ -162,7 +162,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_ear_right_body'     => array(
+		'shadow_digest_ear_right_body'          => array(
 			'default'   => __( "A century in the service of\nprecision, heritage & sport.", 'broadside' ),
 			'sanitize'  => 'shadow_digest_sanitize_multiline',
 			'type'      => 'textarea',
@@ -172,7 +172,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_volume'             => array(
+		'shadow_digest_volume'                  => array(
 			'default'   => __( 'Vol. C', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
@@ -182,7 +182,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_issue'              => array(
+		'shadow_digest_issue'                   => array(
 			'default'   => __( 'No. 28', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
@@ -192,7 +192,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_wordmark_font'      => array(
+		'shadow_digest_wordmark_font'           => array(
 			'default'  => 'masthead',
 			'sanitize' => 'shadow_digest_sanitize_wordmark_font',
 			'type'     => 'select',
@@ -211,7 +211,7 @@ function shadow_digest_settings(): array {
 		 * ----------------------------------------------------------------
 		 */
 
-		'shadow_digest_accent'             => array(
+		'shadow_digest_accent'                  => array(
 			'default'   => '#6b1f1f',
 			'sanitize'  => 'sanitize_hex_color',
 			'type'      => 'color',
@@ -221,7 +221,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_accent_soft'        => array(
+		'shadow_digest_accent_soft'             => array(
 			'default'   => '#c99a5b',
 			'sanitize'  => 'sanitize_hex_color',
 			'type'      => 'color',
@@ -231,7 +231,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_kicker'             => array(
+		'shadow_digest_kicker'                  => array(
 			'default'   => '#8a5a2a',
 			'sanitize'  => 'sanitize_hex_color',
 			'type'      => 'color',
@@ -241,7 +241,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_paper'              => array(
+		'shadow_digest_paper'                   => array(
 			'default'   => '#f4efe4',
 			'sanitize'  => 'sanitize_hex_color',
 			'type'      => 'color',
@@ -251,7 +251,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_paper_shade'        => array(
+		'shadow_digest_paper_shade'             => array(
 			'default'   => '#e7dfce',
 			'sanitize'  => 'sanitize_hex_color',
 			'type'      => 'color',
@@ -261,7 +261,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_paper_tint'         => array(
+		'shadow_digest_paper_tint'              => array(
 			'default'   => '#eef0e6',
 			'sanitize'  => 'sanitize_hex_color',
 			'type'      => 'color',
@@ -271,7 +271,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_texture'            => array(
+		'shadow_digest_texture'                 => array(
 			'default'  => true,
 			'sanitize' => 'shadow_digest_sanitize_checkbox',
 			'type'     => 'checkbox',
@@ -286,7 +286,7 @@ function shadow_digest_settings(): array {
 		 * ----------------------------------------------------------------
 		 */
 
-		'shadow_digest_newsletter_enable'  => array(
+		'shadow_digest_newsletter_enable'       => array(
 			'default'  => true,
 			'sanitize' => 'shadow_digest_sanitize_checkbox',
 			'type'     => 'checkbox',
@@ -295,7 +295,7 @@ function shadow_digest_settings(): array {
 			'help'     => __( 'The dark panel on the front page and beneath each article.', 'broadside' ),
 		),
 
-		'shadow_digest_newsletter_name'    => array(
+		'shadow_digest_newsletter_name'         => array(
 			'default'   => __( 'The Weekly Dispatch', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
@@ -305,7 +305,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_newsletter_eyebrow' => array(
+		'shadow_digest_newsletter_eyebrow'      => array(
 			'default'   => __( 'The Flagship Newsletter · Every Thursday', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
@@ -315,7 +315,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_newsletter_blurb'   => array(
+		'shadow_digest_newsletter_blurb'        => array(
 			'default'   => __( 'Field notes, match results, and the week in marksmanship — reported and written by the newsroom, delivered to your inbox before dawn on Thursday.', 'broadside' ),
 			'sanitize'  => 'shadow_digest_sanitize_multiline',
 			'type'      => 'textarea',
@@ -325,7 +325,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_newsletter_note'    => array(
+		'shadow_digest_newsletter_note'         => array(
 			'default'   => __( 'Free weekly. Unsubscribe anytime.', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
@@ -335,7 +335,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_newsletter_count'   => array(
+		'shadow_digest_newsletter_count'        => array(
 			'default'   => '',
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
@@ -345,7 +345,7 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
-		'shadow_digest_newsletter_action'  => array(
+		'shadow_digest_newsletter_action'       => array(
 			'default'  => '',
 			'sanitize' => 'esc_url_raw',
 			'type'     => 'url',
@@ -354,7 +354,7 @@ function shadow_digest_settings(): array {
 			'help'     => __( 'Where the signup form posts. Broadside stores no subscribers and sends no mail — it renders the form and hands the address to whatever service you name here (a webhook, an automation, a mailing-list provider). Leave empty and the form is not rendered at all.', 'broadside' ),
 		),
 
-		'shadow_digest_newsletter_field'   => array(
+		'shadow_digest_newsletter_field'        => array(
 			'default'  => 'email',
 			'sanitize' => 'shadow_digest_sanitize_field_name',
 			'type'     => 'text',
@@ -369,7 +369,7 @@ function shadow_digest_settings(): array {
 		 * ----------------------------------------------------------------
 		 */
 
-		'shadow_digest_dropcap'            => array(
+		'shadow_digest_dropcap'                 => array(
 			'default'  => true,
 			'sanitize' => 'shadow_digest_sanitize_checkbox',
 			'type'     => 'checkbox',
@@ -378,7 +378,7 @@ function shadow_digest_settings(): array {
 			'help'     => __( 'Applied automatically to the first paragraph of every article.', 'broadside' ),
 		),
 
-		'shadow_digest_reading_time'       => array(
+		'shadow_digest_reading_time'            => array(
 			'default'  => true,
 			'sanitize' => 'shadow_digest_sanitize_checkbox',
 			'type'     => 'checkbox',
@@ -387,7 +387,7 @@ function shadow_digest_settings(): array {
 			'help'     => __( 'Estimated from the word count at 220 words a minute.', 'broadside' ),
 		),
 
-		'shadow_digest_standards'          => array(
+		'shadow_digest_standards'               => array(
 			'default'   => '',
 			'sanitize'  => 'wp_kses_post',
 			'type'      => 'textarea',
@@ -452,23 +452,23 @@ function shadow_digest_customize_register( WP_Customize_Manager $wp_customize ):
 	);
 
 	$sections = array(
-		'shadow_digest_identity'   => array(
+		'shadow_digest_identity'                => array(
 			'title'       => __( 'Identity', 'broadside' ),
 			'description' => __( 'Who the publication is, and what it prints on its folio rule.', 'broadside' ),
 		),
-		'shadow_digest_masthead'   => array(
+		'shadow_digest_masthead'                => array(
 			'title'       => __( 'Masthead', 'broadside' ),
 			'description' => __( 'The nameplate and the two “ears” either side of it.', 'broadside' ),
 		),
-		'shadow_digest_colour'     => array(
+		'shadow_digest_colour'                  => array(
 			'title'       => __( 'Colour & paper', 'broadside' ),
 			'description' => __( 'The accent colour does most of the work. Everything else is the paper it is printed on.', 'broadside' ),
 		),
-		'shadow_digest_newsletter' => array(
+		'shadow_digest_newsletter'              => array(
 			'title'       => __( 'Newsletter', 'broadside' ),
 			'description' => __( 'Broadside renders the signup form. It does not store subscribers or send mail — point the form at your own service.', 'broadside' ),
 		),
-		'shadow_digest_article'    => array(
+		'shadow_digest_article'                 => array(
 			'title'       => __( 'Article furniture', 'broadside' ),
 			'description' => __( 'The details of the long-read layout.', 'broadside' ),
 		),
