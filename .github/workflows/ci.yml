@@ -72,16 +72,18 @@ jobs:
           tools: composer
 
       - name: PHP syntax
-        run: find broadside -name '*.php' -print0 | xargs -0 -n1 -P4 php -l
+        run: find broadside broadside-blocks -name '*.php' -print0 | xargs -0 -n1 -P4 php -l
 
       - name: JSON syntax
         run: |
-          for f in $(find broadside -name '*.json'); do
+          for f in $(find broadside broadside-blocks -name '*.json'); do
             python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f" || { echo "bad JSON: $f"; exit 1; }
           done
 
       - name: JavaScript syntax
-        run: node --check broadside/assets/js/blocks.js
+        # The editor JS moved into the plugin with the blocks it configures — the
+        # theme now ships no JavaScript at all.
+        run: node --check broadside-blocks/assets/js/blocks.js
 
   phpcs:
     name: WordPress Coding Standards + Theme Review
