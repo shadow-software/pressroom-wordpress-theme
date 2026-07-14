@@ -5,7 +5,7 @@
 	"title": "Newsletter Box",
 	"category": "broadside",
 	"icon": "email",
-	"description": "The dark signup panel. Pressroom renders the form and hands the address to whatever endpoint you name in the Customizer — it stores nothing and sends nothing.",
+	"description": "The dark signup panel. Broadside renders the form and hands the address to whatever endpoint you name in the Customizer — it stores nothing and sends nothing.",
 	"keywords": ["newsletter", "subscribe", "signup", "email"],
 	"textdomain": "broadside-blocks",
 	"supports": {

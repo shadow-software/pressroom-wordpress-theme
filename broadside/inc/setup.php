@@ -94,11 +94,11 @@ function shadow_digest_register_menus(): void {
 add_action( 'init', 'shadow_digest_register_menus' );
 
 /**
- * Enqueue the front-end stylesheet.
+ * Enqueue the front-end stylesheet and any conditional scripts.
  *
  * Broadside deliberately ships exactly one stylesheet and no front-end JavaScript
- * framework. The only script is a ~1KB progressive enhancement for the table of
- * contents, and it is loaded only on singular views that actually contain one.
+ * framework. Scripts are small, plain, build-step-free, and each is loaded only on
+ * the requests that actually need it — see the newsletter form enhancement below.
  *
  * @since 1.0.0
  * @return void
@@ -121,6 +121,24 @@ function shadow_digest_enqueue_assets(): void {
 
 	// Per-site branding, injected as custom properties. See inc/customizer.php.
 	wp_add_inline_style( 'broadside', shadow_digest_custom_properties() );
+
+	/*
+	 * The newsletter form's progressive enhancement. Loaded only when
+	 * shadow_digest_newsletter() will actually render a <form> — same two settings
+	 * it checks, so the asset never ships on a request that has nothing to enhance.
+	 */
+	if (
+		shadow_digest_get( 'shadow_digest_newsletter_enable' )
+		&& '' !== (string) shadow_digest_get( 'shadow_digest_newsletter_action' )
+	) {
+		wp_enqueue_script(
+			'broadside-newsletter',
+			SHADOW_DIGEST_URL . 'assets/js/newsletter.js',
+			array(),
+			SHADOW_DIGEST_VERSION,
+			true
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'shadow_digest_enqueue_assets' );
 

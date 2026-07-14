@@ -3,7 +3,7 @@ Contributors: shadowsoftware
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
@@ -154,6 +154,11 @@ GPLv2 or later.
 
 == Upgrade Notice ==
 
+= 1.3.2 =
+The newsletter form now submits without a page reload when JavaScript is
+available, showing an inline confirmation instead. Plain form submission still
+works exactly as before if JavaScript is off — nothing to configure.
+
 = 1.3.1 =
 Housekeeping. Broadside Blocks now has its own repository and its own release zips,
 and the two are back on the same version number. Nothing on your site changes.
@@ -181,6 +186,15 @@ The front page's lead photograph is no longer lazy-loaded. If you run Broadside 
 a site that is measured on Core Web Vitals, this release is worth taking.
 
 == Changelog ==
+
+= 1.3.2 =
+* The newsletter form is now progressively enhanced: with JavaScript available it
+  submits via `fetch` and shows an inline "check your inbox" or error message in
+  place, instead of reloading the page. With JavaScript unavailable, or if the
+  request fails to even start, the form's real `action`/`method` attributes mean
+  a plain submit-and-reload still works — nothing about how the endpoint receives
+  the address has changed.
+* Corrected a leftover "Pressroom" name in the newsletter block's description.
 
 = 1.3.1 =
 * Broadside Blocks now lives in its own repository, with its own CI and its own

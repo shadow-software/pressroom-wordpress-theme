@@ -523,7 +523,14 @@ function shadow_digest_newsletter(): void {
 					</p>
 				<?php endif; ?>
 
-				<form class="digest-newsletter__form" action="<?php echo esc_url( $action ); ?>" method="post">
+				<form
+					class="digest-newsletter__form"
+					action="<?php echo esc_url( $action ); ?>"
+					method="post"
+					data-digest-newsletter-form
+					data-success-text="<?php esc_attr_e( 'Thanks — check your inbox to confirm.', 'broadside' ); ?>"
+					data-error-text="<?php esc_attr_e( 'Something went wrong. Please try again.', 'broadside' ); ?>"
+				>
 					<label class="screen-reader-text" for="<?php echo esc_attr( $id ); ?>-email">
 						<?php esc_html_e( 'Your email address', 'broadside' ); ?>
 					</label>
@@ -542,6 +549,8 @@ function shadow_digest_newsletter(): void {
 						<?php esc_html_e( 'Subscribe', 'broadside' ); ?>
 					</button>
 				</form>
+
+				<p class="digest-newsletter__status" data-digest-newsletter-status role="status" aria-live="polite" hidden></p>
 
 				<?php if ( '' !== $note ) : ?>
 					<p class="digest-newsletter__note"><?php echo esc_html( $note ); ?></p>

@@ -1828,6 +1828,15 @@ body:has(.digest-single) .wp-site-blocks::before {
 	font-style: italic;
 }
 
+.digest-newsletter__status {
+	font-size: var(--wp--preset--font-size--meta);
+	margin: 9px 0 0;
+}
+
+.digest-newsletter__status[data-state="error"] {
+	color: #e2b3a8;
+}
+
 /* -------------------------------------------------------------------------- *
  * 10. Related stories
  * -------------------------------------------------------------------------- */
