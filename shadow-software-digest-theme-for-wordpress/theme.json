@@ -402,6 +402,42 @@
 					"fontSize": "var(--wp--preset--font-size--caption)",
 					"fontStyle": "italic"
 				}
+			},
+			"button": {
+				"color": {
+					"background": "var(--wp--preset--color--accent)",
+					"text": "var(--wp--preset--color--paper)"
+				},
+				"border": {
+					"radius": "0"
+				},
+				"typography": {
+					"fontFamily": "var(--wp--preset--font-family--body)",
+					"fontSize": "var(--wp--preset--font-size--meta)",
+					"fontWeight": "700",
+					"letterSpacing": "0.14em",
+					"textTransform": "uppercase"
+				},
+				"spacing": {
+					"padding": {
+						"top": "14px",
+						"bottom": "14px",
+						"left": "26px",
+						"right": "26px"
+					}
+				},
+				":hover": {
+					"color": {
+						"background": "var(--wp--preset--color--ink-soft)",
+						"text": "var(--wp--preset--color--paper)"
+					}
+				},
+				":focus": {
+					"color": {
+						"background": "var(--wp--preset--color--ink-soft)",
+						"text": "var(--wp--preset--color--paper)"
+					}
+				}
 			}
 		},
 		"blocks": {
@@ -466,6 +502,11 @@
 		}
 	},
 	"templateParts": [
+		{
+			"name": "header",
+			"title": "Header (alias — used by plugin templates)",
+			"area": "header"
+		},
 		{
 			"name": "masthead",
 			"title": "Masthead",

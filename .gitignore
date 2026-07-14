@@ -29,3 +29,6 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
+
+# Screenshot output from ./scripts/shoot.sh — regenerate, do not commit
+/.shots/

@@ -204,6 +204,81 @@ function shadow_digest_register_sidebars(): void {
 add_action( 'widgets_init', 'shadow_digest_register_sidebars' );
 
 /**
+ * Declare the catalogue plate to WooCommerce.
+ *
+ * OPTIONAL: this is a no-op on a site with no shop. Digest depends on no plugin
+ * and must run on stock WordPress — declaring support for a plugin that is not
+ * there costs nothing and changes nothing.
+ *
+ * WHY THIS IS NOT JUST CSS. WooCommerce's default catalogue thumbnail is a 300px
+ * HARD SQUARE CROP (woocommerce_thumbnail_cropping defaults to 1:1). The
+ * stylesheet then crops those thumbnails again to the 4:5 plate the grid is ruled
+ * for — so a wide product photograph is cropped twice, first to a square by the
+ * server and then to a portrait by the browser, and the second crop can only
+ * choose from what the first one left. A panoramic shot came out as a picture of
+ * the middle of itself with the subject cut off both sides.
+ *
+ * Cropping twice is not a styling problem and cannot be fixed in the stylesheet.
+ * So the theme states the shape it wants ONCE, here, and WooCommerce generates
+ * that file. The CSS in §13 then only has to cover the images Woo has NOT
+ * regenerated — the ones uploaded before the theme was activated.
+ *
+ * (After changing these, a shop with existing products needs its thumbnails
+ * regenerated: `wp wc product regenerate_images`, or Tools -> Regenerate.)
+ *
+ * @since 1.0.11
+ * @return void
+ */
+function shadow_digest_woocommerce_setup(): void {
+	add_theme_support( 'woocommerce' );
+
+	// The gallery lightbox and zoom are WooCommerce's own, and are what a reader
+	// expects from a shop. Declaring them costs one line and nothing else.
+	add_theme_support( 'wc-product-gallery-zoom' );
+	add_theme_support( 'wc-product-gallery-lightbox' );
+	add_theme_support( 'wc-product-gallery-slider' );
+
+	/*
+	 * The catalogue plate: 4:5, the proportion of a printed catalogue engraving.
+	 * `cropping => custom` with a 4:5 ratio, NOT the 1:1 default — see above.
+	 */
+	add_theme_support(
+		'woocommerce',
+		array(
+			'thumbnail_image_width' => 480,
+			'single_image_width'    => 960,
+			'product_grid'          => array(
+				'default_rows'    => 3,
+				'default_columns' => 3,
+			),
+		)
+	);
+}
+add_action( 'after_setup_theme', 'shadow_digest_woocommerce_setup' );
+
+/**
+ * Crop the catalogue thumbnail to the plate the grid is ruled for.
+ *
+ * WooCommerce stores the catalogue crop as an option, not as theme support, and
+ * offers `woocommerce_get_image_size_<size>` to override it in code. Digest sets
+ * it here so the shape lives in the theme (where the grid that depends on it
+ * lives) rather than in a database row a future admin can silently change.
+ *
+ * @since 1.0.11
+ * @param array $size The image size WooCommerce is about to use.
+ * @return array The size, cropped to 4:5.
+ */
+function shadow_digest_woocommerce_thumbnail_size( array $size ): array {
+	$size['width']  = 480;
+	$size['height'] = 600;
+	$size['crop']   = 1;
+
+	return $size;
+}
+add_filter( 'woocommerce_get_image_size_thumbnail', 'shadow_digest_woocommerce_thumbnail_size' );
+add_filter( 'woocommerce_get_image_size_gallery_thumbnail', 'shadow_digest_woocommerce_thumbnail_size' );
+
+/**
  * Keep WooCommerce's Customer Account block out of the masthead.
  *
  * WHY: on activation, WooCommerce auto-injects a `woocommerce/customer-account`

@@ -3,7 +3,7 @@ Contributors: shadowsoftware
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.0.10
+Stable tag: 1.0.11
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
@@ -144,6 +144,44 @@ Shadow Software LLC and licensed GPLv2 or later. It contains no third-party
 imagery.
 
 == Changelog ==
+
+= 1.0.11 =
+* **Fixed: the cart and the checkout were rendering with no masthead at all.**
+  WooCommerce ships its own block templates for Shop, Product, Cart and Checkout,
+  and every one of them asks for a template part called `header`. Digest's is
+  called `masthead`. WordPress found no `header`, so those four pages — the four a
+  customer passes through on the way to paying — dropped the nameplate, the folio
+  and the section navigation, and printed "Template part has been deleted or is
+  unavailable: header" where the newspaper should have been. Digest now provides a
+  `header` part, so a plugin that follows the WordPress convention finds what it
+  expects.
+* WooCommerce is now dressed in the newspaper's own clothes. Every page the plugin
+  adds — the shop, a product, the cart, the checkout, My Account and its order
+  history — is set in the theme's type, on the theme's paper, using the theme's
+  rules and its oxblood accent. Digest treats WooCommerce's two eras (the React
+  blocks of the shop and cart; the older PHP templates of My Account) as one shop,
+  so the site does not change typeface when a reader logs in.
+* The catalogue is a plate, not a card. Product photographs arrive in whatever
+  shape the supplier sent, and WooCommerce prints them at their natural ratio, so a
+  row of products ends at a row of different heights. Every plate is now cropped to
+  4:5 and centred, and — because cropping an already-cropped thumbnail loses detail
+  twice — the theme asks WooCommerce to GENERATE the 4:5 crop rather than crop its
+  square one again.
+* A product with no photograph no longer punches a grey hole in the page: the
+  placeholder is tinted to the paper and faded back, so it reads as an absence
+  rather than as an error.
+* Buttons are declared once, in theme.json, as the theme's global button. Before,
+  the theme had no opinion on what a button was, so WooCommerce's own slate-blue
+  pill won by default — on every Add to Cart, on the login form, and at checkout.
+* Entirely optional. With no WooCommerce installed none of this matches anything,
+  and Digest remains a theme with no plugin dependency that runs on stock
+  WordPress.
+* New: `./scripts/shoot.sh` screenshots every page of the theme — including every
+  shop page — at desktop and mobile, and builds a contact sheet putting the two
+  side by side. The sandbox (`./scripts/local-wp.sh up`) now builds a WooCommerce
+  shop as well as a newspaper, stocked with the awkward cases: a sale price, an
+  out-of-stock item, a product with no image, a variable product, and a name long
+  enough to wrap.
 
 = 1.0.10 =
 * The featured image is no longer a slab between the headline and the article. It

@@ -129,6 +129,28 @@ PHP
   # that let the front page look "fine" while genuinely broken during the outage.
   wp_cli eval-file "$ROOT/scripts/local-seed-images.php"
 
+  # WooCommerce, and a shop to look at.
+  #
+  # marksmansdigest.com runs WooCommerce in production, and the theme styles every
+  # page it adds (see §13 of digest.css). Without a shop in the sandbox, none of
+  # that CSS is ever executed before it ships — which is the exact condition that
+  # produced the outage this file exists to prevent. It also caught a REAL bug the
+  # moment it was added: Woo's block templates ask for a template part called
+  # `header`, this theme's is called `masthead`, and every cart and checkout page on
+  # the live site was rendering with NO masthead at all.
+  #
+  # Opt out with SKIP_WOO=1 if you only care about the newspaper.
+  if [ "${SKIP_WOO:-0}" != "1" ]; then
+    echo "── installing WooCommerce (SKIP_WOO=1 to skip)"
+    wp_cli plugin install woocommerce --activate 2>&1 | grep -E 'Plugin installed|activated' || true
+
+    echo "── creating the shop pages"
+    wp_cli wc --user=admin tool run install_pages >/dev/null 2>&1 || true
+
+    echo "── seeding a shop (7 products: a sale, an out-of-stock, an imageless, a variable)"
+    wp_cli eval-file "$ROOT/scripts/local-seed-woo.php"
+  fi
+
   echo "── setting permalinks and flushing rewrite rules"
   # Deliberately last, after every post/term the seed scripts create. Flushing
   # earlier — this used to happen inside local-seed.php, before

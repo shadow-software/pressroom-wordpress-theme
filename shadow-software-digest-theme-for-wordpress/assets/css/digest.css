@@ -1746,7 +1746,845 @@ html {
 }
 
 /* -------------------------------------------------------------------------- *
- * 13. Responsive
+ * 13. WooCommerce
+ *
+ * OPTIONAL. Everything below matches nothing at all unless WooCommerce is
+ * installed — the theme itself has no shop, declares no dependency on one, and
+ * must keep working on stock WordPress with no plugins (a hard requirement of the
+ * Theme Directory). These are additive rules, not a coupling.
+ *
+ * WHY THIS IS AS LONG AS IT IS. WooCommerce is not one design system, it is two,
+ * and a shop draws from both on the same visit:
+ *
+ *   wc-block-*     the block era. Shop, product, cart, checkout. React-rendered.
+ *   woocommerce-*  the shortcode era. My Account. Classic PHP templates.
+ *
+ * They share no class names, no markup and no conventions. Styling one and not
+ * the other gets you a shop that changes typeface when the reader logs in. So the
+ * selectors below are grouped in pairs — one rule, both eras — rather than
+ * written twice. That is the DRY that is actually available here.
+ *
+ * Woo exposes essentially no theming API (exactly ONE CSS custom property in the
+ * whole block library: --wc-form-color-text). There is no palette to hand it. So
+ * the values below are the theme's own tokens, applied by hand, and every single
+ * one is a var(--wp--preset--*) — there is not one literal colour or type size in
+ * this section. Change theme.json and the shop follows.
+ *
+ * The BUTTON is deliberately NOT here. It is declared once in theme.json under
+ * styles.elements.button, which is the global button for the whole site — core
+ * blocks and Woo's blocks alike inherit it. Woo prints a
+ * `woocommerce-block-theme-has-button-styles` class precisely to stand down when a
+ * block theme has an opinion; before that declaration existed, Digest had no
+ * opinion, and every Add to Cart rendered in Woo's stock slate-blue pill.
+ * -------------------------------------------------------------------------- */
+
+/*
+ * Woo's pages are `is-layout-constrained`, so they land on the 680px content
+ * measure — a prose measure, meant for a column of text. A product grid and a
+ * cart are furniture, not prose, and they want the sheet's full width, the same
+ * width the front page's lead grid uses.
+ */
+.woocommerce-page main .wp-block-post-content > .alignwide,
+.woocommerce main .wc-block-product-template,
+.woocommerce-page main > .wp-block-group,
+body:is(.woocommerce, .woocommerce-page) main :is(.wc-block-cart, .wc-block-checkout) {
+	max-width: var(--digest-measure-wide, 1120px);
+}
+
+/* ---------------------------------------------------------------------------
+ * Shop — the product grid.
+ * ------------------------------------------------------------------------- */
+
+/*
+ * The grid is a run of cells with hairline rules between them, like the section
+ * index on the front page — not a row of floating cards. Woo ships neither the
+ * rules nor a consistent gutter.
+ */
+/*
+ * THE COLUMN COUNT.
+ *
+ * Woo does not state one. Its rule is
+ *
+ *   .wc-block-product-template__responsive.columns-3 {
+ *     grid-template-columns: repeat(auto-fill, minmax(max(150px, calc(33.333% - .833em)), 1fr));
+ *   }
+ *
+ * — `auto-fill` with a percentage MINIMUM, so the count is emergent, and the
+ * `columns-3` class is a statement of intent that the CSS then declines to
+ * enforce. Widening the container to the sheet gave TWO 547px columns, not three:
+ * auto-fill packs as many tracks as clear the minimum, and with a wider gutter the
+ * third no longer did. A `columns-3` grid rendering two columns is not a bug you
+ * can see in the markup; it is only visible on the page.
+ *
+ * State the count outright. Note the DOUBLED CLASS: Woo's selector is two classes,
+ * (0,2,0), so a single-class rule here loses and is silently discarded — which is
+ * exactly what happened on the first attempt. Matching its specificity is the
+ * honest fix; `!important` would have hidden the reason.
+ *
+ * Three across is what the front page's section index does, and the shop is the
+ * same piece of furniture.
+ */
+.wc-block-product-template.wc-block-product-template {
+	--digest-shop-gap: 26px;
+
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: var(--digest-shop-gap);
+	list-style: none;
+	padding-left: 0;
+}
+
+@media (max-width: 1024px) {
+	.wc-block-product-template.wc-block-product-template {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+/*
+ * The cell must FILL its grid track.
+ *
+ * The related-products loop puts `is-flex-container columns-5` on the SAME <ul> as
+ * the grid classes, and Woo sizes its items with
+ *
+ *   .wc-block-product-template.is-flex-container.is-flex-container.columns-5 > li
+ *     { width: calc(20% - 1em) }
+ *
+ * — a quadrupled selector, (0,4,0), which Woo evidently writes precisely to win
+ * arguments like this one. The items therefore kept 20% of a container they were
+ * no longer being laid out in: measured 55px wide inside a 349px grid track, so the
+ * related strip rendered as postage-stamp thumbnails with the titles wrapping one
+ * character per line — "Canva / s Satchel".
+ *
+ * I lost three guesses to this before asking the browser which rule actually won
+ * (CSS.getMatchedStylesForNode over CDP). It answers in one shot what reading
+ * WooCommerce's stylesheets does not: the rule that beat me was not the rule I was
+ * fighting.
+ *
+ * Match the weight rather than reach for !important, so this stays overridable.
+ */
+.wc-block-product-template.wc-block-product-template.is-flex-container.is-flex-container > li,
+.wc-block-product-template.wc-block-product-template .wc-block-product,
+.woocommerce ul.products li.product {
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	border-top: 1px solid var(--wp--preset--color--rule);
+	padding-top: 18px;
+	text-align: left;
+	list-style: none;
+}
+
+/*
+ * THE RAGGED GRID.
+ *
+ * Product photographs arrive in whatever shape the supplier sent — a square
+ * studio shot beside a panoramic pack shot beside a tall bottle. Woo prints them
+ * at their natural ratio (`--aspect-ratio-auto`), so the cards in a row end at
+ * different heights and the titles below them do not line up. On a paper theme,
+ * where everything else is ruled and aligned, that reads as a fault.
+ *
+ * Every plate is therefore cropped to a single ratio and centred. This is the
+ * same argument, and the same fix, as the featured-image backdrop in §8: the box
+ * decides the shape, not the upload. 4:5 is a catalogue plate — slightly taller
+ * than square, which flatters an object photographed alone.
+ */
+/*
+ * PUT THE RATIO ON THE IMAGE, NOT ON ITS WRAPPER.
+ *
+ * The obvious rule — aspect-ratio on .wc-block-components-product-image, then
+ * height:100% on the img inside — does not work, and fails in a way that looks
+ * like it worked. That class is on a DIV which contains ANOTHER div
+ * (__inner-container) which contains the <img>. `height: 100%` resolves against
+ * the img's actual parent (the inner container, height:auto), not against the
+ * ratio'd grandparent, so it computes to auto and is silently dropped.
+ *
+ * Measured, before and after: the wrapper obediently became 547x684 while the
+ * image inside it stayed 547x547 — a correctly-shaped box with a
+ * wrongly-shaped picture sitting in the top of it, and 137px of empty paper
+ * below. Every card in the row still ended at a different height.
+ *
+ * So the ratio goes on the <img> itself, which needs no parent's height to
+ * resolve it. Same lesson as the featured-image hero: a percentage height needs
+ * a parent with a real height, and almost nothing in a block theme has one.
+ */
+/*
+ * The plate's backing colour goes on the OUTER box only.
+ *
+ * Putting it on the __inner-container as well painted a beige rectangle directly
+ * ON TOP of the photograph: the inner container is the image's own parent and
+ * paints after it, so its background covers the picture completely. Every plate in
+ * the shop rendered as an empty beige box — at exactly the right size, in exactly
+ * the right ratio, in a perfectly ruled grid, containing nothing.
+ *
+ * It survived two rounds of measurement because everything I measured was right:
+ * the image loaded (naturalWidth 480), it was opacity 1, it was not clipped, its
+ * box was 356x445. The only question that found it was "what is actually painted
+ * at the centre of the plate?" — document.elementFromPoint() answered
+ * __inner-container, not IMG, and that was the whole bug.
+ */
+.wc-block-components-product-image {
+	overflow: hidden;
+	background-color: var(--wp--preset--color--paper-shade);
+	display: block;
+}
+
+.wc-block-components-product-image__inner-container {
+	display: block;
+	background-color: transparent;
+}
+
+.wc-block-components-product-image,
+.woocommerce ul.products li.product a img {
+	margin-bottom: 14px;
+}
+
+.wc-block-components-product-image img,
+.woocommerce ul.products li.product a img {
+	aspect-ratio: 4 / 5;
+	width: 100%;
+	height: auto;
+	object-fit: cover;
+	object-position: center;
+	display: block;
+	margin: 0;
+}
+
+/*
+ * A product with no image. Woo substitutes a light-grey stock placeholder — a
+ * literal grey hole punched in a sheet of cream paper. Tint it to the paper and
+ * fade it back so it reads as an absence rather than an error.
+ */
+.wc-block-components-product-image img[src*="woocommerce-placeholder"],
+.woocommerce ul.products li.product img[src*="woocommerce-placeholder"] {
+	object-fit: contain;
+	padding: 22%;
+	opacity: 0.25;
+	filter: grayscale(1);
+	background-color: var(--wp--preset--color--paper-shade);
+}
+
+/* The product name: a headline, in the display face, set left like a story. */
+.wc-block-product-template .wp-block-post-title,
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: var(--wp--preset--font-size--reading);
+	line-height: 1.16;
+	margin: 0 0 6px;
+	text-align: left;
+}
+
+.wc-block-product-template .wp-block-post-title a,
+.woocommerce ul.products li.product .woocommerce-loop-product__title a {
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+}
+
+.wc-block-product-template .wp-block-post-title a:hover,
+.wc-block-product-template .wp-block-post-title a:focus-visible {
+	color: var(--wp--preset--color--accent);
+}
+
+/*
+ * The price. Tabular figures so a column of prices aligns on the decimal point
+ * the way a stock table does.
+ */
+.wc-block-components-product-price,
+.woocommerce ul.products li.product .price,
+.woocommerce div.product p.price {
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--compact);
+	color: var(--wp--preset--color--ink-faded);
+	font-variant-numeric: tabular-nums;
+	display: block;
+	margin: 0 0 12px;
+	text-align: left;
+}
+
+/*
+ * A SALE PRICE prints the old price and the new one adjacent, with no separation
+ * of any kind — "$24.00$18.00" reads as a typo. The old one is struck and faded;
+ * the new one carries the accent, which is the only place in the shop that colour
+ * is used to mean "look here".
+ */
+:is(.wc-block-components-product-price, .price) del,
+:is(.wc-block-components-product-price, .price) del .amount {
+	color: var(--wp--preset--color--ink-ghost);
+	text-decoration: line-through;
+	margin-right: 8px;
+	font-weight: 400;
+}
+
+:is(.wc-block-components-product-price, .price) ins,
+:is(.wc-block-components-product-price, .price) ins .amount {
+	color: var(--wp--preset--color--accent);
+	text-decoration: none;
+	font-weight: 700;
+}
+
+/*
+ * The sale badge. Woo's is a floating white rounded pill — a sticker on a
+ * newspaper. Digest's is a printed overprint: the accent, square, in the
+ * letterspaced caps every other label in the theme uses.
+ */
+.wc-block-components-product-sale-badge,
+.woocommerce span.onsale {
+	background-color: var(--wp--preset--color--accent);
+	color: var(--wp--preset--color--paper);
+	border: 0;
+	border-radius: 0;
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--micro);
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	padding: 4px 10px;
+	min-height: 0;
+	min-width: 0;
+	line-height: 1.5;
+}
+
+/* The results count and the sort control sit on one rule, like a folio line. */
+.wc-block-product-results-count,
+.woocommerce .woocommerce-result-count {
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink-ghost);
+	margin: 0;
+}
+
+/*
+ * A bare <select> renders in the operating system's own chrome — a grey Windows
+ * or macOS widget dropped into a 1920s broadsheet. Redraw it as a ruled field.
+ * (appearance:none removes the OS arrow, so one is drawn back with a background
+ * image; without that the control looks like a text input and no one clicks it.)
+ */
+.wc-block-catalog-sorting select,
+.woocommerce .woocommerce-ordering select,
+.woocommerce-page select,
+body:is(.woocommerce, .woocommerce-page) .wc-block-components-sort-select__select {
+	appearance: none;
+	-webkit-appearance: none;
+	background-color: transparent;
+	background-image: linear-gradient(45deg, transparent 50%, var(--wp--preset--color--ink-faded) 50%),
+		linear-gradient(135deg, var(--wp--preset--color--ink-faded) 50%, transparent 50%);
+	background-position: calc(100% - 15px) calc(50% + 1px), calc(100% - 10px) calc(50% + 1px);
+	background-size: 5px 5px, 5px 5px;
+	background-repeat: no-repeat;
+	border: 1px solid var(--wp--preset--color--rule);
+	border-radius: 0;
+	color: var(--wp--preset--color--ink);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--small);
+	padding: 9px 34px 9px 12px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Single product.
+ * ------------------------------------------------------------------------- */
+
+.woocommerce div.product .product_title,
+.wp-block-post-title.wc-block-components-product-title {
+	font-family: var(--wp--preset--font-family--display);
+	line-height: 1.06;
+}
+
+.woocommerce div.product .woocommerce-product-details__short-description {
+	font-size: var(--wp--preset--font-size--reading);
+	line-height: 1.6;
+	color: var(--wp--preset--color--ink-muted);
+	border-top: 1px solid var(--wp--preset--color--rule);
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	padding: 16px 0;
+	margin-bottom: 22px;
+}
+
+/* The quantity stepper and the variation select: ruled fields, like every other
+   input in the theme. */
+.woocommerce .quantity input.qty,
+.woocommerce div.product form.cart .variations select {
+	border: 1px solid var(--wp--preset--color--rule);
+	border-radius: 0;
+	background-color: transparent;
+	color: var(--wp--preset--color--ink);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--base);
+	padding: 12px 10px;
+	text-align: center;
+}
+
+.woocommerce div.product form.cart .variations th {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	font-weight: 400;
+	color: var(--wp--preset--color--ink-faded);
+	text-align: left;
+	padding-right: 14px;
+}
+
+/*
+ * The stock line. "Out of stock" is information, not an alarm — Woo prints it in
+ * red, which on this palette collides with the accent and shouts.
+ */
+.woocommerce div.product .stock,
+.wc-block-components-product-stock-indicator {
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink-ghost);
+}
+
+.woocommerce div.product .stock.out-of-stock {
+	color: var(--wp--preset--color--accent);
+}
+
+/* Product tabs — reviews, description. Ruled, not boxed. */
+.woocommerce div.product .woocommerce-tabs ul.tabs {
+	padding: 0;
+	margin: 0 0 20px;
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	display: flex;
+	gap: 26px;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs::before,
+.woocommerce div.product .woocommerce-tabs ul.tabs li::before,
+.woocommerce div.product .woocommerce-tabs ul.tabs li::after {
+	display: none;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li {
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	margin: 0;
+	padding: 0;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li a {
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink-ghost);
+	padding: 0 0 10px;
+	display: block;
+	border-bottom: 2px solid transparent;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li.active a {
+	color: var(--wp--preset--color--ink);
+	border-bottom-color: var(--wp--preset--color--accent);
+}
+
+/*
+ * A DISABLED button must look disabled, not merely faded.
+ *
+ * Woo disables Add to Cart on a variable product until a variation is chosen, and
+ * implements that as `opacity: .5` over the theme's button colour. On an oxblood
+ * button over cream paper that lands on a washed-out pink that reads as a styling
+ * mistake — a button someone got wrong — rather than as a control that is waiting
+ * for you. Say what it means: greyed, ruled, and with a cursor that tells the
+ * truth.
+ */
+.woocommerce button.button:disabled,
+.woocommerce button.button.disabled,
+.woocommerce a.button.disabled,
+.wc-block-components-button:disabled,
+body:is(.woocommerce, .woocommerce-page) .wp-block-button__link:disabled {
+	background-color: transparent;
+	border: 1px solid var(--wp--preset--color--rule);
+	color: var(--wp--preset--color--ink-ghost);
+	cursor: not-allowed;
+	opacity: 1;
+}
+
+/* ---------------------------------------------------------------------------
+ * Cart, checkout, and every form Woo prints.
+ *
+ * The single biggest visual offence is the INPUT: Woo draws it as a stark white
+ * box with a rounded border, which on cream paper is a hole cut in the sheet.
+ * Digest's fields are ruled lines on the paper itself, and every input in the
+ * shop — block-era or shortcode-era — is brought to that.
+ * ------------------------------------------------------------------------- */
+
+/*
+ * THE INPUT.
+ *
+ * Note the selector shape. Woo whitens its checkout fields with
+ *
+ *   .wc-block-components-text-input input[type="email"] { background-color: #fff }
+ *
+ * — a class plus an ATTRIBUTE selector, (0,2,0), repeated once per input type, and
+ * it is loaded after the theme's stylesheet. A rule written against
+ * `input.wc-block-components-text-input__input` matches nothing at all (Woo does
+ * not put that class on the input; it is on the wrapper), and one written as a
+ * plain `:is(input[type=...])` list ties on specificity and loses on order. Both
+ * were tried. The checkout kept its stark white boxes, which on cream paper are
+ * holes cut in the sheet.
+ *
+ * So mirror Woo's own shape — wrapper class + typed input — and the paper shows
+ * through.
+ */
+.wc-block-components-text-input.wc-block-components-text-input input[type="text"],
+.wc-block-components-text-input.wc-block-components-text-input input[type="email"],
+.wc-block-components-text-input.wc-block-components-text-input input[type="tel"],
+.wc-block-components-text-input.wc-block-components-text-input input[type="number"],
+.wc-block-components-text-input.wc-block-components-text-input input[type="password"],
+.wc-block-components-text-input.wc-block-components-text-input input[type="url"],
+body:is(.woocommerce, .woocommerce-page) :is(input[type="text"], input[type="email"], input[type="tel"], input[type="password"], input[type="number"], input[type="search"], textarea),
+.woocommerce form .form-row input.input-text,
+.woocommerce form .form-row textarea {
+	background-color: transparent;
+	border: 1px solid var(--wp--preset--color--rule);
+	border-radius: 0;
+	box-shadow: none;
+	color: var(--wp--preset--color--ink);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--base);
+	padding: 13px 14px;
+}
+
+/* The checkbox is a small white square on cream; rule it like every other field. */
+.wc-block-components-checkbox__input.wc-block-components-checkbox__input,
+body:is(.woocommerce, .woocommerce-page) input[type="checkbox"] {
+	background-color: transparent;
+	border: 1px solid var(--wp--preset--color--rule);
+	border-radius: 0;
+	accent-color: var(--wp--preset--color--accent);
+}
+
+body:is(.woocommerce, .woocommerce-page) :is(input, textarea, select):focus,
+.wc-block-components-text-input input:focus {
+	outline: 2px solid var(--wp--preset--color--accent);
+	outline-offset: -2px;
+	border-color: var(--wp--preset--color--ink-faded);
+	box-shadow: none;
+}
+
+/*
+ * Woo's floating label sits INSIDE the field and animates upward on focus. The
+ * animation is fine; the colour is not — it defaults to a mid-grey that fails
+ * contrast on this paper.
+ */
+.wc-block-components-text-input label,
+.woocommerce form .form-row label {
+	color: var(--wp--preset--color--ink-faded);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--small);
+}
+
+.wc-block-components-text-input.is-active label {
+	color: var(--wp--preset--color--ink-ghost);
+}
+
+/* The required asterisk: Woo prints a fire-engine red that is in no palette. */
+.woocommerce form .form-row .required,
+.woocommerce .required {
+	color: var(--wp--preset--color--accent);
+	text-decoration: none;
+	border: 0;
+}
+
+/*
+ * Panels — order summary, cart totals, the login box. Woo boxes them in a
+ * rounded card with a drop shadow. A broadsheet has no cards; it has ruled
+ * columns. Square them, rule them, and let the paper show through.
+ */
+.wc-block-components-panel,
+.wc-block-components-totals-wrapper,
+.wp-block-woocommerce-checkout-order-summary-block,
+.woocommerce-checkout #order_review,
+.woocommerce-account .woocommerce-form-login,
+.woocommerce-account .woocommerce-form-register,
+.woocommerce .cart_totals {
+	background-color: transparent;
+	border: 1px solid var(--wp--preset--color--rule);
+	border-radius: 0;
+	box-shadow: none;
+	padding: 22px 24px;
+}
+
+.wp-block-woocommerce-checkout-order-summary-block {
+	background-color: var(--wp--preset--color--paper-shade);
+}
+
+/*
+ * Section heads inside the checkout — "Contact information", "Billing address",
+ * "Order summary". These are the shop's equivalent of a section rule on the
+ * front page, and they get the same treatment: caps, letterspaced, on a rule.
+ */
+.wc-block-components-title,
+.wc-block-components-checkout-step__title,
+.woocommerce-billing-fields > h3,
+.woocommerce-additional-fields > h3,
+.woocommerce-column__title,
+.woocommerce h2.woocommerce-column__title,
+.woocommerce-order-details__title,
+.woocommerce-customer-details h2 {
+	font-family: var(--wp--preset--font-family--body) !important;
+	font-size: var(--wp--preset--font-size--eyebrow) !important;
+	font-weight: 700;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink);
+	border-bottom: 1px solid var(--wp--preset--color--ink);
+	padding-bottom: 8px;
+	margin-bottom: 16px;
+}
+
+/*
+ * The cart's line-item table. Digest already has a table idiom — the disclosure
+ * table in §9: a solid ink thead in reversed type, hairline rules between rows.
+ * The cart is a table of the same kind and gets the same clothes, so the two do
+ * not read as having come from different publications.
+ */
+.wc-block-cart-items,
+.wp-block-woocommerce-cart-items-block table {
+	border-collapse: collapse;
+	border-spacing: 0;
+	width: 100%;
+}
+
+/*
+ * The SHORTCODE-era table (My Account's orders, downloads) gets the ink thead that
+ * Digest's disclosure table uses. It is an ordinary <table> and behaves like one.
+ */
+.woocommerce table.shop_table thead {
+	background-color: var(--wp--preset--color--ink);
+	color: var(--wp--preset--color--paper);
+}
+
+.woocommerce table.shop_table thead th {
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--eyebrow);
+	font-weight: 400;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	text-align: left;
+	padding: 11px 16px;
+	border: 0;
+}
+
+/*
+ * THE BLOCK CART'S HEADER GETS A RULE, NOT AN INK BAR — and this is a deliberate
+ * retreat, not a compromise.
+ *
+ * Its <tr> is 677px of contiguous, correctly-collapsed table-row with a solid ink
+ * background, and it STILL renders as two separate black boxes with bare paper
+ * between them. The reason: the middle cell (__header-product, 497px of the 677)
+ * contains only a screen-reader span and paints nothing at all — sampling
+ * elementFromPoint straight across the row returns the TABLE itself, not that
+ * cell, from x=260 to x=650. A row background cannot show through a cell that
+ * declines to paint. Colouring the <tr> fails, colouring the <th>s fails, and
+ * collapsing the borders fails, because none of them is the actual problem.
+ *
+ * So: do not paint the row. A hairline rule under letterspaced caps is the idiom
+ * this theme already uses everywhere else (the folio, the section heads), it needs
+ * no cell to cooperate, and it cannot break again when Woo next reshuffles which
+ * cells it bothers to render.
+ */
+.wc-block-cart-items__header {
+	background-color: transparent;
+}
+
+.wc-block-cart-items__header th {
+	background-color: transparent;
+	border-bottom: 1px solid var(--wp--preset--color--ink);
+	color: var(--wp--preset--color--ink);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--eyebrow);
+	font-weight: 700;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	text-align: left;
+	padding: 0 0 8px;
+	border-top: 0;
+	border-left: 0;
+	border-right: 0;
+}
+
+.wc-block-cart-items__header th:last-child {
+	text-align: right;
+}
+
+.woocommerce table.shop_table {
+	border: 1px solid var(--wp--preset--color--rule);
+	border-radius: 0;
+	border-collapse: collapse;
+}
+
+.woocommerce table.shop_table td,
+.wc-block-cart-items__row td {
+	border-top: 1px solid var(--wp--preset--color--rule);
+	padding: 16px;
+}
+
+.wc-block-components-product-name {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: var(--wp--preset--font-size--reading);
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+}
+
+/* The cart's own thumbnails: same catalogue plate as the grid. */
+.wc-block-cart-item__image img,
+.woocommerce table.shop_table td.product-thumbnail img {
+	aspect-ratio: 4 / 5;
+	object-fit: cover;
+	border: 1px solid var(--wp--preset--color--rule-faint);
+}
+
+/* The totals: the grand total is the one number that should be unmissable. */
+.wc-block-components-totals-item__label {
+	font-size: var(--wp--preset--font-size--small);
+	color: var(--wp--preset--color--ink-faded);
+}
+
+.wc-block-components-totals-item__value,
+.woocommerce .cart_totals .order-total .amount {
+	font-variant-numeric: tabular-nums;
+}
+
+.wc-block-components-totals-footer-item .wc-block-components-totals-item__label,
+.wc-block-components-totals-footer-item .wc-block-components-totals-item__value {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: var(--wp--preset--font-size--subhead);
+	color: var(--wp--preset--color--ink);
+}
+
+/*
+ * Woo's checkout header (page-checkout.html) is a DELIBERATELY stripped,
+ * distraction-free header: the site title and a cart link, nothing else — it
+ * pulls `checkout-header` from Woo's OWN theme namespace, bypassing this theme
+ * entirely, and that is a conversion-rate decision, not a bug. Digest respects it
+ * rather than forcing the full masthead back in and re-adding the very
+ * distractions Woo removed on purpose.
+ *
+ * But the site title it prints is unstyled body type. Give it the wordmark, so a
+ * reader who has just left the newspaper still recognises whose checkout this is.
+ */
+.wp-block-site-title a {
+	text-decoration: none;
+}
+
+.woocommerce-checkout .wp-block-site-title,
+.woocommerce-checkout .wp-block-site-title a {
+	font-family: var(--digest-wordmark-font, var(--wp--preset--font-family--masthead));
+	font-size: 26px;
+	font-weight: 400;
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--wp--preset--color--ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * My Account — the shortcode era.
+ * ------------------------------------------------------------------------- */
+
+/* The dashboard nav: a ruled list, like the section index. */
+.woocommerce-MyAccount-navigation ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	border-top: 1px solid var(--wp--preset--color--rule);
+}
+
+.woocommerce-MyAccount-navigation li {
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	margin: 0;
+}
+
+.woocommerce-MyAccount-navigation li a {
+	display: block;
+	padding: 12px 0;
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink-faded);
+	text-decoration: none;
+}
+
+.woocommerce-MyAccount-navigation li.is-active a,
+.woocommerce-MyAccount-navigation li a:hover,
+.woocommerce-MyAccount-navigation li a:focus-visible {
+	color: var(--wp--preset--color--accent);
+}
+
+.woocommerce-LostPassword a,
+.woocommerce-privacy-policy-text a {
+	color: var(--wp--preset--color--accent);
+}
+
+/* ---------------------------------------------------------------------------
+ * Notices.
+ *
+ * Woo's notices are coloured banners — a green success bar, a red error bar, a
+ * blue info bar. Three saturated colours that exist in no part of this palette.
+ * A newspaper sets a notice as a ruled box with a coloured left edge.
+ * ------------------------------------------------------------------------- */
+
+.woocommerce-message,
+.woocommerce-info,
+.woocommerce-error,
+.wc-block-components-notice-banner {
+	background-color: var(--wp--preset--color--paper-shade);
+	border: 1px solid var(--wp--preset--color--rule);
+	border-left: 3px solid var(--wp--preset--color--ink-faded);
+	border-radius: 0;
+	color: var(--wp--preset--color--ink);
+	font-size: var(--wp--preset--font-size--small);
+	padding: 14px 18px;
+}
+
+.woocommerce-error,
+.wc-block-components-notice-banner.is-error {
+	border-left-color: var(--wp--preset--color--accent);
+}
+
+.wc-block-components-notice-banner > svg {
+	fill: var(--wp--preset--color--ink-faded);
+	background: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+ * The shop at small sizes.
+ * ------------------------------------------------------------------------- */
+
+@media (max-width: 760px) {
+	/* Two is the most a 390px screen can carry and still be legible. */
+	.wc-block-product-template.wc-block-product-template {
+		--digest-shop-gap: 16px;
+
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	/*
+	 * In a 170px-wide cell, "ADD TO CART" at 0.14em of letterspacing wraps onto two
+	 * lines and the button becomes a tall slab. Tighten the tracking and the padding
+	 * rather than shrinking the type, which would put it below the theme's smallest
+	 * legible size.
+	 */
+	.wc-block-product-template .wp-block-button__link,
+	.wc-block-product-template .wc-block-components-product-button__button {
+		padding: 12px 14px;
+		letter-spacing: 0.08em;
+	}
+
+	/* The cart's two columns (items, totals) stack. */
+	.wc-block-cart .wp-block-woocommerce-cart-items-block,
+	.wc-block-cart .wp-block-woocommerce-cart-totals-block,
+	.wc-block-checkout .wp-block-woocommerce-checkout-main,
+	.wc-block-checkout .wp-block-woocommerce-checkout-totals-block {
+		width: 100% !important;
+		padding-left: 0;
+		padding-right: 0;
+	}
+}
+
+/* -------------------------------------------------------------------------- *
+ * 14. Responsive
  *
  * A broadsheet is a wide-format object. Rather than shrink it, Digest unstacks
  * it: the three-column lead becomes one column, the two-column body becomes one,
@@ -1907,7 +2745,7 @@ html {
 }
 
 /* -------------------------------------------------------------------------- *
- * 14. Print
+ * 15. Print
  *
  * A newspaper theme that prints badly is a joke with no punchline.
  * -------------------------------------------------------------------------- */
