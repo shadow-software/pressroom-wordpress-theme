@@ -3,7 +3,7 @@ Contributors: shadowsoftware
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.0.12
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
@@ -144,6 +144,31 @@ Shadow Software LLC and licensed GPLv2 or later. It contains no third-party
 imagery.
 
 == Changelog ==
+
+= 1.1.0 =
+* **Fixed: the front page's lead photograph was lazy-loaded.** WordPress decides
+  for itself which image to fetch eagerly — it takes the first "content" image on
+  the page, marks it `fetchpriority="high"` and exempts it from lazy-loading. On
+  an article page it picks correctly. On the front page it did the exact opposite:
+  the lead photograph sits inside a group inside the query loop, which WordPress
+  reads as a below-the-fold list thumbnail, so the single largest visible element
+  of the site's most important page was served `loading="lazy"` and
+  `fetchpriority="low"` — and nothing on the page was marked high priority at all.
+  The browser would not begin fetching it until layout had run, then queued it
+  behind everything else. Digest now tells WordPress the fact only the theme knows:
+  on the front page, the first featured image IS the hero. The briefs rail and the
+  secondary story stay lazy, because they genuinely are further down.
+* The theme now builds its own WordPress.org submission package
+  (`./scripts/package.sh`), and verifies the bytes that would actually be
+  uploaded rather than the working tree they were copied from. This caught two dev
+  dotfiles that were shipping inside every hand-made zip: they live in the theme
+  directory, so `.distignore`'s root-anchored rules could never match them.
+* The guard against the 2026-07-13 outage bug now tokenizes the PHP instead of
+  grepping it, and is itself unit-tested (`./scripts/guard-selftest.sh`, 16 cases).
+  The old grep could not tell a live `do_blocks()` call from a comment warning
+  against one — it had been failing the build on every single run, flagging the
+  comment that documents the rule. A build that is always red teaches people to
+  stop reading it, which is worse than having no guard.
 
 = 1.0.12 =
 * The front page's lead story now carries its featured image as a BACKDROP behind

@@ -1,0 +1,105 @@
+name: Release
+
+# Tags v1.0.9 through v1.0.12 were pushed and nothing ever happened: there were
+# four tags and zero releases, because no workflow existed to build anything from
+# them. The .org submission zip was therefore something a human would assemble by
+# hand — which is exactly the procedure that took a production server down on
+# 2026-07-13 (docs/INCIDENT-2026-07-13-vps-outage.md).
+#
+# So the artifact is built by CI, from the tag, by the same script a developer
+# runs locally (scripts/package.sh), and it is verified BEFORE it is published.
+# A release that fails the Theme Directory's own checks never gets created.
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write        # required to create the release
+
+jobs:
+  release:
+    name: Build, verify and publish the submission package
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: sqlite3, pdo_sqlite, mysqli, gd, zip
+          coverage: none
+          tools: wp-cli
+
+      # ---------------------------------------------------------------------
+      # Re-run the gates. CI already ran them on the commit, but a tag can be
+      # pushed at any commit — including one CI never saw, or one it failed on.
+      # The release must stand on its own evidence.
+      # ---------------------------------------------------------------------
+
+      - name: Nothing renders post content (the outage guard)
+        run: php scripts/guard-no-content-render.php
+
+      - name: The guard itself still catches the outage bug
+        run: ./scripts/guard-selftest.sh
+
+      - name: The theme renders, and the pages are correct
+        run: |
+          ./scripts/local-wp.sh up
+          ./scripts/local-smoke.sh
+          php scripts/local-assert.php
+
+      # ---------------------------------------------------------------------
+      # The tag must agree with the theme. A v1.1.0 tag on a tree that says
+      # 1.0.12 would publish a zip whose filename and contents disagree — and
+      # WordPress.org keys everything on the version in style.css.
+      # ---------------------------------------------------------------------
+
+      - name: The tag matches the theme version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          ver=$(grep -oP '^Version:\s*\K[0-9.]+' shadow-software-digest-theme-for-wordpress/style.css)
+          echo "tag=$tag  style.css=$ver"
+          if [ "$tag" != "$ver" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match style.css Version: $ver"
+            exit 1
+          fi
+
+      - name: Build and verify the submission package
+        run: ./scripts/package.sh
+
+      # The changelog section for THIS version becomes the release body, so the
+      # release notes and readme.txt can never drift apart — there is one source.
+      - name: Extract this version's changelog
+        id: notes
+        run: |
+          ver="${GITHUB_REF_NAME#v}"
+          {
+            echo "## Digest ${ver}"
+            echo
+            awk -v v="= ${ver} =" '
+              $0 == v      { on = 1; next }
+              on && /^= /  { exit }
+              on           { print }
+            ' shadow-software-digest-theme-for-wordpress/readme.txt
+            echo
+            echo '---'
+            echo
+            echo 'The attached zip is the WordPress.org submission package, built and verified by CI.'
+            echo 'Install it with **Appearance → Themes → Add New → Upload Theme**.'
+          } > NOTES.md
+          cat NOTES.md
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            build/*.zip \
+            --title "Digest ${GITHUB_REF_NAME#v}" \
+            --notes-file NOTES.md
+
+      - name: Show the log on failure
+        if: failure()
+        run: tail -100 .local-wp.log || true

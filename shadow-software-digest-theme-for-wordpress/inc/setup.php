@@ -314,3 +314,69 @@ function shadow_digest_drop_woo_account_block( string $block_content, array $blo
 	return $block_content;
 }
 add_filter( 'render_block', 'shadow_digest_drop_woo_account_block', 10, 2 );
+
+/**
+ * Tell WordPress that the front page's lead photograph is the LCP element.
+ *
+ * WordPress decides on its own which image to fetch eagerly: it walks the page,
+ * and the first "content" image it meets gets fetchpriority="high" and is exempt
+ * from lazy-loading. Everything after it is lazy and low. On an article page that
+ * heuristic lands on the right image, because single.html puts the featured image
+ * at the top level of the template.
+ *
+ * The front page's lead photograph is NOT at the top level. It sits inside a
+ * group (.digest-lead__hero) inside a query loop's post-template — and core reads
+ * images inside a loop as list thumbnails, the kind that legitimately belong below
+ * the fold. So it did the exact opposite of what the page needs:
+ *
+ *     loading="lazy" fetchpriority="low"
+ *
+ * on the single largest visible element of the site's most important page. Nothing
+ * on the front page was marked high priority at all. The browser would not even
+ * begin fetching the lead photo until layout had run, and then queued it behind
+ * everything else — a Largest Contentful Paint regression, introduced by the very
+ * change (1.0.12) that put the photograph there.
+ *
+ * This is not fixed by rewriting the <img> markup. Core exposes the decision as a
+ * filter, so the theme states the fact it uniquely knows — "on the front page, the
+ * first featured image IS the hero" — and lets core apply it.
+ *
+ * Strictly the FIRST such image: the lead story is the only one treated this way.
+ * The briefs rail and the secondary story below it stay lazy, which is correct —
+ * they are genuinely further down the page.
+ *
+ * The filter passes FOUR arguments — ( $loading_attrs, $tag_name, $attr, $context ).
+ * Registering it for three silently hands the $attr array to the $context
+ * parameter, which is a fatal on every front-page request. Verified against
+ * wp-includes/media.php rather than assumed.
+ *
+ * @since 1.1.0
+ *
+ * @param array<string, mixed> $loading_attrs The loading-optimization attributes core chose.
+ * @param string               $tag_name      The tag being filtered ('img', 'iframe').
+ * @param array<string, mixed> $attr          The element's own attributes.
+ * @param string               $context       Where the tag came from, e.g. 'the_post_thumbnail'.
+ * @return array<string, mixed> The attributes, with the lead photograph promoted.
+ */
+function shadow_digest_prioritize_lead_image( array $loading_attrs, string $tag_name, array $attr, string $context ): array {
+	static $promoted = false;
+
+	if ( 'img' !== $tag_name || $promoted || is_admin() || ! is_front_page() ) {
+		return $loading_attrs;
+	}
+
+	// A post's featured image — not the custom logo, not an avatar, not content.
+	if ( 'the_post_thumbnail' !== $context ) {
+		return $loading_attrs;
+	}
+
+	// The FIRST one only: that is the lead. The briefs rail and the secondary
+	// story below it stay lazy, which is correct — they really are further down.
+	$promoted = true;
+
+	$loading_attrs['fetchpriority'] = 'high';
+	unset( $loading_attrs['loading'] );
+
+	return $loading_attrs;
+}
+add_filter( 'wp_get_loading_optimization_attributes', 'shadow_digest_prioritize_lead_image', 10, 4 );
