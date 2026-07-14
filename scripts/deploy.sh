@@ -73,10 +73,10 @@ echo "════ GATE 1/5 — lint"
 fail=0
 while IFS= read -r f; do
   php -l "$f" >/dev/null 2>&1 || { red "   PHP syntax error: $f"; fail=1; }
-done < <(find "$ROOT/broadside" -name '*.php')
+done < <(find "$ROOT/broadside" "$ROOT/broadside-blocks" -name '*.php')
 while IFS= read -r f; do
   python3 -c "import json,sys;json.load(open(sys.argv[1]))" "$f" 2>/dev/null || { red "   bad JSON: $f"; fail=1; }
-done < <(find "$ROOT/broadside" -name '*.json')
+done < <(find "$ROOT/broadside" "$ROOT/broadside-blocks" -name '*.json')
 [ "$fail" -eq 0 ] || { red "✗ lint failed — not deploying"; exit 1; }
 echo "   ✓ clean"
 
@@ -128,12 +128,38 @@ echo "   ✓ $(grep -oE '[0-9]+ assertions passed' /tmp/broadside-assert.log)"
 
 echo
 echo "════ DEPLOYING to $SITE (one site only)"
+
+# The theme is HALF the deploy. Since 1.2.0 every block the templates call —
+# nameplate, folio, utility-bar, byline, toc, takeaways, related, newsletter,
+# colophon — lives in the broadside-blocks PLUGIN, because .org forbids a theme
+# registering blocks. Shipping the theme alone leaves WordPress with template
+# parts full of <!-- wp:broadside/* --> comments it cannot resolve, and an
+# unregistered block renders as NOTHING — silently, with a 200 and no error.
+# That is precisely how both live sites lost their mastheads. Ship both, always,
+# and put the plugin down FIRST so the theme never activates without its blocks.
+rsync -az --delete -e "$SSH" "$ROOT/broadside-blocks/" "$HOST:/var/www/$SITE/public/wp-content/plugins/broadside-blocks/"
+$SSH "$HOST" "chown -R nobody:nogroup /var/www/$SITE/public/wp-content/plugins/broadside-blocks"
+$SSH "$HOST" "cd /var/www/$SITE/public && wp plugin activate broadside-blocks --allow-root" >/dev/null 2>&1
+echo "   ✓ plugin broadside-blocks uploaded + activated"
+
 rsync -az --delete -e "$SSH" "$ROOT/broadside/" "$HOST:/var/www/$SITE/public/wp-content/themes/broadside/"
 $SSH "$HOST" "chown -R nobody:nogroup /var/www/$SITE/public/wp-content/themes/broadside"
-echo "   ✓ uploaded"
+echo "   ✓ theme uploaded"
 
 $SSH "$HOST" "cd /var/www/$SITE/public && wp theme activate broadside --allow-root" >/dev/null
-echo "   ✓ activated"
+echo "   ✓ theme activated"
+
+# A block that is registered renders; a block that is merely PRESENT on disk but
+# not registered does not. Ask WordPress what it actually knows about, rather
+# than trusting that the files landed.
+MISSING=$($SSH "$HOST" "cd /var/www/$SITE/public && wp eval 'foreach ([\"nameplate\",\"folio\",\"utility-bar\",\"byline\",\"toc\"] as \$b) { if ( ! WP_Block_Type_Registry::get_instance()->is_registered(\"broadside/\$b\") ) echo \$b, \" \"; }' --allow-root 2>/dev/null" | tr -d '\r')
+if [ -n "${MISSING// /}" ]; then
+  red "✗ blocks NOT registered after activation: $MISSING"
+  red "  The theme would render a page with no masthead. Refusing to leave it live."
+  $SSH "$HOST" "cd /var/www/$SITE/public && wp theme activate twentytwentyfive --allow-root" >/dev/null
+  exit 1
+fi
+echo "   ✓ all masthead blocks registered"
 
 # ------------------------------------------------------------------ verify ----
 
@@ -145,27 +171,66 @@ echo "════ VERIFYING the live site"
 # within seconds and we roll back rather than leaving it to eat the box.
 ARTICLE=$($SSH "$HOST" "cd /var/www/$SITE/public && wp post list --post_type=post --posts_per_page=1 --field=url --allow-root 2>/dev/null" | head -1)
 
+# $3 = the CSS class that proves this page type's masthead furniture rendered.
+# The front page uses parts/masthead.html   → broadside/nameplate → .digest-masthead
+#                                            + broadside/folio    → .digest-folio
+# An ARTICLE uses parts/masthead-compact.html, which is core site-title + nav and
+# has NO nameplate and NO folio block by design. Asserting folio on an article is
+# a false failure — it is not what that template renders.
 probe() {
-  local url="$1" label="$2"
-  local start end ms code
+  local url="$1" label="$2" witness="$3"
+  local start end ms code body
+  body=/tmp/broadside-live-$$.html
   start=$(date +%s%N)
-  code=$(curl -s -o /tmp/broadside-live.html -w "%{http_code}" --max-time 20 "$url" 2>/dev/null || echo 000)
+  code=$(curl -s -o "$body" -w "%{http_code}" --max-time 20 "$url" 2>/dev/null || echo 000)
   end=$(date +%s%N)
   ms=$(( (end - start) / 1000000 ))
 
   printf "   %-14s %s  %5dms  " "$label" "$code" "$ms"
 
   if [ "$ms" -gt 10000 ] || [ "$code" = "000" ] || [ "$code" -ge 500 ]; then
-    red "✗ FAILING"
+    red "✗ FAILING (status/latency)"
     return 1
   fi
+
+  # A page whose blocks all failed to register returns 200 in 300ms and looks
+  # perfectly healthy to a status-and-stopwatch check. It is not healthy: it has
+  # no masthead. Liveness is not correctness — the incident doc says so, and this
+  # gate ignored it. So look at what came back.
+  #
+  # Grep for the CLASS ATTRIBUTE, not the bare string: these class names also
+  # appear in the inlined theme CSS on every page, so a bare `grep digest-folio`
+  # passes even on a page with an empty <header>. That false pass is exactly the
+  # trap this gate exists to catch — it is how a headless site looked healthy.
+  if ! grep -qE "class=\"[^\"]*$witness" "$body"; then
+    red "✗ FAILING — '$witness' absent: this page's masthead did not render"
+    red "  Almost certainly broadside-blocks is missing or inactive on $SITE."
+    rm -f "$body"
+    return 1
+  fi
+
+  # Whatever the page, an unregistered dynamic block collapses to nothing. The
+  # colophon (which emits .digest-footer) is in parts/footer.html and therefore on
+  # EVERY template, so it is a page-agnostic witness that the plugin is really
+  # live and not merely present on disk.
+  if ! grep -qE 'class="[^"]*digest-footer' "$body"; then
+    red "✗ FAILING — no colophon: broadside-blocks is not rendering"
+    rm -f "$body"
+    return 1
+  fi
+
+  rm -f "$body"
   echo "✓"
   return 0
 }
 
 ok=0
-probe "https://$SITE/" "front page" || ok=1
-[ -n "$ARTICLE" ] && { probe "$ARTICLE" "ARTICLE" || ok=1; }
+# Front page: full masthead (nameplate block) → .digest-masthead
+# Article:    masthead-compact → core site-title with .digest-nameplate--compact.
+#             It has no nameplate and no folio block; asserting those here would
+#             be a false failure against a page that is perfectly correct.
+probe "https://$SITE/" "front page" 'digest-masthead' || ok=1
+[ -n "$ARTICLE" ] && { probe "$ARTICLE" "ARTICLE" 'digest-nameplate--compact' || ok=1; }
 
 if [ "$ok" -ne 0 ]; then
   echo

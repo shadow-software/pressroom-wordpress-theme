@@ -3,7 +3,7 @@ Contributors: shadowsoftware
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
@@ -154,6 +154,11 @@ GPLv2 or later.
 
 == Upgrade Notice ==
 
+= 1.3.3 =
+Fixes a grey band printed across the masthead on any site that has not chosen a
+masthead device. The band was the device's own ink, painted with nothing masked
+out of it. If you do use a device, it is unchanged.
+
 = 1.3.2 =
 The newsletter form now submits without a page reload when JavaScript is
 available, showing an inline confirmation instead. Plain form submission still
@@ -186,6 +191,14 @@ The front page's lead photograph is no longer lazy-loaded. If you run Broadside 
 a site that is measured on Core Web Vitals, this release is worth taking.
 
 == Changelog ==
+
+= 1.3.3 =
+* Fix: a solid grey band was printed across the masthead on every site with no
+  masthead device chosen — which is to say, by default. The device is drawn by
+  masking a rectangle of ink; with no device the mask was set to `none`, and in
+  CSS `mask-image: none` means "no mask" rather than "mask everything", so the
+  bare ink rectangle was painted at full size. The ink is now only laid down when
+  there is actually a device to carve out of it.
 
 = 1.3.2 =
 * The newsletter form is now progressively enhanced: with JavaScript available it

@@ -390,8 +390,18 @@
 	z-index: -1;
 	pointer-events: none;
 
-	/* Nothing to draw, nothing drawn. `none` collapses this to a no-op. */
-	background-color: var(--wp--preset--color--ink);
+	/*
+	 * Nothing to draw, nothing drawn — but NOT via the mask. `mask-image: none`
+	 * means "no mask", i.e. the element is drawn in FULL, so defaulting the device
+	 * to `none` and relying on it to collapse this rule painted the ink as a solid
+	 * slab: a grey band across the masthead on every site without a device. Both
+	 * live sites shipped that.
+	 *
+	 * So gate the INK, not the mask. `--digest-masthead-ink` is set to the ink
+	 * colour only when a device exists (below); otherwise it stays transparent and
+	 * there is genuinely nothing to paint, whatever the mask does.
+	 */
+	background-color: var( --digest-masthead-ink, transparent );
 
 	/*
 	 * TWO mask layers, intersected:

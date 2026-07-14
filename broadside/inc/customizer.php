@@ -637,6 +637,21 @@ function shadow_digest_custom_properties(): string {
 	$css .= '--digest-masthead-device:' . ( '' !== $device ? "url('" . esc_url( $device ) . "')" : 'none' ) . ';';
 	$css .= '--digest-masthead-device-opacity:' . ( $opacity / 100 ) . ';';
 
+	/*
+	 * The ::before that draws the device paints a rectangle of ink and then masks
+	 * the device out of it. `mask-image: none` does NOT mean "mask everything away"
+	 * — it means "no mask", so with no device that rectangle painted in full and
+	 * put a grey band across the masthead. Both live sites shipped that band.
+	 *
+	 * The mask cannot express "draw nothing", so the INK is what gets gated: it is
+	 * only ever set when there is genuinely a device to carve out of it. With no
+	 * device the custom property is absent, the CSS falls back to `transparent`,
+	 * and nothing is painted at all.
+	 */
+	if ( '' !== $device ) {
+		$css .= '--digest-masthead-ink:var(--wp--preset--color--ink);';
+	}
+
 	$css .= '}';
 
 	/**
