@@ -3,7 +3,7 @@
  * Plugin Name:       Broadside Blocks
  * Plugin URI:        https://github.com/shadow-software/broadside-wordpress-theme
  * Description:       The editorial blocks and masthead furniture for the Broadside theme — a short-answer box, key takeaways, a self-building table of contents, an FAQ that emits FAQPage schema, a sources list, a disclosure table, and the nameplate, folio rule and bylines a broadsheet needs.
- * Version:           1.2.0
+ * Version:           1.2.1
  * Requires at least: 6.6
  * Requires PHP:      8.0
  * Author:            Shadow Software LLC
@@ -73,7 +73,7 @@ defined( 'ABSPATH' ) || exit;
  */
 define( 'BROADSIDE_BLOCKS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'BROADSIDE_BLOCKS_URL', plugin_dir_url( __FILE__ ) );
-define( 'BROADSIDE_BLOCKS_VERSION', '1.2.0' );
+define( 'BROADSIDE_BLOCKS_VERSION', '1.2.1' );
 
 /**
  * Is the Broadside theme active?
@@ -135,5 +135,33 @@ function broadside_blocks_load_textdomain(): void {
 }
 add_action( 'init', 'broadside_blocks_load_textdomain' );
 
+/*
+ * A NOTE ON shadow_digest_plain_text(), AND ON A FATAL I NEARLY SHIPPED.
+ *
+ * That helper lives in the THEME (inc/template-tags.php). Every block that calls
+ * it does so from inside a render callback, and every render callback is already
+ * behind broadside_blocks_theme_active() — so under another theme they return
+ * before they can reach an undefined function. Safe.
+ *
+ * The exception is shadow_digest_print_faq_schema(), which runs on wp_footer and
+ * therefore NOT through the render guard. The obvious fix — have the plugin define
+ * its own copy behind `if ( ! function_exists() )` — is wrong, and wrong in a way
+ * that is worth writing down, because it looks obviously right:
+ *
+ *     WordPress loads PLUGINS BEFORE THE THEME.
+ *     wp-settings.php: plugins_loaded fires at line 622, the theme's
+ *     functions.php is included at line 739.
+ *
+ * So function_exists() is ALWAYS false when a plugin asks. The plugin defines the
+ * function, the theme then defines it again, and PHP fatals on the redeclare —
+ * every page, HTTP 500, both live sites. I wrote exactly that, and the sandbox
+ * returned 500 on the next request. That is what the sandbox is FOR.
+ *
+ * The right fix needs no second definition: the one unguarded caller checks for
+ * the theme itself, exactly like every other caller does. One function, one file,
+ * no duplicate to drift.
+ */
+
 require_once BROADSIDE_BLOCKS_PATH . 'inc-blocks.php';
 require_once BROADSIDE_BLOCKS_PATH . 'inc-blocks-masthead.php';
+

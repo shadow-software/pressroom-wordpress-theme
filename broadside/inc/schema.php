@@ -134,7 +134,7 @@ function shadow_digest_schema_publisher(): array {
 	$node = array(
 		'@type' => 'NewsMediaOrganization',
 		'@id'   => $home . '#organization',
-		'name'  => get_bloginfo( 'name', 'display' ),
+		'name'  => shadow_digest_plain_text( get_bloginfo( 'name', 'display' ) ),
 		'url'   => $home,
 	);
 
@@ -182,8 +182,8 @@ function shadow_digest_schema_website( string $publisher_id ): array {
 		'@type'           => 'WebSite',
 		'@id'             => $home . '#website',
 		'url'             => $home,
-		'name'            => get_bloginfo( 'name', 'display' ),
-		'description'     => get_bloginfo( 'description', 'display' ),
+		'name'            => shadow_digest_plain_text( get_bloginfo( 'name', 'display' ) ),
+		'description'     => shadow_digest_plain_text( get_bloginfo( 'description', 'display' ) ),
 		'inLanguage'      => get_bloginfo( 'language' ),
 		'publisher'       => array( '@id' => $publisher_id ),
 		'potentialAction' => array(
@@ -217,7 +217,7 @@ function shadow_digest_schema_article( string $publisher_id ): array {
 		'@type'            => 'NewsArticle',
 		'@id'              => $permalink . '#article',
 		'url'              => $permalink,
-		'headline'         => wp_strip_all_tags( get_the_title( $post ) ),
+		'headline'         => shadow_digest_plain_text( get_the_title( $post ) ),
 		'datePublished'    => (string) get_the_date( DATE_W3C, $post ),
 		'dateModified'     => (string) get_the_modified_date( DATE_W3C, $post ),
 		'inLanguage'       => get_bloginfo( 'language' ),
@@ -232,7 +232,7 @@ function shadow_digest_schema_article( string $publisher_id ): array {
 	$excerpt = get_the_excerpt( $post );
 
 	if ( '' !== $excerpt ) {
-		$node['description'] = wp_strip_all_tags( $excerpt );
+		$node['description'] = shadow_digest_plain_text( $excerpt );
 	}
 
 	$author_id = (int) $post->post_author;
@@ -247,7 +247,7 @@ function shadow_digest_schema_article( string $publisher_id ): array {
 		$bio = (string) get_the_author_meta( 'description', $author_id );
 
 		if ( '' !== $bio ) {
-			$author['description'] = wp_strip_all_tags( $bio );
+			$author['description'] = shadow_digest_plain_text( $bio );
 		}
 
 		$node['author'] = $author;
@@ -311,7 +311,7 @@ function shadow_digest_schema_breadcrumbs(): array {
 	$items[] = array(
 		'@type'    => 'ListItem',
 		'position' => count( $items ) + 1,
-		'name'     => wp_strip_all_tags( get_the_title( $post ) ),
+		'name'     => shadow_digest_plain_text( get_the_title( $post ) ),
 		'item'     => (string) get_permalink( $post ),
 	);
 
@@ -430,14 +430,14 @@ function shadow_digest_meta_description(): string {
 	if ( is_singular() ) {
 		$excerpt = get_the_excerpt();
 
-		return '' !== $excerpt ? wp_strip_all_tags( $excerpt ) : '';
+		return '' !== $excerpt ? shadow_digest_plain_text( $excerpt ) : '';
 	}
 
 	if ( is_category() || is_tag() || is_tax() ) {
 		$description = term_description();
 
 		if ( '' !== $description ) {
-			return wp_strip_all_tags( $description );
+			return shadow_digest_plain_text( $description );
 		}
 
 		return sprintf(
@@ -451,7 +451,7 @@ function shadow_digest_meta_description(): string {
 		$bio = get_the_author_meta( 'description' );
 
 		if ( '' !== $bio ) {
-			return wp_strip_all_tags( $bio );
+			return shadow_digest_plain_text( $bio );
 		}
 
 		return sprintf(
@@ -476,9 +476,9 @@ function shadow_digest_meta_description(): string {
 			return $strapline;
 		}
 
-		$tagline = get_bloginfo( 'description', 'display' );
+		$tagline = shadow_digest_plain_text( get_bloginfo( 'description', 'display' ) );
 
-		return '' !== $tagline ? wp_strip_all_tags( $tagline ) : '';
+		return '' !== $tagline ? shadow_digest_plain_text( $tagline ) : '';
 	}
 
 	return '';

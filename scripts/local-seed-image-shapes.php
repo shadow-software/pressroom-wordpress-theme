@@ -156,6 +156,17 @@ foreach ( $shapes as $i => $shape ) {
 
 	require_once ABSPATH . 'wp-admin/includes/image.php';
 	wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, $path ) );
+
+	// An attachment with NO alt meta makes WordPress fall back to the post title —
+	// raw, entities and all — so a title containing `&apos;` produces
+	// alt="CNBC&amp;apos;s…" and a screen reader announces "ampersand apos
+	// semicolon". Store decoded plain text, which is what the media library does.
+	update_post_meta(
+		$attachment_id,
+		'_wp_attachment_image_alt',
+		html_entity_decode( $post->post_title, ENT_QUOTES | ENT_HTML5, 'UTF-8' )
+	);
+
 	set_post_thumbnail( $post->ID, $attachment_id );
 
 	echo "  {$post->post_name}: {$name} {$w}x{$h}\n";

@@ -2,14 +2,14 @@
 # This file is distributed under the GNU General Public License v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Broadside 1.2.0\n"
+"Project-Id-Version: Broadside 1.2.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/theme/broadside\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-14T15:15:15+00:00\n"
+"POT-Creation-Date: 2026-07-14T16:06:07+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: broadside\n"
@@ -440,42 +440,42 @@ msgid "The narrow left-hand column on the front page, beside the lead story. Tra
 msgstr ""
 
 #. translators: 1: founding year in Roman numerals, 2: founding year in digits.
-#: inc/template-tags.php:136
+#: inc/template-tags.php:185
 #, php-format
 msgid "Est. %1$s"
 msgstr ""
 
-#: inc/template-tags.php:212
+#: inc/template-tags.php:261
 msgid "My Account"
 msgstr ""
 
-#: inc/template-tags.php:213
+#: inc/template-tags.php:262
 msgid "Log In"
 msgstr ""
 
-#: inc/template-tags.php:220
+#: inc/template-tags.php:269
 msgid "Cart"
 msgstr ""
 
-#: inc/template-tags.php:457
+#: inc/template-tags.php:506
 msgid "No signup endpoint is configured, so the form is hidden. Set one under Customizer → Broadside → Newsletter, or turn the box off."
 msgstr ""
 
 #. translators: %s: a subscriber count, e.g. "48,000".
-#: inc/template-tags.php:470
+#: inc/template-tags.php:519
 #, php-format
 msgid "Join %s readers"
 msgstr ""
 
-#: inc/template-tags.php:479
+#: inc/template-tags.php:528
 msgid "Your email address"
 msgstr ""
 
-#: inc/template-tags.php:487
+#: inc/template-tags.php:536
 msgid "your@email.com"
 msgstr ""
 
-#: inc/template-tags.php:493
+#: inc/template-tags.php:542
 msgid "Subscribe"
 msgstr ""
 

@@ -12,7 +12,7 @@
  * from then on it prints the right volume, the right date and the right motto on
  * every page, in every language, without ever being edited again.
  *
- * @package Pressroom
+ * @package Broadside
  * @since   1.0.0
  */
 
@@ -54,7 +54,7 @@ function shadow_digest_register_masthead_blocks(): void {
 			array(
 
 				/*
-				 * Guarded, like every Pressroom block — see shadow_digest_guard().
+				 * Guarded, like every Broadside block — see shadow_digest_guard().
 				 *
 				 * These callbacks take no arguments: they are configured entirely
 				 * from the Customizer and the current post, not from block
@@ -373,7 +373,7 @@ function shadow_digest_render_standards(): string {
  */
 function shadow_digest_user_role_field( WP_User $user ): void {
 	?>
-	<h2><?php esc_html_e( 'Pressroom', 'broadside-blocks' ); ?></h2>
+	<h2><?php esc_html_e( 'Broadside', 'broadside-blocks' ); ?></h2>
 
 	<table class="form-table" role="presentation">
 		<tr>

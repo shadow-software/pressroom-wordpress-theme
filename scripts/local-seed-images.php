@@ -241,13 +241,18 @@ foreach ( $posts as $post ) {
 	$attachment_data = wp_generate_attachment_metadata( $attachment_id, $tmp_path );
 	wp_update_attachment_metadata( $attachment_id, $attachment_data );
 
+	// Decoded, not raw. alt text is a plain-text attribute: WordPress escapes it on
+	// output, so storing `CNBC&apos;s` here yields alt="CNBC&amp;apos;s" and a
+	// screen reader announces "ampersand apos semicolon". The media library stores
+	// decoded text and so does every real publisher; the seeder should too, or the
+	// sandbox invents a bug that production does not have.
 	update_post_meta(
 		$attachment_id,
 		'_wp_attachment_image_alt',
 		sprintf(
 			/* translators: %s: article headline. */
 			__( 'Editorial illustration for "%s"', 'broadside' ),
-			$post->post_title
+			html_entity_decode( $post->post_title, ENT_QUOTES | ENT_HTML5, 'UTF-8' )
 		)
 	);
 

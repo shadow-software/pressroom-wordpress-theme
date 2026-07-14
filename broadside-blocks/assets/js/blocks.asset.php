@@ -4,13 +4,13 @@
  *
  * WordPress reads this alongside the script named in each block.json and uses it
  * to enqueue the editor packages the script expects on `window.wp`. It is
- * normally emitted by @wordpress/scripts; Pressroom has no build step, so it is
+ * normally emitted by @wordpress/scripts; Broadside has no build step, so it is
  * maintained by hand — which is only tenable because the dependency list is
  * short and stable.
  *
  * The version is the theme version, so an upgrade busts the browser cache.
  *
- * @package Pressroom
+ * @package Broadside
  * @since   1.0.0
  */
 

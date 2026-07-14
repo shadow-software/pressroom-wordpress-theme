@@ -56,6 +56,26 @@ $headlines = array(
 		'The Gunsmiths Keeping Heirloom Rifles Alive',
 		'Inside the Last Family Barrel Shop',
 		"What the Champions Know That We Don't",
+
+		/*
+		 * A title carrying LITERAL HTML ENTITIES, as characters, in the database.
+		 *
+		 * This is not a contrived case. The n8n auto-publisher writes titles exactly
+		 * like this, and one is live on marksmansdigest.com right now:
+		 *
+		 *     CNBC&apos;s &quot;Best States&quot; List Faces Scrutiny…
+		 *
+		 * The theme then ran esc_html() over an already-escaped title, turning
+		 * `&apos;` into `&amp;apos;`, and the front page printed the raw entity where
+		 * an apostrophe belonged. In the JSON-LD it was worse: a JSON string is never
+		 * HTML-decoded, so Google was being served the entity verbatim.
+		 *
+		 * Every seeded title before this one had either a real apostrophe or no
+		 * punctuation at all, so the sandbox could not reproduce the bug and 36
+		 * green assertions said nothing about it. This title is here so that it can.
+		 * See shadow_digest_plain_text() and local-assert.php.
+		 */
+		'CNBC&apos;s &quot;Best States&quot; List Faces Scrutiny &amp; Doubt',
 	),
 	'heritage'    => array(
 		'The Springfield That Won Camp Perry',

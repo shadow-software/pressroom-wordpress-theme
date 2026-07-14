@@ -11,6 +11,55 @@ declare( strict_types = 1 );
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * A post title or excerpt as PLAIN TEXT — entities decoded, tags stripped.
+ *
+ * WHY THIS EXISTS
+ *
+ * A live post on marksmansdigest.com had this as its title, in the database, as
+ * literal characters:
+ *
+ *     CNBC&apos;s &quot;Best States&quot; List Faces Scrutiny…
+ *
+ * Not an apostrophe — the six characters `&apos;`. The auto-publisher writes HTML
+ * entities into the title as text. WordPress core copes: it re-encodes the bare
+ * `&` to `&#038;`, the browser decodes that back to `&`, and the reader sees
+ * `CNBC&apos;s`… which is still wrong, just wrong in a way core cannot fix.
+ *
+ * What the theme did made it worse. `esc_html( get_the_title() )` escapes a title
+ * that get_the_title() has ALREADY escaped, turning `&apos;` into `&amp;apos;`,
+ * which the browser renders as the literal text `&apos;`. The section grid and the
+ * related-posts rail both did this, so the front page and every article page
+ * printed the raw entity where an apostrophe belonged.
+ *
+ * And in JSON-LD it is not a display bug at all, it is a data bug: a JSON string
+ * is not HTML, so nothing ever decodes it. Google was being served
+ *
+ *     "headline":"CNBC&apos;s &quot;Best States&quot; List…"
+ *
+ * and would index exactly that.
+ *
+ * So: decode FIRST, to real characters, and let the caller escape once for its own
+ * context — esc_html() for markup, wp_json_encode() for JSON. Decoding twice is
+ * deliberate: `&amp;apos;` needs two passes to reach `'`, and a title that is
+ * already clean is unchanged by either pass.
+ *
+ * @since 1.2.1
+ *
+ * @param string $text A title, excerpt or heading, possibly carrying entities.
+ * @return string Plain text: no tags, no entities, safe to escape for any context.
+ */
+function shadow_digest_plain_text( string $text ): string {
+	$text = wp_strip_all_tags( $text );
+
+	// Twice, on purpose. One pass turns `&amp;apos;` into `&apos;`; the second
+	// turns that into `'`. A clean string survives both untouched.
+	$text = html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+	$text = html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+
+	return trim( $text );
+}
+
+/**
  * Render a year as Roman numerals.
  *
  * The utility bar prints "Est. MCMXXVI" and the footer prints "© MMXXVI".

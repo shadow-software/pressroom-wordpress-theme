@@ -293,6 +293,72 @@ foreach ( $expected as $needle => $what ) {
 	);
 }
 
+/*
+ * Entities are decoded exactly once.
+ *
+ * A live post on marksmansdigest.com has this as its title, in the database, as
+ * literal characters: `CNBC&apos;s &quot;Best States&quot; …`. The auto-publisher
+ * writes HTML entities into the title as text.
+ *
+ * The theme then ran esc_html() over a title get_the_title() had ALREADY escaped,
+ * which turned `&apos;` into `&amp;apos;` — and the browser printed the six
+ * characters `&apos;` in the middle of the headline. It shipped because every
+ * seeded title had either a real apostrophe or no punctuation, so nothing in this
+ * file could see it. local-seed-front.php now seeds one that can.
+ *
+ * The tell is `&amp;` followed by an entity name: that is an entity that has been
+ * escaped twice, and it can only ever be a bug.
+ */
+echo "\n── Titles with HTML entities are not double-escaped\n";
+
+$double = '/&amp;(apos|quot|amp|lt|gt|#\d+);/';
+
+/*
+ * Scoped to the text the THEME renders, deliberately.
+ *
+ * A whole-page grep also catches the featured image's alt="", and that one is not
+ * ours to fix: core's post-featured-image block builds alt from the attachment's
+ * alt meta and, when there is none, falls back to the RAW post title — entities
+ * included — then escapes it for the attribute. The theme never touches that alt
+ * (its only 'alt' is the author avatar). Asserting on it here would be asserting
+ * on WordPress core, and the assertion would be unfixable from this repo.
+ *
+ * The real fix for that one is upstream, where the entities are being written into
+ * the title in the first place. See the note at the end of this file.
+ */
+$body_text = preg_replace( '/<img[^>]*>/', '', $fp['body'] );
+
+check(
+	1 !== preg_match( $double, (string) $body_text ),
+	'no theme-rendered text is double-escaped',
+	'found `&amp;apos;` (or similar) outside an <img> — an entity escaped twice, which prints as literal text. See shadow_digest_plain_text().'
+);
+
+check(
+	! str_contains( (string) $body_text, '&amp;apos;' ) && ! str_contains( (string) $body_text, '&amp;quot;' ),
+	'headlines print real punctuation, not entity names',
+	'a headline is rendering `&apos;` or `&quot;` as visible text'
+);
+
+/*
+ * The JSON-LD is the one that actually costs something. A JSON string is not HTML
+ * — nothing downstream ever decodes it — so an entity here is indexed by Google
+ * verbatim, and the headline in the search result reads `CNBC&apos;s`.
+ */
+$ld = $r['body'];
+
+check(
+	1 !== preg_match( '/"headline":"[^"]*&(amp|apos|quot|#\d+);/', $ld ),
+	'the JSON-LD headline carries no HTML entities',
+	'schema.org headline contains an entity — Google will index it literally'
+);
+
+check(
+	1 !== preg_match( '/"name":"[^"]*&(amp|apos|quot|#\d+);/', $ld ),
+	'no JSON-LD name carries an HTML entity',
+	'a schema.org name (organisation, breadcrumb, FAQ question) contains an entity'
+);
+
 echo "\n";
 echo str_repeat( '─', 70 ) . "\n";
 

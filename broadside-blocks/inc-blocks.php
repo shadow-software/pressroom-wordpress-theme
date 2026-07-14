@@ -2,7 +2,7 @@
 /**
  * The editorial blocks.
  *
- * Pressroom ships the furniture a long-read needs and core does not have: a
+ * Broadside ships the furniture a long-read needs and core does not have: a
  * short-answer box, a key-takeaways list, a table of contents, an FAQ, a sources
  * list and a disclosure table.
  *
@@ -16,7 +16,7 @@
  *   3. If the theme is ever deactivated, the saved markup degrades to plain,
  *      semantic HTML rather than a wall of block-validation errors.
  *
- * @package Pressroom
+ * @package Broadside
  * @since   1.0.0
  */
 
@@ -37,7 +37,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * The specific bug is fixed (nothing in this theme renders content any more).
  * This guard exists so that the *class* of bug cannot have that outcome again:
- * if any Pressroom block ever re-enters itself, it returns an empty string on the
+ * if any Broadside block ever re-enters itself, it returns an empty string on the
  * second entry instead of recursing. The page loses a block. The server lives.
  *
  * Wrap every render callback in this. It costs one array lookup.
@@ -75,7 +75,7 @@ function shadow_digest_guard( string $name, callable $render ): string {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			// A developer should hear about this loudly; a visitor should not.
 			trigger_error( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
-				esc_html( "Pressroom: block {$name} re-entered itself; refusing to recurse. This is a bug." ),
+				esc_html( "Broadside: block {$name} re-entered itself; refusing to recurse. This is a bug." ),
 				E_USER_WARNING
 			);
 		}
@@ -101,7 +101,7 @@ function shadow_digest_guard( string $name, callable $render ): string {
  * Each block is a directory with a block.json. WordPress reads the metadata,
  * wires up the editor script, and calls the render callback named below.
  *
- * Every callback is wrapped in shadow_digest_guard(), so no Pressroom block can ever
+ * Every callback is wrapped in shadow_digest_guard(), so no Broadside block can ever
  * recurse into itself — see the note on that function.
  *
  * @since 1.0.0
@@ -132,7 +132,7 @@ function shadow_digest_register_blocks(): void {
 			array(
 
 				/*
-				 * Guarded, so no Pressroom block can recurse into itself — see
+				 * Guarded, so no Broadside block can recurse into itself — see
 				 * shadow_digest_guard() and docs/INCIDENT-2026-07-13-vps-outage.md.
 				 *
 				 * WordPress passes ( $attributes, $content, $block ); these
@@ -164,7 +164,7 @@ function shadow_digest_block_category( array $categories ): array {
 		$categories,
 		array(
 			'slug'  => 'broadside',
-			'title' => __( 'Pressroom — editorial', 'broadside-blocks' ),
+			'title' => __( 'Broadside — editorial', 'broadside-blocks' ),
 			'icon'  => null,
 		)
 	);
@@ -569,6 +569,21 @@ function shadow_digest_print_faq_schema(): void {
 		return;
 	}
 
+	/*
+	 * This runs on wp_footer, NOT through a render callback, so it is the one path
+	 * in this plugin that shadow_digest_guard()'s theme check does not cover — and
+	 * below it calls shadow_digest_plain_text(), which lives in the theme. Under any
+	 * other theme that is an undefined function and a fatal in the page footer.
+	 *
+	 * Do not "fix" this by defining a copy of the helper in the plugin behind
+	 * function_exists(): WordPress loads plugins BEFORE the theme, so the check is
+	 * always false, the plugin defines it, the theme redeclares it, and every page
+	 * on the site fatals. That was tried; the sandbox returned HTTP 500.
+	 */
+	if ( ! broadside_blocks_theme_active() ) {
+		return;
+	}
+
 	$questions = shadow_digest_collect_faq();
 
 	if ( empty( $questions ) ) {
@@ -578,12 +593,15 @@ function shadow_digest_print_faq_schema(): void {
 	$entities = array();
 
 	foreach ( $questions as $item ) {
+		// Decoded, not merely stripped. This is a JSON string, not HTML — nothing
+		// downstream will ever decode an entity here, so `&amp;` would be indexed
+		// by Google as the five literal characters. See shadow_digest_plain_text().
 		$entities[] = array(
 			'@type'          => 'Question',
-			'name'           => $item['question'],
+			'name'           => shadow_digest_plain_text( $item['question'] ),
 			'acceptedAnswer' => array(
 				'@type' => 'Answer',
-				'text'  => wp_strip_all_tags( $item['answer'] ),
+				'text'  => shadow_digest_plain_text( $item['answer'] ),
 			),
 		);
 	}
@@ -703,7 +721,7 @@ function shadow_digest_render_lead_body( array $attributes ): string {
 			'#<blockquote\b.*?</blockquote>#is',
 			'#<figure\b.*?</figure>#is',
 			'#<figcaption\b.*?</figcaption>#is',
-			// Pressroom's own dynamic blocks save no inner HTML, but a future one
+			// Broadside's own dynamic blocks save no inner HTML, but a future one
 			// might; skip any comment-delimited digest block wholesale.
 			'#<!--\s*wp:broadside/.*?/-->#is',
 		),
@@ -839,8 +857,8 @@ function shadow_digest_render_related( array $attributes ): string {
 			'<a class="digest-related__item" href="%1$s">%2$s<span class="digest-related__head">%3$s</span><span class="digest-related__sum">%4$s</span></a>',
 			esc_url( (string) get_permalink( $post ) ),
 			$kicker, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above.
-			esc_html( wp_strip_all_tags( get_the_title( $post ) ) ),
-			esc_html( wp_strip_all_tags( get_the_excerpt( $post ) ) )
+			esc_html( shadow_digest_plain_text( get_the_title( $post ) ) ),
+			esc_html( shadow_digest_plain_text( get_the_excerpt( $post ) ) )
 		);
 	}
 
@@ -906,7 +924,7 @@ function shadow_digest_render_section_grid( array $attributes ): string {
 			$links .= sprintf(
 				'<a class="digest-section__link" href="%1$s">%2$s</a>',
 				esc_url( (string) get_permalink( $post ) ),
-				esc_html( wp_strip_all_tags( get_the_title( $post ) ) )
+				esc_html( shadow_digest_plain_text( get_the_title( $post ) ) )
 			);
 		}
 
@@ -942,7 +960,7 @@ function shadow_digest_render_section_grid( array $attributes ): string {
  * The disclosure table — a comparison table whose outbound links are correctly
  * marked as sponsored.
  *
- * Pressroom hard-codes rel="sponsored nofollow noopener" on every partner link and
+ * Broadside hard-codes rel="sponsored nofollow noopener" on every partner link and
  * refuses to render the table without a disclosure line. That is not a
  * limitation; it is the point. A publication that takes affiliate money and
  * hides it is not a journal of record, and Google's link-spam policy agrees.
@@ -1020,7 +1038,7 @@ function shadow_digest_render_disclosure_table( array $attributes ): string {
 		);
 	}
 
-	// The disclosure is not optional. If the editor supplied none, Pressroom prints
+	// The disclosure is not optional. If the editor supplied none, Broadside prints
 	// its own rather than render an undisclosed affiliate table.
 	$note = isset( $attributes['disclosure'] ) && '' !== trim( wp_strip_all_tags( (string) $attributes['disclosure'] ) )
 		? (string) $attributes['disclosure']

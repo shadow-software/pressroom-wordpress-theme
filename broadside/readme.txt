@@ -3,7 +3,7 @@ Contributors: shadowsoftware
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
@@ -154,6 +154,10 @@ GPLv2 or later.
 
 == Upgrade Notice ==
 
+= 1.2.1 =
+Fixes headlines printing `&apos;` and `&quot;` as visible text, and the same
+entities leaking into the structured data that search engines read.
+
 = 1.2.0 =
 The blocks now live in a companion plugin, Broadside Blocks, which WordPress will
 offer to install alongside the theme. Without it you get the paper, the type and
@@ -169,6 +173,26 @@ The front page's lead photograph is no longer lazy-loaded. If you run Broadside 
 a site that is measured on Core Web Vitals, this release is worth taking.
 
 == Changelog ==
+
+= 1.2.1 =
+* **Fixed: headlines printed `&apos;` and `&quot;` as visible text.** A title whose
+  punctuation is stored as an HTML entity — which happens when the post is created
+  by an automation rather than typed into the editor — was being escaped a second
+  time by the theme, turning `&apos;` into `&amp;apos;`, which a browser renders as
+  the literal characters. It showed on the front page's section index and in the
+  related-posts rail beneath every article.
+* **Fixed: the same entities were reaching search engines.** In JSON-LD it was not a
+  display bug but a data bug: a JSON string is never HTML-decoded, so Google was
+  being served `"headline":"CNBC&apos;s &quot;Best States&quot;…"` and would index
+  exactly that. The article headline, the organisation name, the site tagline, the
+  breadcrumb, the FAQ questions and the meta description were all affected.
+* The theme now decodes a title or excerpt to plain text once, then escapes it for
+  whichever context it is going into — HTML or JSON — instead of assuming WordPress
+  has not already done it. New helper: `shadow_digest_plain_text()`.
+* The sandbox now seeds a post whose title carries literal entities, and four new
+  assertions check that nothing is escaped twice. Every seeded title before this
+  had either real punctuation or none, so 36 green assertions had nothing to say
+  about a bug that was live on a production site.
 
 = 1.2.0 =
 * **Renamed to Broadside, and the blocks moved to a companion plugin.** Two changes,

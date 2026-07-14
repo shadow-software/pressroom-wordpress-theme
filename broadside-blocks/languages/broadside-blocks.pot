@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Broadside Blocks 1.2.0\n"
+"Project-Id-Version: Broadside Blocks 1.2.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/broadside-blocks\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-14T15:15:18+00:00\n"
+"POT-Creation-Date: 2026-07-14T16:06:09+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: broadside-blocks\n"
@@ -80,7 +80,7 @@ msgid "About the Author"
 msgstr ""
 
 #: inc-blocks-masthead.php:376
-msgid "Pressroom"
+msgid "Broadside"
 msgstr ""
 
 #: inc-blocks-masthead.php:381
@@ -92,7 +92,7 @@ msgid "Printed after the name in the byline — “Chief Correspondent”, “Sc
 msgstr ""
 
 #: inc-blocks.php:167
-msgid "Pressroom — editorial"
+msgid "Broadside — editorial"
 msgstr ""
 
 #: inc-blocks.php:204
@@ -124,44 +124,44 @@ msgstr ""
 msgid "Frequently Asked Questions"
 msgstr ""
 
-#: inc-blocks.php:636
+#: inc-blocks.php:654
 #: assets/js/blocks.js:583
 #: assets/js/blocks.js:599
 msgid "Sources & References"
 msgstr ""
 
-#: inc-blocks.php:758
+#: inc-blocks.php:776
 msgid "Continue the full report →"
 msgstr ""
 
-#: inc-blocks.php:828
+#: inc-blocks.php:846
 msgid "Continue Reading"
 msgstr ""
 
-#: inc-blocks.php:987
+#: inc-blocks.php:1005
 #: assets/js/blocks.js:679
 #: assets/js/blocks.js:730
 msgid "What to check"
 msgstr ""
 
-#: inc-blocks.php:990
+#: inc-blocks.php:1008
 #: assets/js/blocks.js:680
 #: assets/js/blocks.js:740
 msgid "Why it matters"
 msgstr ""
 
-#: inc-blocks.php:993
+#: inc-blocks.php:1011
 #: assets/js/blocks.js:681
 #: assets/js/blocks.js:750
 msgid "Partner"
 msgstr ""
 
-#: inc-blocks.php:1007
+#: inc-blocks.php:1025
 msgid "(opens in a new tab, sponsored link)"
 msgstr ""
 
 #. translators: %s: the site name.
-#: inc-blocks.php:1029
+#: inc-blocks.php:1047
 #, php-format
 msgid "Affiliate disclosure: %s may earn a commission on purchases made through partner links. Commissions never influence which products we recommend; testing and editorial are handled independently of commercial partnerships."
 msgstr ""
