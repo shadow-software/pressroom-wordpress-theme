@@ -3,7 +3,7 @@ Contributors: shadowsoftware
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
@@ -154,11 +154,32 @@ GPLv2 or later.
 
 == Upgrade Notice ==
 
+= 1.1.1 =
+The theme is now called Pressroom. It was called Digest, and a different author
+already has a theme by that name in the Theme Directory. The text domain moves with
+it, so a site running the old build should reapply its Customizer settings.
+
 = 1.1.0 =
 The front page's lead photograph is no longer lazy-loaded. If you run Pressroom on
 a site that is measured on Core Web Vitals, this release is worth taking.
 
 == Changelog ==
+
+= 1.1.1 =
+* **Renamed: Digest is now Pressroom.** A theme called Digest already exists in the
+  WordPress.org Theme Directory, by a different author. Sharing a name is not just
+  a submission problem — WordPress matches theme updates by slug, so a site running
+  this theme under a name someone else owns could be auto-updated to a stranger's
+  theme. The slug, the text domain and the block namespace move with the name.
+* The bundled fonts' copyright lines are now transcribed from each font's own
+  embedded metadata rather than from a distributor's web page. Three were wrong:
+  Libre Caslon Display is "Copyright 2012 The Libre Caslon Display Authors" (not
+  2019, Impallari et al.); Source Serif 4 is 2014-2021 Adobe Systems Incorporated
+  (not 2014-2023); and UnifrakturMaguntia had its two authors' years transposed.
+  All four remain SIL OFL 1.1, which is GPL-compatible. Nothing about what the
+  theme is allowed to ship has changed — only the accuracy of what it says about it.
+* Added the Upgrade Notice section required of a Theme Directory readme, and cut
+  the short description to 142 characters (the limit is 150; it was 168).
 
 = 1.1.0 =
 * **Fixed: the front page's lead photograph was lazy-loaded.** WordPress decides
