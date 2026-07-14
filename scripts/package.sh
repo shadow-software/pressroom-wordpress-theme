@@ -21,7 +21,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SLUG="shadow-software-digest-theme-for-wordpress"
+SLUG="pressroom"
 SRC="$ROOT/$SLUG"
 OUT="$ROOT/build"
 
@@ -144,6 +144,64 @@ if grep -q "Text Domain: *$SLUG" "$DIR/style.css"; then
 	okay "text domain = $SLUG"
 else
 	note "style.css Text Domain must equal the directory name: $SLUG"
+fi
+
+# ---------------------------------------------------------------- naming ----
+#
+# The first submission was rejected on the name:
+#
+#   "There is already a theme called digest by a different author. Please change
+#    the name of your theme in style.css and upload it again."
+#
+# and the handbook adds a rule the reviewer did not have to mention, because the
+# old slug broke it too — theme names "must not use: WordPress, Theme, Twenty*",
+# and the slug IS the name, lowercased and hyphenated. The old
+# `shadow-software-digest-theme-for-wordpress` contained BOTH forbidden words.
+#
+# So the name is now checked mechanically, here, against the bytes being shipped.
+# https://make.wordpress.org/themes/handbook/review/required/
+
+echo
+echo "── the theme name is legal and not already taken"
+
+NAME=$(grep -oP '^Theme Name:\s*\K.*' "$DIR/style.css" | tr -d '\r')
+if [ -z "$NAME" ]; then
+	note "style.css has no Theme Name"
+else
+	okay "Theme Name: $NAME"
+
+	# Forbidden words. Matched case-insensitively as whole words, so "Pressroom"
+	# is fine and "Press Theme" is not.
+	for word in wordpress theme; do
+		if printf '%s' "$NAME" | grep -qiE "(^|[^a-z])${word}([^a-z]|$)"; then
+			note "theme name must not contain \"${word}\" — handbook, Naming"
+		fi
+	done
+	printf '%s' "$NAME" | grep -qiE '(^|[^a-z])twenty' \
+		&& note 'theme name must not begin with "Twenty" — reserved for core'
+
+	# The slug the Directory will publish under is derived FROM the name.
+	want=$(printf '%s' "$NAME" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+	if [ "$want" = "$SLUG" ]; then
+		okay "slug derived from the name matches the directory: $SLUG"
+	else
+		note "directory is '$SLUG' but the name '$NAME' derives the slug '$want' — they must agree"
+	fi
+fi
+
+# Is the slug already taken on wordpress.org? A 200 means someone owns it, and
+# shipping under it is worse than a rejection: WordPress matches update payloads
+# by slug, so a site running this theme could be auto-updated to a stranger's.
+# Skipped without network (CI has one; an offline developer does not).
+if curl -s -o /dev/null --max-time 8 "https://wordpress.org/themes/$SLUG/" 2>/dev/null; then
+	code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 "https://wordpress.org/themes/$SLUG/" || echo 000)
+	case "$code" in
+		404) okay "wordpress.org/themes/$SLUG/ is free (404)" ;;
+		200) note "wordpress.org/themes/$SLUG/ ALREADY EXISTS — pick another name" ;;
+		*)   echo "   · could not check the Directory (HTTP $code) — verify by hand" ;;
+	esac
+else
+	echo "   · no network; slug availability not checked"
 fi
 
 echo

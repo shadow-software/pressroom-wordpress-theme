@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pressroom/colophon",
+	"title": "Colophon",
+	"category": "pressroom",
+	"icon": "info-outline",
+	"description": "The footer line: the wordmark, the domain and founding year, and the copyright in Roman numerals. All of it derived — there is no year to forget to update.",
+	"keywords": [ "footer", "copyright", "colophon", "founded" ],
+	"textdomain": "pressroom",
+	"supports": {
+		"html": false,
+		"reusable": false,
+		"multiple": false,
+		"spacing": {
+			"margin": [ "top", "bottom" ]
+		}
+	},
+	"attributes": {},
+	"style": "pressroom"
+}

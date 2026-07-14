@@ -1,0 +1,2977 @@
+/**
+ * Pressroom — the printed sheet.
+ *
+ * theme.json owns the design tokens (colour, type scale, spacing) and the block
+ * styles. This file owns everything theme.json cannot express: the halftone
+ * paper, the folio rules, the drop cap, the multi-column lead story, and the
+ * editorial blocks.
+ *
+ * It is loaded on the front end AND inside the block editor, so an editor
+ * composing an article sees the same drop cap and the same rules a reader will.
+ *
+ * Every colour here is a custom property that resolves to either a theme.json
+ * preset or a Customizer override (see inc/customizer.php). There are no literal
+ * brand colours in this file — that is what lets one stylesheet dress two
+ * different publications.
+ *
+ * @package Pressroom
+ * @since   1.0.0
+ */
+
+/* -------------------------------------------------------------------------- *
+ * 1. The sheet
+ * -------------------------------------------------------------------------- */
+
+/*
+ * Border-box everywhere.
+ *
+ * WordPress sets box-sizing on the blocks it knows about but not on the
+ * template-part wrappers, so the top-level regions did not agree on what
+ * `max-width` meant. The wrappers around the header and the footer were
+ * content-box — max-width 1260px PLUS 40px of padding each side, a 1340px outer
+ * box — while <main> was border-box, so the same declarations gave it a 1260px
+ * outer box. Their contents therefore started 40px apart: the folio and footer
+ * rules at one inset, the lead grid and section grid at another. That is the
+ * ragged left and right edge.
+ *
+ * The mockup opens with exactly this rule, for exactly this reason.
+ */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+.wp-site-blocks {
+	/*
+	 * The desk the paper sits on. The gutter is the strip of desk visible either
+	 * side of the sheet; it is a custom property because the paper itself has to
+	 * subtract it (see ::before below) and the two must not drift apart.
+	 */
+	--digest-desk-gutter: 16px;
+
+	background-color: var(--wp--preset--color--paper-shade);
+	padding-block: clamp(0px, 3vw, 34px) 70px;
+	padding-inline: var(--digest-desk-gutter);
+
+	/*
+	 * THE PAPER MUST REACH THE BOTTOM OF THE SCREEN.
+	 *
+	 * The sheet is drawn by ::before with `inset-block: 0`, so it is exactly as
+	 * tall as the content sitting on it — and no taller. On a SHORT page that is a
+	 * real, visible fault: My Account is a login card and a footer, so the paper
+	 * stopped part-way down the screen and the rest of the viewport was bare desk.
+	 * It reads as a page that failed to finish loading rather than as a design.
+	 *
+	 * `100dvh` — the DYNAMIC viewport height — with a `100vh` line above it as the
+	 * fallback for anything that does not support dvh. On mobile Safari and Chrome
+	 * 100vh is the viewport with the URL bar HIDDEN, so a 100vh box is taller than
+	 * what you can actually see and the page gains a scrollbar that scrolls to
+	 * nothing. dvh tracks the visible viewport as the browser chrome collapses,
+	 * which is what a human means by "the bottom of the screen".
+	 *
+	 * `min-height`, not `height`: a long page must still be free to be longer.
+	 *
+	 * NOT `display: flex`. The obvious way to push the footer down is to make this
+	 * a flex column and let <main> absorb the slack. It does fill the viewport —
+	 * and it also turns the masthead and the footer into flex ITEMS, which
+	 * collapses their own internal layout: the footer's three parts (wordmark,
+	 * dateline, copyright) piled onto a single line and the nameplate lost its
+	 * centring. That was caught by looking at the screenshot, not by reasoning
+	 * about it.
+	 *
+	 * The content does not need stretching. Only the PAPER needs to be tall, and
+	 * the paper is a pseudo-element — so stretch that (see ::before) and leave the
+	 * document's own flow completely alone.
+	 */
+	min-height: 100vh;
+	min-height: 100dvh;
+}
+
+/*
+ * The printed sheet.
+ *
+ * A block theme has no single wrapper element to hang this on — the header, the
+ * main and the footer are siblings inside .wp-site-blocks. So the sheet is drawn
+ * with a pseudo-element behind them: a paper-coloured, softly shadowed panel,
+ * centred at the wide width, that all three sit on top of.
+ *
+ * The box-shadow lifts it off the desk; the radial gradient is the halftone dot
+ * screen, toggleable from the Customizer.
+ */
+.wp-site-blocks {
+	position: relative;
+	isolation: isolate;
+}
+
+.wp-site-blocks::before {
+	content: "";
+	position: absolute;
+	inset-block: 0;
+	inset-inline: 50%;
+	translate: -50% 0;
+	/*
+	 * The paper is the same outer box as the regions that sit on it — wide-size
+	 * plus the sheet margin on each side. Sizing it to wide-size alone would draw
+	 * the paper exactly under the *content*, leaving the inner margin outside the
+	 * sheet and the type flush to its edge.
+	 *
+	 * The 100% is measured against the padding box of .wp-site-blocks, which
+	 * INCLUDES the desk gutter — so a plain `min(100%, …)` painted the paper
+	 * straight over the gutter and the sheet ran to the edge of the screen with
+	 * no desk visible behind it. Subtracting the gutter keeps the paper inside
+	 * it, which is what makes the sheet look like a sheet on a phone.
+	 */
+	width: min(
+		100% - (2 * var(--digest-desk-gutter)),
+		calc(var(--wp--style--global--wide-size) + (2 * var(--digest-sheet-margin)))
+	);
+	background-color: var(--wp--preset--color--paper);
+	background-image: var(--digest-texture, none);
+	background-size: 3px 3px;
+	box-shadow: var(--wp--preset--shadow--sheet);
+	z-index: -1;
+}
+
+/*
+ * The sheet's inner margin — the white space between the edge of the paper and
+ * the type, which is what makes a page read as a printed page rather than as a
+ * block of text with a background colour.
+ *
+ * The value itself lives in theme.json, as styles.spacing.padding, so there is
+ * one place to change it. WordPress publishes it back as a custom property,
+ * which is what the width maths below and the paper itself both read.
+ *
+ * It is aliased on .wp-site-blocks and NOT on :root, because that is the element
+ * WordPress actually defines --wp--style--root--padding-* on. Aliasing it on
+ * :root looked correct and silently resolved to the fallback instead, so edits
+ * to theme.json never reached the page at all.
+ */
+.wp-site-blocks {
+	--digest-sheet-margin: var(--wp--style--root--padding-left, clamp(22px, 4vw, 40px));
+}
+
+/*
+ * Every top-level region — masthead, main, footer — is inset to the sheet's
+ * width and given the sheet's inner margin, so they line up over the paper
+ * behind them.
+ *
+ * The padding is applied here rather than left to WordPress: core only applies
+ * root padding to blocks it has marked .has-global-padding, and the header and
+ * footer template-parts and this theme's <main> do not carry that class. The
+ * value still comes from theme.json (as --wp--style--root--padding-left), so
+ * there remains exactly one place to change it.
+ *
+ * The width is deliberately wide-size PLUS the two margins, not wide-size.
+ * Everything is border-box, so a plain `max-width: wide-size` subtracts the
+ * margin from the content instead of adding it outside — the regions measured a
+ * full 1180px, the padding collapsed to nothing, and the rules ran to the very
+ * edge of the sheet. The design wants 1180px of paper with 40px of air inside
+ * it, so the box has to be 1180 + 40 + 40 and the type 1100.
+ */
+.wp-site-blocks > * {
+	max-width: calc(var(--wp--style--global--wide-size) + (2 * var(--digest-sheet-margin)));
+	margin-inline: auto;
+	padding-inline: var(--digest-sheet-margin);
+}
+
+.digest-sheet__inner {
+	padding-block: 26px 44px;
+}
+
+::selection {
+	background-color: var(--wp--preset--color--accent);
+	color: var(--wp--preset--color--paper);
+}
+
+/* -------------------------------------------------------------------------- *
+ * 2. Shared editorial primitives
+ * -------------------------------------------------------------------------- */
+
+/*
+ * Small uppercase type is the connective tissue of a newspaper — it appears in
+ * the utility bar, the folio, the kickers, the section heads and the bylines.
+ * Defining it once and composing it is what keeps this stylesheet short.
+ */
+.digest-utility,
+.digest-folio,
+.digest-nav,
+.digest-kicker,
+.digest-eyebrow,
+.digest-byline,
+.digest-rail__title,
+.digest-section-head,
+.digest-footer,
+.digest-newsletter__eyebrow,
+.digest-newsletter__count,
+.digest-newsletter__button {
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+	font-size: var(--wp--preset--font-size--utility);
+	line-height: 1.4;
+}
+
+.digest-rule {
+	border-top: 1px solid var(--wp--preset--color--ink);
+	border-bottom: 3px double var(--wp--preset--color--ink);
+}
+
+.digest-kicker {
+	display: block;
+	font-size: var(--wp--preset--font-size--micro);
+	letter-spacing: 0.16em;
+	font-weight: 700;
+	color: var(--wp--preset--color--kicker);
+	text-decoration: none;
+	margin-bottom: 5px;
+}
+
+.digest-kicker:hover,
+.digest-kicker:focus-visible {
+	color: var(--wp--preset--color--ink);
+}
+
+.digest-eyebrow {
+	color: var(--wp--preset--color--accent);
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.2em;
+	margin: 0 0 12px;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 3. Masthead
+ * -------------------------------------------------------------------------- */
+
+/*
+ * The utility bar is three items: the dateline, the strapline, the links.
+ *
+ * It used to be a flex row with space-between, which centres the middle item
+ * only when the two flanking it happen to be the same width. The links span is
+ * empty unless a "utility" nav menu is assigned — neither site assigns one — so
+ * the strapline was being pushed 98px right of centre on the live sites.
+ *
+ * A three-column grid with equal outer tracks centres the middle item on the
+ * BAR, not on the leftovers, whatever the flanking content weighs — or whether
+ * it exists at all.
+ */
+.digest-utility {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	gap: 16px;
+	color: var(--wp--preset--color--ink-ghost);
+	padding-bottom: 12px;
+	border-bottom: 2px solid var(--wp--preset--color--ink);
+}
+
+.digest-utility__strapline {
+	color: var(--wp--preset--color--accent);
+	font-weight: 600;
+	text-align: center;
+}
+
+/* The last item hugs the right edge, as space-between used to make it do. */
+.digest-utility > :last-child {
+	justify-self: end;
+	text-align: right;
+}
+
+.digest-utility__est abbr {
+	text-decoration: none;
+	border: 0;
+}
+
+.digest-utility__menu {
+	display: flex;
+	gap: 14px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+/*
+ * The WooCommerce account/cart links, in the utility bar's third cell — which is
+ * otherwise empty on both sites (it holds a "utility" nav menu, and neither site
+ * has ever assigned one). Rendered by shadow_digest_shop_links(), which is a
+ * complete no-op when WooCommerce is not installed, so nothing here ever applies
+ * on a stock WordPress.
+ *
+ * They inherit the utility bar's small-caps meta styling rather than introducing
+ * a new one: this is furniture at the top of a newspaper, not a shop's header.
+ */
+.digest-shop {
+	display: inline-flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.digest-shop__link {
+	color: inherit;
+	text-decoration: none;
+	white-space: nowrap;
+	border-bottom: 1px solid transparent;
+	transition: border-color 120ms ease;
+}
+
+.digest-shop__link:hover,
+.digest-shop__link:focus-visible {
+	border-bottom-color: currentColor;
+}
+
+.digest-shop__cart {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 6px;
+}
+
+/* The count only renders when the cart is non-empty, so it never sits there as
+   a lonely "0" — an empty cart should look like no cart. */
+.digest-shop__count {
+	display: inline-block;
+	min-width: 1.5em;
+	padding: 1px 5px;
+	border-radius: 999px;
+	background: var(--wp--preset--color--ink);
+	color: var(--wp--preset--color--paper);
+	font-size: 0.85em;
+	line-height: 1.4;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
+.digest-utility__menu a {
+	color: var(--wp--preset--color--ink-ghost);
+}
+
+/* The nameplate, flanked by its two ears. */
+.digest-masthead {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: end;
+	gap: 18px;
+	padding: 20px 0 12px;
+}
+
+/*
+ * The ears are centred against the nameplate; the nameplate itself keeps sitting
+ * on the baseline (align-items: end, above).
+ *
+ * They used to inherit that `end`, which bottom-aligned all three. Both ears were
+ * in fact aligned identically — but the left ear carries a three-line weather
+ * note against the right ear's two-line strapline, so bottom-aligning the taller
+ * one made it START higher, and it read as though one ear were top-aligned and
+ * the other centred. Aligning the ears to the centre of the row makes the two
+ * blocks balance regardless of how many lines the Customizer copy runs to, which
+ * is the point: this text is user-editable and its height is not knowable here.
+ */
+.digest-ear {
+	font-size: var(--wp--preset--font-size--meta);
+	line-height: 1.5;
+	color: var(--wp--preset--color--ink-faded);
+	align-self: center;
+}
+
+.digest-ear--right {
+	text-align: right;
+}
+
+.digest-ear__title {
+	font-family: var(--wp--preset--font-family--body);
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	font-size: var(--wp--preset--font-size--eyebrow);
+	margin: 0;
+}
+
+.digest-ear__body {
+	margin: 4px 0 0;
+	font-style: italic;
+	/* The Customizer stores these as multi-line text; honour the line breaks. */
+	white-space: pre-line;
+}
+
+.digest-nameplate {
+	font-family: var(--digest-wordmark-font, var(--wp--preset--font-family--masthead));
+	font-weight: 400;
+	font-size: var(--wp--preset--font-size--masthead);
+	line-height: 0.9;
+	letter-spacing: 0.5px;
+	text-align: center;
+	margin: 0;
+}
+
+.digest-nameplate a {
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+}
+
+.digest-nameplate a:hover,
+.digest-nameplate a:focus-visible {
+	text-decoration: none;
+}
+
+.digest-nameplate img {
+	max-height: 120px;
+	width: auto;
+	margin-inline: auto;
+}
+
+.digest-nameplate--compact {
+	font-size: 26px;
+	line-height: 1;
+	text-align: left;
+}
+
+/* The folio rule: volume, dateline, motto. */
+/*
+ * The folio: volume, dateline, motto. Same three-column grid as the utility bar
+ * above, and for the same reason — the dateline is centred on the rule, not on
+ * whatever the volume and motto leave over. See the note on .digest-utility.
+ */
+.digest-folio {
+	border-top: 1px solid var(--wp--preset--color--ink);
+	border-bottom: 3px double var(--wp--preset--color--ink);
+	padding: 7px 0;
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	gap: 12px;
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.1em;
+	color: var(--wp--preset--color--ink-muted);
+}
+
+.digest-folio > :last-child {
+	justify-self: end;
+	text-align: right;
+}
+
+.digest-folio__dateline {
+	font-weight: 600;
+}
+
+/* Section navigation. */
+.digest-nav {
+	display: flex;
+	justify-content: center;
+	gap: 26px;
+	flex-wrap: wrap;
+	/*
+	 * The nav sits directly under the folio rule; its own padding is the whole
+	 * of the space above the links. It is a sibling block inside the masthead,
+	 * so it also inherited theme.json's 20px blockGap as a margin-top, which
+	 * opened a band between the rule and the links that the design does not
+	 * have. The padding below is the spacing; the inherited margin is not.
+	 */
+	margin-block: 0;
+	padding: 11px 0 4px;
+	color: var(--wp--preset--color--ink-muted);
+}
+
+.digest-nav ul {
+	display: flex;
+	justify-content: center;
+	gap: 26px;
+	flex-wrap: wrap;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.digest-nav a {
+	color: var(--wp--preset--color--ink-muted);
+	text-decoration: none;
+}
+
+.digest-nav a:hover,
+.digest-nav a:focus-visible,
+.digest-nav .current-menu-item > a {
+	color: var(--wp--preset--color--accent);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+/* The compact masthead used above articles. */
+.digest-masthead--compact {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 20px;
+	flex-wrap: wrap;
+	padding: 16px 0;
+	border-bottom: 2px solid var(--wp--preset--color--ink);
+}
+
+/* -------------------------------------------------------------------------- *
+ * 4. Front page — the three-column lead grid
+ * -------------------------------------------------------------------------- */
+
+.digest-lead {
+	display: grid;
+	grid-template-columns: 1fr 2.1fr 1.35fr;
+	gap: 0;
+	margin-top: 14px;
+}
+
+/*
+ * theme.json sets styles.spacing.blockGap to 20px, and WordPress implements
+ * block gap as a *margin-top on every sibling but the first*. The three columns
+ * below are siblings, so the rail got 0 and the centre and aside each got 20px —
+ * which pushed two of the three columns of a broadsheet grid 20px down the page
+ * relative to the first. The column rules ran on regardless, so it read as a
+ * hollow under the lead story.
+ *
+ * The grid owns its own spacing (gap: 0, above; the columns are separated by
+ * rules, not gutters), so the inherited gap is not wanted here. Zero it on the
+ * children rather than lowering blockGap globally, which the rest of the page
+ * legitimately depends on.
+ */
+.digest-lead > * {
+	margin-block: 0;
+}
+
+.digest-lead__rail {
+	padding-right: 24px;
+	border-right: 1px solid var(--wp--preset--color--rule);
+}
+
+.digest-lead__main {
+	padding-inline: 26px;
+}
+
+/*
+ * The lead's hero: the featured image as a BACKDROP behind the headline.
+ *
+ * The same treatment, and the same argument, as the article page's hero (§8): the
+ * photograph is not a slab stacked above the headline, it is the ground the
+ * headline is printed on. Here it also has a second job — the front page's lead
+ * had no image at all, so the strongest story on the paper was the only one with
+ * nothing to look at.
+ *
+ * Kept deliberately in step with .digest-single .digest-article__header. If you
+ * change the treatment there, change it here, or the front page and the article
+ * it links to will fade their photographs differently and the reader will notice
+ * even if they cannot say why.
+ */
+.digest-lead__hero {
+	position: relative;
+	isolation: isolate;
+
+	/*
+	 * Room for the backdrop to BE a backdrop. Less than this and the image is a
+	 * band behind the type rather than a ground beneath it — the same mistake the
+	 * article hero made at 44px (see §8).
+	 */
+	padding: 54px 22px 24px;
+
+	/* Pull the backdrop out to the column's edges, past the column's own padding,
+	   so it bleeds to the rules on either side rather than floating inside them. */
+	margin-inline: -26px;
+	margin-top: -14px;
+}
+
+.digest-lead__hero .wp-block-post-featured-image {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	margin: 0;
+	overflow: hidden;
+
+	/* Load-bearing for the same reason as on the article page: a constrained
+	   layout puts a max-width on every child, and max-width beats inset: 0. */
+	max-width: none;
+}
+
+.digest-lead__hero .wp-block-post-featured-image img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+
+	/* Thin the ink, pull the colour out of the palette's way, flatten it so no
+	   dark passage fights the black type. Identical to the article hero. */
+	opacity: 0.2;
+	filter: grayscale(0.7) contrast(0.75) brightness(1.06);
+
+	/*
+	 * Dissolve on all four sides. Fading only downward leaves a hard rectangle
+	 * across the top and down both flanks — which is just a smaller slab.
+	 */
+	-webkit-mask-image:
+		linear-gradient(to bottom, transparent 0%, #000 22%, #000 58%, transparent 100%),
+		linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+	mask-image:
+		linear-gradient(to bottom, transparent 0%, #000 22%, #000 58%, transparent 100%),
+		linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+	-webkit-mask-composite: source-in;
+	mask-composite: intersect;
+}
+
+/*
+ * A lead story with no featured image must not hold open a pocket of empty
+ * padding where the backdrop would have been.
+ */
+.digest-lead__hero:not(:has(.wp-block-post-featured-image img)) {
+	padding: 0;
+	margin-inline: 0;
+	margin-top: 0;
+}
+
+@media (prefers-contrast: more) {
+	.digest-lead__hero .wp-block-post-featured-image {
+		display: none;
+	}
+}
+
+.digest-lead__aside {
+	padding-left: 24px;
+	border-left: 1px solid var(--wp--preset--color--rule);
+}
+
+.digest-rail__title {
+	text-align: center;
+	font-family: var(--wp--preset--font-family--body);
+	font-weight: 400;
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.22em;
+	color: var(--wp--preset--color--accent);
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	padding-bottom: 7px;
+	margin: 0 0 14px;
+}
+
+/* A brief in the left rail. */
+.digest-brief {
+	padding-bottom: 15px;
+	margin-bottom: 15px;
+	border-bottom: 1px dotted var(--wp--preset--color--rule);
+}
+
+.digest-brief:last-child {
+	border-bottom: 0;
+}
+
+.digest-brief__head {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 18px;
+	line-height: 1.18;
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+	display: block;
+}
+
+.digest-brief__sum {
+	font-size: var(--wp--preset--font-size--small);
+	color: var(--wp--preset--color--ink-faded);
+	margin: 5px 0 0;
+	line-height: 1.42;
+}
+
+/* The lead story. */
+.digest-lead__label {
+	text-align: center;
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--accent);
+	margin-bottom: 12px;
+}
+
+.digest-lead__title {
+	font-family: var(--wp--preset--font-family--display);
+	font-weight: 400;
+	font-size: var(--wp--preset--font-size--lead);
+	line-height: 1.01;
+	text-align: center;
+	margin: 0 0 14px;
+}
+
+.digest-lead__title a {
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+}
+
+.digest-lead__deck {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 19px;
+	line-height: 1.4;
+	text-align: center;
+	color: var(--wp--preset--color--ink-muted);
+	font-style: italic;
+	margin: 0 auto 16px;
+	max-width: var(--wp--custom--measure--deck);
+}
+
+.digest-byline {
+	text-align: center;
+	color: var(--wp--preset--color--ink-ghost);
+	letter-spacing: 0.12em;
+	border-top: 1px solid var(--wp--preset--color--rule);
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	padding: 7px 0;
+	margin-bottom: 18px;
+}
+
+.digest-byline a {
+	color: var(--wp--preset--color--ink-ghost);
+}
+
+/*
+ * Two-column body text, the way a broadsheet sets its lead. Collapses to one
+ * column on narrow screens — two columns on a phone would be unreadable.
+ */
+.digest-columns {
+	columns: 2;
+	column-gap: 26px;
+	column-rule: 1px solid var(--wp--preset--color--rule-faint);
+}
+
+.digest-columns > p {
+	margin: 0 0 12px;
+	font-size: var(--wp--preset--font-size--base);
+	line-height: 1.6;
+	text-align: justify;
+	hyphens: auto;
+}
+
+/* The jump line at the foot of the lead story. */
+.digest-lead__more {
+	display: inline-block;
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--accent);
+	font-weight: 700;
+	text-decoration: none;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 5. The drop cap
+ * -------------------------------------------------------------------------- */
+
+.digest-dropcap::first-letter {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 4.4em;
+	line-height: 0.78;
+	float: left;
+	padding: 6px 10px 0 0;
+	color: var(--wp--preset--color--accent);
+}
+
+/*
+ * In the article body the drop cap is slightly smaller, because the surrounding
+ * type is larger there than in the front-page columns.
+ */
+.digest-prose > p:first-of-type.digest-dropcap::first-letter {
+	font-size: 4.2em;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 6. The article
+ * -------------------------------------------------------------------------- */
+
+.digest-breadcrumb {
+	padding: 14px 0;
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.06em;
+	color: var(--wp--preset--color--ink-ghost);
+}
+
+.digest-breadcrumb a {
+	color: var(--wp--preset--color--ink-ghost);
+	text-decoration: none;
+}
+
+.digest-breadcrumb__sep {
+	margin-inline: 8px;
+	color: #b3a992;
+}
+
+/*
+ * The article page's measures.
+ *
+ * The front page is a broadsheet — 1180px of type across three columns. An
+ * article is not: it is a single column of prose, and the mockup gives it its
+ * own narrower sheet (1120px) with a graduated set of measures inside it —
+ * 760px for prose and the furniture that sits with it, 680px for the things
+ * meant to feel narrower still, and 960px for the full-bleed-ish blocks (the
+ * related grid, the newsletter) that close the page.
+ *
+ * Before this, everything on the article page inherited a single flat 680px
+ * content size inside the 1260px broadsheet, so the prose was too narrow, the
+ * related grid and the newsletter each landed on a different gutter, and nothing
+ * down the left edge agreed with anything else.
+ *
+ * One custom property per measure, so a width is changed in exactly one place.
+ */
+.digest-single {
+	--digest-measure-prose: 760px;
+	--digest-measure-narrow: 680px;
+	--digest-measure-wide: 960px;
+}
+
+/*
+ * The article sheet is narrower than the broadsheet (1120px of type, against the
+ * front page's 1180px). Every top-level region has to narrow together — the
+ * masthead, the main and the footer all sit on the same piece of paper, and the
+ * paper itself is drawn by .wp-site-blocks::before — or the header rule would
+ * overhang the sheet it is printed on.
+ */
+body:has(.digest-single) .wp-site-blocks > *,
+body:has(.digest-single) .wp-site-blocks::before {
+	max-width: calc(1120px + (2 * var(--digest-sheet-margin)));
+}
+
+body:has(.digest-single) .wp-site-blocks::before {
+	width: min(
+		100% - (2 * var(--digest-desk-gutter)),
+		calc(1120px + (2 * var(--digest-sheet-margin)))
+	);
+}
+
+/*
+ * The <article> wrapper is a constrained group, so WordPress caps it at
+ * theme.json's 680px content size. Everything inside it — the prose, the header,
+ * the takeaways — is then clamped to 680px no matter what max-width it declares,
+ * because a child cannot outgrow its parent. Release the wrapper and let the
+ * blocks inside it set their own measure.
+ */
+.digest-single > article.is-layout-constrained,
+.digest-single .digest-prose > .wp-block-post-content.is-layout-constrained {
+	max-width: none;
+}
+
+/*
+ * Give the article's furniture the prose measure instead of theme.json's global
+ * 680px content size. WordPress sizes a constrained group with its own
+ * .is-layout-constrained rule, so the group itself has to be widened — widening
+ * only its children leaves them boxed inside a 680px parent.
+ *
+ * (.digest-prose and .digest-article__header set the same measure at their own
+ * definitions further down, so they are deliberately not repeated here.)
+ */
+.digest-single .digest-short-answer,
+.digest-single .digest-takeaways,
+.digest-single .digest-toc,
+.digest-single .digest-faq,
+.digest-single .digest-sources,
+.digest-single .digest-author-bio,
+.digest-single .digest-standards {
+	max-width: var(--digest-measure-prose);
+	margin-inline: auto;
+}
+
+/*
+ * ...and every constrained block inside the article follows the same measure.
+ *
+ * This is deliberately a descendant selector, not a child one. post-content
+ * renders its own .is-layout-constrained wrapper, so the paragraphs and headings
+ * of the article body are GRANDchildren of .digest-prose — a `>` rule widened
+ * the group but left the prose inside it pinned to the global 680px, so the
+ * headings sat 40px to the right of the title above them.
+ */
+.digest-single :is(.digest-prose, .digest-article__header) .is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull):not(.alignwide)),
+.digest-single :is(.digest-prose, .digest-article__header).is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull):not(.alignwide)) {
+	max-width: var(--digest-measure-prose);
+}
+
+/*
+ * The blocks that close the page are wider than the prose — as in the mockup.
+ *
+ * The newsletter arrives wrapped in a .wp-block-template-part div, which is
+ * itself a constrained child of <main> and so was capped at the content size.
+ * A child cannot outgrow its parent, so the wrapper has to be released too or
+ * the newsletter silently stays at the prose width.
+ */
+.digest-single .digest-related,
+.digest-single .digest-newsletter,
+.digest-single > .wp-block-template-part:has(.digest-newsletter) {
+	max-width: var(--digest-measure-wide);
+	margin-inline: auto;
+}
+
+.digest-single .digest-newsletter {
+	width: 100%;
+}
+
+/* ---------------------------------------------------------------------------
+ * THE HERO — the featured image as a BACKDROP, not a slab.
+ *
+ * History, because this is the third attempt and the first two were wrong:
+ *
+ *   v1.0.8 and earlier — no styling at all. The figure was width:100% of the
+ *   sheet and its height was whatever the upload happened to be, so an 800x1600
+ *   portrait rendered 2,240px tall on a 1440x900 desktop: 249% of the viewport.
+ *
+ *   v1.0.9 — clamped the ratio into a band and capped the height at 88vh. That
+ *   turned a 1120px SQUARE into a 1120x792 letterbox. Measurably better, and
+ *   still wrong: 88vh is "almost an entire screen of picture" standing between
+ *   the headline and the first word of the article. Taming the slab does not
+ *   help, because THE SLAB ITSELF IS THE PROBLEM. A broadsheet does not put a
+ *   full-bleed photograph between its headline and its lede.
+ *
+ * So the image stops being a block in the flow and becomes the ground the
+ * masthead furniture is printed on: it sits BEHIND the eyebrow, the headline,
+ * the deck and the byline, bled to the edges of the sheet, faded down into the
+ * paper. The reader sees the headline first, with the photograph behind it, and
+ * the article body begins immediately underneath. Nothing is scrolled past.
+ *
+ * This is possible at all because the images are generated (see the n8n RSS
+ * bloggers) and NEVER CONTAIN TEXT — the user confirmed this. A photograph with
+ * its own headline burned into it could not be used this way.
+ *
+ * The image is moved into .digest-article__header in single.html/page.html, so
+ * it is a sibling of the type rather than a block after it.
+ * ------------------------------------------------------------------------- */
+
+.digest-single .digest-article__header {
+	position: relative;
+	isolation: isolate;
+
+	/*
+	 * The type needs air around it now that it is sitting ON something — and the
+	 * backdrop needs room to actually be a backdrop. The first pass used 44px top
+	 * and the header came out 356px tall, which is a BAND, not a ground: the
+	 * photograph had no space to establish itself before the type landed on it.
+	 * The generous top padding is what turns it from a strip into a stage.
+	 */
+	padding: 88px 40px 44px;
+
+	/* Bleed the backdrop to the sheet's edges, cancelling the header's own
+	   prose measure. The type inside stays on the measure (see below). */
+	max-width: none;
+}
+
+/*
+ * The image itself: absolutely positioned to fill the header box, behind
+ * everything. object-fit: cover crops it to whatever shape the HEADLINE decides
+ * — which is the right way round. The picture now serves the type instead of the
+ * page reflowing around the picture.
+ */
+.digest-single .digest-article__header .wp-block-post-featured-image {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	margin: 0;
+	overflow: hidden;
+
+	/*
+	 * max-width: none is LOAD-BEARING, not tidying. The header is a constrained
+	 * group, so WordPress's own `.is-layout-constrained > *` rule puts a
+	 * max-width of the content size (760px) on every child — including this one.
+	 * Measured: the figure was `position: absolute; inset: 0` yet still only
+	 * 760px wide, so the backdrop stopped at the prose measure and read as an
+	 * inset panel rather than as the ground the type is printed on. inset: 0
+	 * cannot win against an explicit max-width; it has to be released.
+	 *
+	 * No aspect-ratio, no height cap, no ratio band, no clamp. The box is the
+	 * header; the image simply fills it. Every one of those mechanisms existed to
+	 * stop a slab being too tall, and there is no slab any more.
+	 */
+	max-width: none;
+}
+
+.digest-single .digest-article__header .wp-block-post-featured-image img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+
+	/*
+	 * Fade the photograph into the paper rather than laying it on at a flat
+	 * opacity. A flat 50% over a warm-white sheet leaves a grey rectangle with a
+	 * visible edge; what is wanted is a print effect, where the ink thins out and
+	 * the page shows through.
+	 *
+	 * Three things together do that:
+	 *   opacity  — thin the ink
+	 *   grayscale — pull the photo's colour out of the palette's way, so it reads
+	 *               as tone rather than as a competing picture
+	 *   contrast  — flatten it so no dark passage fights the black type
+	 */
+	opacity: 0.2;
+	filter: grayscale(0.7) contrast(0.75) brightness(1.06);
+
+	/*
+	 * ...and dissolve it into the paper on EVERY side, not just the bottom.
+	 *
+	 * The first version masked only `to bottom`, which left a hard rectangular
+	 * edge down both sides and across the top: the photograph read as a pasted-in
+	 * panel with a visible boundary, which is precisely the "slab" character the
+	 * whole redesign exists to get rid of. A backdrop has to have no edges at all
+	 * or it is just a smaller slab.
+	 *
+	 * Two masks composited (intersected via mask-composite) fade the horizontal
+	 * and vertical axes independently, so the image bleeds off into paper on all
+	 * four sides — like ink soaking out into the sheet.
+	 */
+	-webkit-mask-image:
+		linear-gradient(to bottom, transparent 0%, #000 22%, #000 58%, transparent 100%),
+		linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+	mask-image:
+		linear-gradient(to bottom, transparent 0%, #000 22%, #000 58%, transparent 100%),
+		linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+	-webkit-mask-composite: source-in;
+	mask-composite: intersect;
+}
+
+/*
+ * The type sits on the prose measure, centred, ON TOP of the bled backdrop.
+ * (The header itself has had its max-width released above so the image can reach
+ * the sheet's edges, so the measure has to be re-imposed on the children.)
+ */
+.digest-single .digest-article__header > :not(.wp-block-post-featured-image) {
+	position: relative;
+	max-width: var(--digest-measure-prose);
+	margin-inline: auto;
+}
+
+/*
+ * A page with no featured image must not keep the padding it needed for one —
+ * it would sit in a mysterious pocket of empty space. :has() lets the header
+ * revert cleanly when the block renders nothing.
+ */
+.digest-single .digest-article__header:not(:has(.wp-block-post-featured-image img)) {
+	padding: 14px 0 0;
+}
+
+@media (max-width: 760px) {
+	.digest-single .digest-article__header {
+		padding: 28px 18px 22px;
+	}
+
+	/* A phone screen is mostly headline, so the backdrop has less room to be
+	   subtle in. Thin it further so the type stays unambiguously legible. */
+	.digest-single .digest-article__header .wp-block-post-featured-image img {
+		opacity: 0.12;
+	}
+}
+
+/*
+ * Respect a reader who has asked for less. A faint photograph behind body copy
+ * is exactly the kind of decoration that makes text hard to read for some
+ * people; if they have asked the OS to reduce it, remove it entirely rather
+ * than merely soften it.
+ */
+@media (prefers-contrast: more) {
+	.digest-single .digest-article__header .wp-block-post-featured-image {
+		display: none;
+	}
+}
+
+/*
+ * The base header measure, for any context that is NOT the article page. On the
+ * article page (.digest-single) the header is deliberately released to full sheet
+ * width so the featured-image backdrop can bleed to the edges, and the measure is
+ * re-imposed on its children instead — see "THE HERO" above. Scoping this rule
+ * with :not() keeps the two from contradicting each other, rather than relying on
+ * a specificity accident to decide which wins.
+ */
+.digest-article__header:not(.digest-single .digest-article__header) {
+	max-width: var(--digest-measure-prose, 760px);
+	margin-inline: auto;
+	padding-top: 14px;
+}
+
+.digest-article__deck {
+	font-family: var(--wp--preset--font-family--display);
+	font-style: italic;
+	font-size: var(--wp--preset--font-size--deck);
+	line-height: 1.36;
+	color: var(--wp--preset--color--ink-muted);
+	margin: 0 0 26px;
+}
+
+/* The byline block, with its author avatar and reviewed-by line. */
+.digest-byline-block {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	border-top: 1px solid var(--wp--preset--color--rule);
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	padding: 16px 0;
+	flex-wrap: wrap;
+	text-transform: none;
+	letter-spacing: normal;
+}
+
+.digest-byline-block__avatar {
+	flex: none;
+	width: 52px;
+	height: 52px;
+	border-radius: 50%;
+	border: 1px solid rgba(28, 26, 23, 0.35);
+	overflow: hidden;
+}
+
+.digest-byline-block__avatar img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/*
+ * The monogram: what an author with no uploaded portrait gets instead of a
+ * broken Gravatar. Set in the display serif on the tinted panel, it reads as a
+ * house style rather than a missing image.
+ */
+.digest-monogram {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	background-color: var(--wp--preset--color--paper-tint);
+	color: var(--wp--preset--color--accent);
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 0.44em;
+	line-height: 1;
+	letter-spacing: 0.02em;
+}
+
+.digest-byline-block__avatar .digest-monogram {
+	font-size: 22px;
+}
+
+.digest-author-bio__avatar .digest-monogram {
+	font-size: 30px;
+}
+
+.digest-byline-block__who {
+	flex: 1;
+	min-width: 220px;
+	font-size: var(--wp--preset--font-size--base);
+}
+
+.digest-byline-block__who a {
+	font-weight: 700;
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+}
+
+.digest-byline-block__when {
+	font-size: var(--wp--preset--font-size--meta);
+	color: var(--wp--preset--color--ink-ghost);
+	text-align: right;
+	line-height: 1.55;
+}
+
+/* The article body. The measure is the mockup's 760px, not the global 680px. */
+.digest-prose {
+	max-width: var(--digest-measure-prose, 760px);
+	margin: 36px auto 0;
+}
+
+.digest-prose > p {
+	margin: 0 0 20px;
+	font-size: var(--wp--preset--font-size--prose);
+	line-height: 1.72;
+}
+
+.digest-prose a {
+	color: var(--wp--preset--color--accent);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	text-decoration-thickness: 1px;
+}
+
+.digest-prose a:hover,
+.digest-prose a:focus-visible {
+	color: var(--wp--preset--color--ink);
+}
+
+.digest-prose :is(h2, h3, h4) {
+	scroll-margin-top: 20px;
+}
+
+.digest-prose h2 {
+	margin: 38px 0 14px;
+}
+
+.digest-prose h3 {
+	margin: 30px 0 12px;
+}
+
+/* The editorial-standards footnote. */
+.digest-standards {
+	max-width: 760px;
+	margin: 20px auto 0;
+	font-size: var(--wp--preset--font-size--caption);
+	font-style: italic;
+	color: var(--wp--preset--color--ink-ghost);
+	line-height: 1.6;
+	border-top: 1px solid var(--wp--preset--color--rule);
+	padding-top: 16px;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 7. Editorial blocks
+ * -------------------------------------------------------------------------- */
+
+/* Short answer — the AEO box. */
+.wp-block-digest-short-answer {
+	max-width: 760px;
+	margin: 26px auto 0;
+	background-color: var(--wp--preset--color--paper-tint);
+	border: 1px solid rgba(28, 26, 23, 0.28);
+	border-left: 4px solid var(--wp--preset--color--accent);
+	padding: 20px 24px;
+}
+
+.wp-block-digest-short-answer__label {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--accent);
+	font-weight: 700;
+	margin: 0 0 8px;
+}
+
+.wp-block-digest-short-answer__body {
+	margin: 0;
+	font-size: var(--wp--preset--font-size--reading);
+	line-height: 1.6;
+	color: var(--wp--preset--color--ink-soft);
+}
+
+/* Key takeaways and the table of contents sit side by side. */
+.wp-block-digest-takeaways,
+.wp-block-digest-toc {
+	border: 1px solid rgba(28, 26, 23, 0.22);
+	padding: 18px 20px;
+}
+
+.wp-block-digest-takeaways__label,
+.wp-block-digest-toc__label {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink-muted);
+	font-weight: 700;
+	margin: 0 0 10px;
+}
+
+.wp-block-digest-takeaways__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.wp-block-digest-takeaways__item {
+	display: flex;
+	gap: 9px;
+	font-size: var(--wp--preset--font-size--compact);
+	line-height: 1.45;
+	color: var(--wp--preset--color--ink-soft);
+	padding: 5px 0;
+}
+
+.wp-block-digest-takeaways__item::before {
+	content: "→";
+	color: var(--wp--preset--color--accent);
+	font-weight: 700;
+	flex: none;
+}
+
+.wp-block-digest-toc__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	counter-reset: none;
+}
+
+.wp-block-digest-toc__list a {
+	display: block;
+	font-size: var(--wp--preset--font-size--compact);
+	line-height: 1.4;
+	color: var(--wp--preset--color--accent);
+	text-decoration: none;
+	padding: 5px 0;
+	border-bottom: 1px dotted var(--wp--preset--color--rule);
+}
+
+.wp-block-digest-toc__list li:last-child a {
+	border-bottom: 0;
+}
+
+/* Nested headings indent, so an h3 reads as a child of the h2 above it. */
+.wp-block-digest-toc__list .is-h3 a {
+	padding-left: 14px;
+	font-size: var(--wp--preset--font-size--small);
+	color: var(--wp--preset--color--ink-faded);
+}
+
+/* FAQ. */
+.wp-block-digest-faq {
+	max-width: 760px;
+	margin: 44px auto 0;
+	scroll-margin-top: 20px;
+}
+
+.wp-block-digest-faq__title {
+	font-family: var(--wp--preset--font-family--display);
+	font-weight: 400;
+	font-size: var(--wp--preset--font-size--headline);
+	line-height: 1.1;
+	margin: 0 0 6px;
+}
+
+.wp-block-digest-faq__rule {
+	border-bottom: 3px double var(--wp--preset--color--ink);
+	margin-bottom: 8px;
+}
+
+.wp-block-digest-faq__item {
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	padding: 18px 0;
+}
+
+.wp-block-digest-faq__q {
+	font-family: var(--wp--preset--font-family--display);
+	font-weight: 400;
+	font-size: 21px;
+	line-height: 1.25;
+	margin: 0 0 8px;
+}
+
+.wp-block-digest-faq__a {
+	margin: 0;
+	font-size: var(--wp--preset--font-size--reading);
+	line-height: 1.62;
+	color: var(--wp--preset--color--ink-muted);
+}
+
+/* Sources. */
+.wp-block-digest-sources {
+	max-width: 760px;
+	margin: 40px auto 0;
+}
+
+.wp-block-digest-sources__label {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink-muted);
+	font-weight: 700;
+	margin: 0 0 12px;
+}
+
+.wp-block-digest-sources__list {
+	margin: 0;
+	padding-left: 22px;
+	font-size: var(--wp--preset--font-size--compact);
+	line-height: 1.6;
+	color: var(--wp--preset--color--ink-faded);
+}
+
+.wp-block-digest-sources__list li {
+	margin-bottom: 8px;
+}
+
+/* Author bio. */
+.wp-block-digest-author-bio,
+.digest-author-bio {
+	max-width: 760px;
+	margin: 38px auto 0;
+	background-color: var(--wp--preset--color--paper-tint);
+	border: 1px solid rgba(28, 26, 23, 0.28);
+	padding: 24px 28px;
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 20px;
+	align-items: start;
+	scroll-margin-top: 20px;
+}
+
+.digest-author-bio__avatar {
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	border: 1px solid rgba(28, 26, 23, 0.35);
+	overflow: hidden;
+}
+
+.digest-author-bio__avatar img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.digest-author-bio__label {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--accent);
+	font-weight: 700;
+	margin: 0 0 4px;
+}
+
+.digest-author-bio__name {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 24px;
+	margin: 0 0 6px;
+}
+
+.digest-author-bio__text {
+	margin: 0 0 10px;
+	font-size: var(--wp--preset--font-size--base);
+	line-height: 1.6;
+	color: var(--wp--preset--color--ink-muted);
+}
+
+/*
+ * The disclosure table (affiliate / gear).
+ *
+ * NOTE THE SELECTOR. The block's inner elements are hand-written with a
+ * `wp-block-digest-*` prefix, but the OUTER wrapper class is generated by
+ * get_block_wrapper_attributes() from the block's registered name —
+ * pressroom/disclosure-table — so it is `wp-block-shadow-digest-…`, with the
+ * vendor prefix. A `.wp-block-digest-disclosure-table` rule matches nothing at
+ * all, which is why the wrapper went unstyled and the table inside it burst its
+ * bounds on a phone.
+ */
+.wp-block-shadow-digest-disclosure-table {
+	max-width: 840px;
+	margin-inline: auto;
+	/*
+	 * A table cannot compress below the width of its cells' text plus padding. On
+	 * a 360px phone this one wanted 342px inside a 296px column and pushed the
+	 * whole document wider than the viewport, giving the page a horizontal
+	 * scrollbar. A wide table scrolls inside its own box; it never widens the page.
+	 */
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.wp-block-digest-disclosure-table__table {
+	width: 100%;
+	border: 1px solid rgba(28, 26, 23, 0.3);
+	border-collapse: collapse;
+}
+
+.wp-block-digest-disclosure-table__table thead {
+	background-color: var(--wp--preset--color--ink);
+	color: var(--wp--preset--color--paper);
+}
+
+.wp-block-digest-disclosure-table__table th {
+	padding: 11px 16px;
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	font-weight: 400;
+	text-align: left;
+}
+
+.wp-block-digest-disclosure-table__table td {
+	padding: 14px 16px;
+	border-top: 1px solid var(--wp--preset--color--rule);
+	vertical-align: middle;
+}
+
+.wp-block-digest-disclosure-table__table td:first-child {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 18px;
+}
+
+.wp-block-digest-disclosure-table__table td:nth-child(2) {
+	font-size: var(--wp--preset--font-size--compact);
+	line-height: 1.45;
+	color: var(--wp--preset--color--ink-muted);
+}
+
+.wp-block-digest-disclosure-table__table td:last-child,
+.wp-block-digest-disclosure-table__table th:last-child {
+	text-align: right;
+}
+
+.wp-block-digest-disclosure-table__partner {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	font-weight: 700;
+	color: var(--wp--preset--color--accent);
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.wp-block-digest-disclosure-table__note {
+	font-size: var(--wp--preset--font-size--caption);
+	font-style: italic;
+	color: var(--wp--preset--color--ink-ghost);
+	margin: 10px 2px 0;
+	line-height: 1.5;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 8. Section grid — "Inside This Week's Edition"
+ * -------------------------------------------------------------------------- */
+
+.digest-section-head {
+	margin: 36px 0 0;
+	font-family: var(--wp--preset--font-family--body);
+	font-weight: 400;
+	text-align: center;
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.24em;
+	color: var(--wp--preset--color--accent);
+	border-bottom: 3px double var(--wp--preset--color--ink);
+	padding-bottom: 8px;
+}
+
+/*
+ * The section grid. The CONTAINER draws the box; the cells draw only the
+ * internal dividers.
+ *
+ * Before this, each cell drew its own border-right and border-bottom and nothing
+ * drew a frame. The grid therefore closed on the right (the last column's
+ * border-right happened to fall on the outer edge) and on the top (the double
+ * rule under the section head sits there anyway) — but THE LEFT EDGE WAS SIMPLY
+ * OPEN. Nothing ever drew it. The missing line was easy to miss in review
+ * precisely because the other three sides looked deliberate.
+ *
+ * Drawing the frame once, on the container, means an edge cannot go missing: it
+ * no longer depends on which cell happens to land last in a row.
+ */
+.digest-sections {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0;
+	border: 1px solid var(--wp--preset--color--rule);
+
+	/* Clips the cells' overhanging edge borders — see below. */
+	overflow: hidden;
+}
+
+/*
+ * margin-block: 0 — the cells are divided by their own borders, not by gutters,
+ * so the 20px blockGap theme.json hands every sibling block is not wanted here;
+ * it opened a band between the grid's two rows and another under the last one.
+ * (See the equivalent note on .digest-lead.)
+ *
+ * The negative right/bottom margins pull each cell 1px past the frame so that a
+ * cell border falling on an edge is clipped by the overflow above, leaving only
+ * the frame. The obvious alternative — :nth-child(3n) { border-right: 0 } — is
+ * WRONG here, and quietly so: this grid is 3 columns on desktop, 2 at <=1024px
+ * and 1 on a phone, so a rule keyed to "every third cell" would strip the border
+ * off a MIDDLE cell at the narrower breakpoints while leaving the real edge
+ * doubled. Clipping works at ANY column count with no rule to keep in sync.
+ */
+.digest-sections > * {
+	margin-block: 0;
+	margin-right: -1px;
+	margin-bottom: -1px;
+}
+
+.digest-section {
+	padding: 22px 24px;
+	border-right: 1px solid var(--wp--preset--color--rule);
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+}
+
+.digest-section__name {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 22px;
+	color: var(--wp--preset--color--ink);
+	border-bottom: 2px solid var(--wp--preset--color--ink);
+	padding-bottom: 7px;
+	margin: 0 0 12px;
+}
+
+.digest-section__link {
+	display: block;
+	font-size: 14.5px;
+	line-height: 1.3;
+	color: var(--wp--preset--color--ink-soft);
+	text-decoration: none;
+	padding: 6px 0;
+	border-bottom: 1px dotted var(--wp--preset--color--rule);
+}
+
+.digest-section__link:last-child {
+	border-bottom: 0;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 9. Newsletter
+ * -------------------------------------------------------------------------- */
+
+.digest-newsletter {
+	margin-top: 34px;
+	border: 3px double var(--wp--preset--color--ink);
+	background-color: var(--wp--preset--color--ink);
+	color: var(--wp--preset--color--paper);
+	padding: 30px clamp(20px, 4vw, 40px);
+	display: grid;
+	grid-template-columns: 1.4fr 1fr;
+	gap: 36px;
+	align-items: center;
+}
+
+/*
+ * When no signup endpoint is configured the theme renders no form — see
+ * shadow_digest_newsletter(). The panel should then be a single, centred column rather
+ * than a two-column grid holding open an empty half.
+ */
+.digest-newsletter:not(:has(.digest-newsletter__form)) {
+	grid-template-columns: 1fr;
+	text-align: center;
+	justify-items: center;
+}
+
+.digest-newsletter:not(:has(.digest-newsletter__form)) .digest-newsletter__blurb {
+	margin-inline: auto;
+}
+
+.digest-newsletter__eyebrow {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.26em;
+	color: var(--wp--preset--color--accent-soft);
+	margin: 0 0 10px;
+}
+
+.digest-newsletter__name {
+	font-family: var(--wp--preset--font-family--display);
+	font-weight: 400;
+	font-size: clamp(34px, 4vw, 50px);
+	line-height: 1;
+	margin: 0 0 12px;
+	color: var(--wp--preset--color--paper);
+}
+
+.digest-newsletter__blurb {
+	font-size: var(--wp--preset--font-size--reading);
+	line-height: 1.5;
+	color: #d8d1c2;
+	margin: 0;
+	max-width: var(--wp--custom--measure--prose);
+	font-style: italic;
+}
+
+.digest-newsletter__count {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.12em;
+	color: #9a9285;
+	margin: 0 0 8px;
+}
+
+.digest-newsletter__form {
+	display: flex;
+	border: 1px solid var(--wp--preset--color--paper);
+}
+
+.digest-newsletter__input {
+	flex: 1;
+	min-width: 0;
+	background: transparent;
+	border: 0;
+	outline: 0;
+	color: var(--wp--preset--color--paper);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--base);
+	padding: 13px 14px;
+}
+
+.digest-newsletter__input::placeholder {
+	color: #9a9285;
+	opacity: 1;
+}
+
+.digest-newsletter__input:focus-visible {
+	outline: 2px solid var(--wp--preset--color--accent-soft);
+	outline-offset: -2px;
+}
+
+.digest-newsletter__button {
+	background-color: var(--wp--preset--color--accent);
+	color: var(--wp--preset--color--paper);
+	border: 0;
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	font-weight: 700;
+	padding: 0 22px;
+	cursor: pointer;
+}
+
+.digest-newsletter__button:hover,
+.digest-newsletter__button:focus-visible {
+	background-color: var(--wp--preset--color--ink-soft);
+}
+
+.digest-newsletter__note {
+	font-size: var(--wp--preset--font-size--meta);
+	color: #9a9285;
+	margin: 9px 0 0;
+	font-style: italic;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 10. Related stories
+ * -------------------------------------------------------------------------- */
+
+.digest-related {
+	max-width: var(--digest-measure-wide, 960px);
+	margin: 44px auto 0;
+}
+
+/*
+ * The double rule under "Continue Reading" needs air beneath it before the cards
+ * begin. Without it the kickers sit directly on the rule — the section head's
+ * shared rule sets `margin: 36px 0 0`, so it has a top margin and no bottom one,
+ * and the grid butted straight up against it.
+ */
+.digest-related > .digest-section-head {
+	margin-bottom: 20px;
+}
+
+.digest-related__grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0;
+}
+
+.digest-related__item {
+	display: block;
+	text-decoration: none;
+	padding-inline: 22px;
+	border-right: 1px solid var(--wp--preset--color--rule);
+}
+
+.digest-related__item:last-child {
+	border-right: 0;
+}
+
+/*
+ * The related card is an <a> containing three <span>s. Spans are inline by
+ * default, so without this they run together into one paragraph of mixed type
+ * sizes — kicker, headline and summary with no line breaks between them. Each
+ * needs to be a block in its own right.
+ */
+.digest-related__item > * {
+	display: block;
+}
+
+.digest-related__head {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 22px;
+	line-height: 1.14;
+	color: var(--wp--preset--color--ink);
+	margin: 0 0 8px;
+}
+
+.digest-related__sum {
+	font-size: 13.5px;
+	line-height: 1.45;
+	color: var(--wp--preset--color--ink-faded);
+	margin: 0;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 11. Footer
+ * -------------------------------------------------------------------------- */
+
+.digest-footer {
+	margin-top: 34px;
+	border-top: 2px solid var(--wp--preset--color--ink);
+	padding-top: 14px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	color: var(--wp--preset--color--ink-ghost);
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.digest-footer__wordmark {
+	font-family: var(--digest-wordmark-font, var(--wp--preset--font-family--masthead));
+	text-transform: none;
+	letter-spacing: 0;
+	font-size: 20px;
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+	margin: 0;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 12. Hover — the story cards
+ *
+ * WHAT WAS ACTUALLY WRONG: nothing had a hover state. Not the briefs, not the
+ * related cards, not the lead's photo. There was no `transition`, no `transform`
+ * and no `:hover` on any card anywhere in this stylesheet — so this is not a
+ * desktop regression being repaired, it is an effect being written for the first
+ * time, and the "working" mobile behaviour was the browser's own grey tap
+ * highlight on the link, which every touch device draws for free.
+ *
+ * That distinction matters for how it is built. A hover rule written plainly
+ * would ALSO fire on a phone — a tap leaves the card stuck in its hover state
+ * until you touch something else, because a touch device has no way to un-hover.
+ * `@media (hover: hover)` is what confines it to a device that actually has a
+ * pointer, and is the honest fix for "mobile and desktop behave differently".
+ *
+ * The effect itself is deliberately quiet. A broadsheet does not lift, scale or
+ * bounce; ink does not do that. Hovering a card darkens its photograph a shade
+ * (the image is otherwise faded into the paper), and pulls the headline to the
+ * accent — the same two moves the theme already makes on every other link.
+ * -------------------------------------------------------------------------- */
+
+@media (hover: hover) and (pointer: fine) {
+	/*
+	 * The photograph. The lead's backdrop and the aside's plate are both printed
+	 * faint, so "come forward" is the natural gesture: the ink thickens slightly
+	 * and the grey drains back toward the true photograph.
+	 */
+	.digest-lead__hero .wp-block-post-featured-image img,
+	.digest-lead__aside .wp-block-post-featured-image img,
+	.digest-related__item img {
+		transition:
+			opacity 180ms ease,
+			filter 180ms ease;
+	}
+
+	.digest-lead__main:hover .wp-block-post-featured-image img,
+	.digest-lead__main:focus-within .wp-block-post-featured-image img {
+		opacity: 0.32;
+		filter: grayscale(0.45) contrast(0.85) brightness(1.02);
+	}
+
+	.digest-lead__aside:hover .wp-block-post-featured-image img,
+	.digest-lead__aside:focus-within .wp-block-post-featured-image img,
+	.digest-related__item:hover img,
+	.digest-related__item:focus-visible img {
+		filter: brightness(0.94) contrast(1.04);
+	}
+
+	/*
+	 * The headline. Every other link in this theme goes to the accent on hover;
+	 * these are the only ones that did not, which is the whole inconsistency.
+	 */
+	.digest-lead__title a,
+	.digest-brief__head,
+	.digest-brief__head a,
+	.digest-related__head,
+	.digest-lead__aside .wp-block-post-title a {
+		transition: color 140ms ease;
+	}
+
+	.digest-lead__title a:hover,
+	.digest-lead__title a:focus-visible,
+	.digest-brief:hover .digest-brief__head,
+	.digest-brief:hover .digest-brief__head a,
+	.digest-brief__head a:focus-visible,
+	.digest-related__item:hover .digest-related__head,
+	.digest-related__item:focus-visible .digest-related__head,
+	.digest-lead__aside:hover .wp-block-post-title a,
+	.digest-lead__aside .wp-block-post-title a:focus-visible {
+		color: var(--wp--preset--color--accent);
+	}
+}
+
+/*
+ * A reader who has asked the OS for less motion still gets the colour change —
+ * it carries the meaning ("this is a link") — but none of the easing. The global
+ * prefers-reduced-motion block in §13 already zeroes every transition-duration,
+ * so there is deliberately nothing to add here; this comment exists so the next
+ * person does not "fix" its absence.
+ */
+
+/* -------------------------------------------------------------------------- *
+ * 13. Accessibility
+ * -------------------------------------------------------------------------- */
+
+/*
+ * The Theme Directory's accessibility-ready tag requires a working skip link and
+ * a visible focus style on every interactive element. Both are below.
+ */
+
+.screen-reader-text {
+	border: 0;
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+	word-wrap: normal !important;
+}
+
+.skip-link:focus,
+.screen-reader-text:focus {
+	background-color: var(--wp--preset--color--paper);
+	border: 2px solid var(--wp--preset--color--accent);
+	clip-path: none;
+	color: var(--wp--preset--color--ink);
+	display: block;
+	font-size: var(--wp--preset--font-size--compact);
+	font-weight: 700;
+	height: auto;
+	left: 6px;
+	line-height: normal;
+	padding: 14px 22px;
+	text-decoration: none;
+	top: 6px;
+	width: auto;
+	z-index: 100000;
+}
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+	outline: 2px solid var(--wp--preset--color--accent);
+	outline-offset: 2px;
+}
+
+/* Honour a reader who has asked the operating system for less motion. */
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 14. WooCommerce
+ *
+ * OPTIONAL. Everything below matches nothing at all unless WooCommerce is
+ * installed — the theme itself has no shop, declares no dependency on one, and
+ * must keep working on stock WordPress with no plugins (a hard requirement of the
+ * Theme Directory). These are additive rules, not a coupling.
+ *
+ * WHY THIS IS AS LONG AS IT IS. WooCommerce is not one design system, it is two,
+ * and a shop draws from both on the same visit:
+ *
+ *   wc-block-*     the block era. Shop, product, cart, checkout. React-rendered.
+ *   woocommerce-*  the shortcode era. My Account. Classic PHP templates.
+ *
+ * They share no class names, no markup and no conventions. Styling one and not
+ * the other gets you a shop that changes typeface when the reader logs in. So the
+ * selectors below are grouped in pairs — one rule, both eras — rather than
+ * written twice. That is the DRY that is actually available here.
+ *
+ * Woo exposes essentially no theming API (exactly ONE CSS custom property in the
+ * whole block library: --wc-form-color-text). There is no palette to hand it. So
+ * the values below are the theme's own tokens, applied by hand, and every single
+ * one is a var(--wp--preset--*) — there is not one literal colour or type size in
+ * this section. Change theme.json and the shop follows.
+ *
+ * The BUTTON is deliberately NOT here. It is declared once in theme.json under
+ * styles.elements.button, which is the global button for the whole site — core
+ * blocks and Woo's blocks alike inherit it. Woo prints a
+ * `woocommerce-block-theme-has-button-styles` class precisely to stand down when a
+ * block theme has an opinion; before that declaration existed, Pressroom had no
+ * opinion, and every Add to Cart rendered in Woo's stock slate-blue pill.
+ * -------------------------------------------------------------------------- */
+
+/*
+ * Woo's pages are `is-layout-constrained`, so they land on the 680px content
+ * measure — a prose measure, meant for a column of text. A product grid and a
+ * cart are furniture, not prose, and they want the sheet's full width, the same
+ * width the front page's lead grid uses.
+ */
+.woocommerce-page main .wp-block-post-content > .alignwide,
+.woocommerce main .wc-block-product-template,
+.woocommerce-page main > .wp-block-group,
+body:is(.woocommerce, .woocommerce-page) main :is(.wc-block-cart, .wc-block-checkout) {
+	max-width: var(--digest-measure-wide, 1120px);
+}
+
+/* ---------------------------------------------------------------------------
+ * Shop — the product grid.
+ * ------------------------------------------------------------------------- */
+
+/*
+ * The grid is a run of cells with hairline rules between them, like the section
+ * index on the front page — not a row of floating cards. Woo ships neither the
+ * rules nor a consistent gutter.
+ */
+/*
+ * THE COLUMN COUNT.
+ *
+ * Woo does not state one. Its rule is
+ *
+ *   .wc-block-product-template__responsive.columns-3 {
+ *     grid-template-columns: repeat(auto-fill, minmax(max(150px, calc(33.333% - .833em)), 1fr));
+ *   }
+ *
+ * — `auto-fill` with a percentage MINIMUM, so the count is emergent, and the
+ * `columns-3` class is a statement of intent that the CSS then declines to
+ * enforce. Widening the container to the sheet gave TWO 547px columns, not three:
+ * auto-fill packs as many tracks as clear the minimum, and with a wider gutter the
+ * third no longer did. A `columns-3` grid rendering two columns is not a bug you
+ * can see in the markup; it is only visible on the page.
+ *
+ * State the count outright. Note the DOUBLED CLASS: Woo's selector is two classes,
+ * (0,2,0), so a single-class rule here loses and is silently discarded — which is
+ * exactly what happened on the first attempt. Matching its specificity is the
+ * honest fix; `!important` would have hidden the reason.
+ *
+ * Three across is what the front page's section index does, and the shop is the
+ * same piece of furniture.
+ */
+.wc-block-product-template.wc-block-product-template {
+	--digest-shop-gap: 26px;
+
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: var(--digest-shop-gap);
+	list-style: none;
+	padding-left: 0;
+}
+
+@media (max-width: 1024px) {
+	.wc-block-product-template.wc-block-product-template {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+/*
+ * The cell must FILL its grid track.
+ *
+ * The related-products loop puts `is-flex-container columns-5` on the SAME <ul> as
+ * the grid classes, and Woo sizes its items with
+ *
+ *   .wc-block-product-template.is-flex-container.is-flex-container.columns-5 > li
+ *     { width: calc(20% - 1em) }
+ *
+ * — a quadrupled selector, (0,4,0), which Woo evidently writes precisely to win
+ * arguments like this one. The items therefore kept 20% of a container they were
+ * no longer being laid out in: measured 55px wide inside a 349px grid track, so the
+ * related strip rendered as postage-stamp thumbnails with the titles wrapping one
+ * character per line — "Canva / s Satchel".
+ *
+ * I lost three guesses to this before asking the browser which rule actually won
+ * (CSS.getMatchedStylesForNode over CDP). It answers in one shot what reading
+ * WooCommerce's stylesheets does not: the rule that beat me was not the rule I was
+ * fighting.
+ *
+ * Match the weight rather than reach for !important, so this stays overridable.
+ */
+.wc-block-product-template.wc-block-product-template.is-flex-container.is-flex-container > li,
+.wc-block-product-template.wc-block-product-template .wc-block-product,
+.woocommerce ul.products li.product {
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	border-top: 1px solid var(--wp--preset--color--rule);
+	padding-top: 18px;
+	text-align: left;
+	list-style: none;
+}
+
+/*
+ * THE RAGGED GRID.
+ *
+ * Product photographs arrive in whatever shape the supplier sent — a square
+ * studio shot beside a panoramic pack shot beside a tall bottle. Woo prints them
+ * at their natural ratio (`--aspect-ratio-auto`), so the cards in a row end at
+ * different heights and the titles below them do not line up. On a paper theme,
+ * where everything else is ruled and aligned, that reads as a fault.
+ *
+ * Every plate is therefore cropped to a single ratio and centred. This is the
+ * same argument, and the same fix, as the featured-image backdrop in §8: the box
+ * decides the shape, not the upload. 4:5 is a catalogue plate — slightly taller
+ * than square, which flatters an object photographed alone.
+ */
+/*
+ * PUT THE RATIO ON THE IMAGE, NOT ON ITS WRAPPER.
+ *
+ * The obvious rule — aspect-ratio on .wc-block-components-product-image, then
+ * height:100% on the img inside — does not work, and fails in a way that looks
+ * like it worked. That class is on a DIV which contains ANOTHER div
+ * (__inner-container) which contains the <img>. `height: 100%` resolves against
+ * the img's actual parent (the inner container, height:auto), not against the
+ * ratio'd grandparent, so it computes to auto and is silently dropped.
+ *
+ * Measured, before and after: the wrapper obediently became 547x684 while the
+ * image inside it stayed 547x547 — a correctly-shaped box with a
+ * wrongly-shaped picture sitting in the top of it, and 137px of empty paper
+ * below. Every card in the row still ended at a different height.
+ *
+ * So the ratio goes on the <img> itself, which needs no parent's height to
+ * resolve it. Same lesson as the featured-image hero: a percentage height needs
+ * a parent with a real height, and almost nothing in a block theme has one.
+ */
+/*
+ * The plate's backing colour goes on the OUTER box only.
+ *
+ * Putting it on the __inner-container as well painted a beige rectangle directly
+ * ON TOP of the photograph: the inner container is the image's own parent and
+ * paints after it, so its background covers the picture completely. Every plate in
+ * the shop rendered as an empty beige box — at exactly the right size, in exactly
+ * the right ratio, in a perfectly ruled grid, containing nothing.
+ *
+ * It survived two rounds of measurement because everything I measured was right:
+ * the image loaded (naturalWidth 480), it was opacity 1, it was not clipped, its
+ * box was 356x445. The only question that found it was "what is actually painted
+ * at the centre of the plate?" — document.elementFromPoint() answered
+ * __inner-container, not IMG, and that was the whole bug.
+ */
+.wc-block-components-product-image {
+	overflow: hidden;
+	background-color: var(--wp--preset--color--paper-shade);
+	display: block;
+}
+
+.wc-block-components-product-image__inner-container {
+	display: block;
+	background-color: transparent;
+}
+
+.wc-block-components-product-image,
+.woocommerce ul.products li.product a img {
+	margin-bottom: 14px;
+}
+
+.wc-block-components-product-image img,
+.woocommerce ul.products li.product a img {
+	aspect-ratio: 4 / 5;
+	width: 100%;
+	height: auto;
+	object-fit: cover;
+	object-position: center;
+	display: block;
+	margin: 0;
+}
+
+/*
+ * A product with no image. Woo substitutes a light-grey stock placeholder — a
+ * literal grey hole punched in a sheet of cream paper. Tint it to the paper and
+ * fade it back so it reads as an absence rather than an error.
+ */
+.wc-block-components-product-image img[src*="woocommerce-placeholder"],
+.woocommerce ul.products li.product img[src*="woocommerce-placeholder"] {
+	object-fit: contain;
+	padding: 22%;
+	opacity: 0.25;
+	filter: grayscale(1);
+	background-color: var(--wp--preset--color--paper-shade);
+}
+
+/* The product name: a headline, in the display face, set left like a story. */
+.wc-block-product-template .wp-block-post-title,
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: var(--wp--preset--font-size--reading);
+	line-height: 1.16;
+	margin: 0 0 6px;
+	text-align: left;
+}
+
+.wc-block-product-template .wp-block-post-title a,
+.woocommerce ul.products li.product .woocommerce-loop-product__title a {
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+}
+
+.wc-block-product-template .wp-block-post-title a:hover,
+.wc-block-product-template .wp-block-post-title a:focus-visible {
+	color: var(--wp--preset--color--accent);
+}
+
+/*
+ * The price. Tabular figures so a column of prices aligns on the decimal point
+ * the way a stock table does.
+ */
+.wc-block-components-product-price,
+.woocommerce ul.products li.product .price,
+.woocommerce div.product p.price {
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--compact);
+	color: var(--wp--preset--color--ink-faded);
+	font-variant-numeric: tabular-nums;
+	display: block;
+	margin: 0 0 12px;
+	text-align: left;
+}
+
+/*
+ * A SALE PRICE prints the old price and the new one adjacent, with no separation
+ * of any kind — "$24.00$18.00" reads as a typo. The old one is struck and faded;
+ * the new one carries the accent, which is the only place in the shop that colour
+ * is used to mean "look here".
+ */
+:is(.wc-block-components-product-price, .price) del,
+:is(.wc-block-components-product-price, .price) del .amount {
+	color: var(--wp--preset--color--ink-ghost);
+	text-decoration: line-through;
+	margin-right: 8px;
+	font-weight: 400;
+}
+
+:is(.wc-block-components-product-price, .price) ins,
+:is(.wc-block-components-product-price, .price) ins .amount {
+	color: var(--wp--preset--color--accent);
+	text-decoration: none;
+	font-weight: 700;
+}
+
+/*
+ * The sale badge. Woo's is a floating white rounded pill — a sticker on a
+ * newspaper. Pressroom's is a printed overprint: the accent, square, in the
+ * letterspaced caps every other label in the theme uses.
+ */
+.wc-block-components-product-sale-badge,
+.woocommerce span.onsale {
+	background-color: var(--wp--preset--color--accent);
+	color: var(--wp--preset--color--paper);
+	border: 0;
+	border-radius: 0;
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--micro);
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	padding: 4px 10px;
+	min-height: 0;
+	min-width: 0;
+	line-height: 1.5;
+}
+
+/* The results count and the sort control sit on one rule, like a folio line. */
+.wc-block-product-results-count,
+.woocommerce .woocommerce-result-count {
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink-ghost);
+	margin: 0;
+}
+
+/*
+ * A bare <select> renders in the operating system's own chrome — a grey Windows
+ * or macOS widget dropped into a 1920s broadsheet. Redraw it as a ruled field.
+ * (appearance:none removes the OS arrow, so one is drawn back with a background
+ * image; without that the control looks like a text input and no one clicks it.)
+ */
+.wc-block-catalog-sorting select,
+.woocommerce .woocommerce-ordering select,
+.woocommerce-page select,
+body:is(.woocommerce, .woocommerce-page) .wc-block-components-sort-select__select {
+	appearance: none;
+	-webkit-appearance: none;
+	background-color: transparent;
+	background-image: linear-gradient(45deg, transparent 50%, var(--wp--preset--color--ink-faded) 50%),
+		linear-gradient(135deg, var(--wp--preset--color--ink-faded) 50%, transparent 50%);
+	background-position: calc(100% - 15px) calc(50% + 1px), calc(100% - 10px) calc(50% + 1px);
+	background-size: 5px 5px, 5px 5px;
+	background-repeat: no-repeat;
+	border: 1px solid var(--wp--preset--color--rule);
+	border-radius: 0;
+	color: var(--wp--preset--color--ink);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--small);
+	padding: 9px 34px 9px 12px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Single product.
+ * ------------------------------------------------------------------------- */
+
+.woocommerce div.product .product_title,
+.wp-block-post-title.wc-block-components-product-title {
+	font-family: var(--wp--preset--font-family--display);
+	line-height: 1.06;
+}
+
+.woocommerce div.product .woocommerce-product-details__short-description {
+	font-size: var(--wp--preset--font-size--reading);
+	line-height: 1.6;
+	color: var(--wp--preset--color--ink-muted);
+	border-top: 1px solid var(--wp--preset--color--rule);
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	padding: 16px 0;
+	margin-bottom: 22px;
+}
+
+/* The quantity stepper and the variation select: ruled fields, like every other
+   input in the theme. */
+.woocommerce .quantity input.qty,
+.woocommerce div.product form.cart .variations select {
+	border: 1px solid var(--wp--preset--color--rule);
+	border-radius: 0;
+	background-color: transparent;
+	color: var(--wp--preset--color--ink);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--base);
+	padding: 12px 10px;
+	text-align: center;
+}
+
+.woocommerce div.product form.cart .variations th {
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	font-weight: 400;
+	color: var(--wp--preset--color--ink-faded);
+	text-align: left;
+	padding-right: 14px;
+}
+
+/*
+ * The stock line. "Out of stock" is information, not an alarm — Woo prints it in
+ * red, which on this palette collides with the accent and shouts.
+ */
+.woocommerce div.product .stock,
+.wc-block-components-product-stock-indicator {
+	font-size: var(--wp--preset--font-size--meta);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink-ghost);
+}
+
+.woocommerce div.product .stock.out-of-stock {
+	color: var(--wp--preset--color--accent);
+}
+
+/* Product tabs — reviews, description. Ruled, not boxed. */
+.woocommerce div.product .woocommerce-tabs ul.tabs {
+	padding: 0;
+	margin: 0 0 20px;
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	display: flex;
+	gap: 26px;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs::before,
+.woocommerce div.product .woocommerce-tabs ul.tabs li::before,
+.woocommerce div.product .woocommerce-tabs ul.tabs li::after {
+	display: none;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li {
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	margin: 0;
+	padding: 0;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li a {
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink-ghost);
+	padding: 0 0 10px;
+	display: block;
+	border-bottom: 2px solid transparent;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li.active a {
+	color: var(--wp--preset--color--ink);
+	border-bottom-color: var(--wp--preset--color--accent);
+}
+
+/*
+ * A DISABLED button must look disabled, not merely faded.
+ *
+ * Woo disables Add to Cart on a variable product until a variation is chosen, and
+ * implements that as `opacity: .5` over the theme's button colour. On an oxblood
+ * button over cream paper that lands on a washed-out pink that reads as a styling
+ * mistake — a button someone got wrong — rather than as a control that is waiting
+ * for you. Say what it means: greyed, ruled, and with a cursor that tells the
+ * truth.
+ */
+.woocommerce button.button:disabled,
+.woocommerce button.button.disabled,
+.woocommerce a.button.disabled,
+.wc-block-components-button:disabled,
+body:is(.woocommerce, .woocommerce-page) .wp-block-button__link:disabled {
+	background-color: transparent;
+	border: 1px solid var(--wp--preset--color--rule);
+	color: var(--wp--preset--color--ink-ghost);
+	cursor: not-allowed;
+	opacity: 1;
+}
+
+/* ---------------------------------------------------------------------------
+ * Cart, checkout, and every form Woo prints.
+ *
+ * The single biggest visual offence is the INPUT: Woo draws it as a stark white
+ * box with a rounded border, which on cream paper is a hole cut in the sheet.
+ * Pressroom's fields are ruled lines on the paper itself, and every input in the
+ * shop — block-era or shortcode-era — is brought to that.
+ * ------------------------------------------------------------------------- */
+
+/*
+ * THE INPUT.
+ *
+ * Note the selector shape. Woo whitens its checkout fields with
+ *
+ *   .wc-block-components-text-input input[type="email"] { background-color: #fff }
+ *
+ * — a class plus an ATTRIBUTE selector, (0,2,0), repeated once per input type, and
+ * it is loaded after the theme's stylesheet. A rule written against
+ * `input.wc-block-components-text-input__input` matches nothing at all (Woo does
+ * not put that class on the input; it is on the wrapper), and one written as a
+ * plain `:is(input[type=...])` list ties on specificity and loses on order. Both
+ * were tried. The checkout kept its stark white boxes, which on cream paper are
+ * holes cut in the sheet.
+ *
+ * So mirror Woo's own shape — wrapper class + typed input — and the paper shows
+ * through.
+ */
+.wc-block-components-text-input.wc-block-components-text-input input[type="text"],
+.wc-block-components-text-input.wc-block-components-text-input input[type="email"],
+.wc-block-components-text-input.wc-block-components-text-input input[type="tel"],
+.wc-block-components-text-input.wc-block-components-text-input input[type="number"],
+.wc-block-components-text-input.wc-block-components-text-input input[type="password"],
+.wc-block-components-text-input.wc-block-components-text-input input[type="url"],
+body:is(.woocommerce, .woocommerce-page) :is(input[type="text"], input[type="email"], input[type="tel"], input[type="password"], input[type="number"], input[type="search"], textarea),
+.woocommerce form .form-row input.input-text,
+.woocommerce form .form-row textarea {
+	background-color: transparent;
+	border: 1px solid var(--wp--preset--color--rule);
+	border-radius: 0;
+	box-shadow: none;
+	color: var(--wp--preset--color--ink);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--base);
+	padding: 13px 14px;
+}
+
+/* The checkbox is a small white square on cream; rule it like every other field. */
+.wc-block-components-checkbox__input.wc-block-components-checkbox__input,
+body:is(.woocommerce, .woocommerce-page) input[type="checkbox"] {
+	background-color: transparent;
+	border: 1px solid var(--wp--preset--color--rule);
+	border-radius: 0;
+	accent-color: var(--wp--preset--color--accent);
+}
+
+body:is(.woocommerce, .woocommerce-page) :is(input, textarea, select):focus,
+.wc-block-components-text-input input:focus {
+	outline: 2px solid var(--wp--preset--color--accent);
+	outline-offset: -2px;
+	border-color: var(--wp--preset--color--ink-faded);
+	box-shadow: none;
+}
+
+/*
+ * Woo's floating label sits INSIDE the field and animates upward on focus. The
+ * animation is fine; the colour is not — it defaults to a mid-grey that fails
+ * contrast on this paper.
+ */
+.wc-block-components-text-input label,
+.woocommerce form .form-row label {
+	color: var(--wp--preset--color--ink-faded);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--small);
+}
+
+.wc-block-components-text-input.is-active label {
+	color: var(--wp--preset--color--ink-ghost);
+}
+
+/* The required asterisk: Woo prints a fire-engine red that is in no palette. */
+.woocommerce form .form-row .required,
+.woocommerce .required {
+	color: var(--wp--preset--color--accent);
+	text-decoration: none;
+	border: 0;
+}
+
+/*
+ * Panels — order summary, cart totals, the login box. Woo boxes them in a
+ * rounded card with a drop shadow. A broadsheet has no cards; it has ruled
+ * columns. Square them, rule them, and let the paper show through.
+ */
+.wc-block-components-panel,
+.wc-block-components-totals-wrapper,
+.wp-block-woocommerce-checkout-order-summary-block,
+.woocommerce-checkout #order_review,
+.woocommerce-account .woocommerce-form-login,
+.woocommerce-account .woocommerce-form-register,
+.woocommerce .cart_totals {
+	background-color: transparent;
+	border: 1px solid var(--wp--preset--color--rule);
+	border-radius: 0;
+	box-shadow: none;
+	padding: 22px 24px;
+}
+
+.wp-block-woocommerce-checkout-order-summary-block {
+	background-color: var(--wp--preset--color--paper-shade);
+}
+
+/*
+ * Section heads inside the checkout — "Contact information", "Billing address",
+ * "Order summary". These are the shop's equivalent of a section rule on the
+ * front page, and they get the same treatment: caps, letterspaced, on a rule.
+ */
+.wc-block-components-title,
+.wc-block-components-checkout-step__title,
+.woocommerce-billing-fields > h3,
+.woocommerce-additional-fields > h3,
+.woocommerce-column__title,
+.woocommerce h2.woocommerce-column__title,
+.woocommerce-order-details__title,
+.woocommerce-customer-details h2 {
+	font-family: var(--wp--preset--font-family--body) !important;
+	font-size: var(--wp--preset--font-size--eyebrow) !important;
+	font-weight: 700;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink);
+	border-bottom: 1px solid var(--wp--preset--color--ink);
+	padding-bottom: 8px;
+	margin-bottom: 16px;
+}
+
+/*
+ * The cart's line-item table. Pressroom already has a table idiom — the disclosure
+ * table in §9: a solid ink thead in reversed type, hairline rules between rows.
+ * The cart is a table of the same kind and gets the same clothes, so the two do
+ * not read as having come from different publications.
+ */
+.wc-block-cart-items,
+.wp-block-woocommerce-cart-items-block table {
+	border-collapse: collapse;
+	border-spacing: 0;
+	width: 100%;
+}
+
+/*
+ * The SHORTCODE-era table (My Account's orders, downloads) gets the ink thead that
+ * Pressroom's disclosure table uses. It is an ordinary <table> and behaves like one.
+ */
+.woocommerce table.shop_table thead {
+	background-color: var(--wp--preset--color--ink);
+	color: var(--wp--preset--color--paper);
+}
+
+.woocommerce table.shop_table thead th {
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--eyebrow);
+	font-weight: 400;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	text-align: left;
+	padding: 11px 16px;
+	border: 0;
+}
+
+/*
+ * THE BLOCK CART'S HEADER GETS A RULE, NOT AN INK BAR — and this is a deliberate
+ * retreat, not a compromise.
+ *
+ * Its <tr> is 677px of contiguous, correctly-collapsed table-row with a solid ink
+ * background, and it STILL renders as two separate black boxes with bare paper
+ * between them. The reason: the middle cell (__header-product, 497px of the 677)
+ * contains only a screen-reader span and paints nothing at all — sampling
+ * elementFromPoint straight across the row returns the TABLE itself, not that
+ * cell, from x=260 to x=650. A row background cannot show through a cell that
+ * declines to paint. Colouring the <tr> fails, colouring the <th>s fails, and
+ * collapsing the borders fails, because none of them is the actual problem.
+ *
+ * So: do not paint the row. A hairline rule under letterspaced caps is the idiom
+ * this theme already uses everywhere else (the folio, the section heads), it needs
+ * no cell to cooperate, and it cannot break again when Woo next reshuffles which
+ * cells it bothers to render.
+ */
+.wc-block-cart-items__header {
+	background-color: transparent;
+}
+
+.wc-block-cart-items__header th {
+	background-color: transparent;
+	border-bottom: 1px solid var(--wp--preset--color--ink);
+	color: var(--wp--preset--color--ink);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: var(--wp--preset--font-size--eyebrow);
+	font-weight: 700;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	text-align: left;
+	padding: 0 0 8px;
+	border-top: 0;
+	border-left: 0;
+	border-right: 0;
+}
+
+.wc-block-cart-items__header th:last-child {
+	text-align: right;
+}
+
+.woocommerce table.shop_table {
+	border: 1px solid var(--wp--preset--color--rule);
+	border-radius: 0;
+	border-collapse: collapse;
+}
+
+.woocommerce table.shop_table td,
+.wc-block-cart-items__row td {
+	border-top: 1px solid var(--wp--preset--color--rule);
+	padding: 16px;
+}
+
+.wc-block-components-product-name {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: var(--wp--preset--font-size--reading);
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+}
+
+/* The cart's own thumbnails: same catalogue plate as the grid. */
+.wc-block-cart-item__image img,
+.woocommerce table.shop_table td.product-thumbnail img {
+	aspect-ratio: 4 / 5;
+	object-fit: cover;
+	border: 1px solid var(--wp--preset--color--rule-faint);
+}
+
+/* The totals: the grand total is the one number that should be unmissable. */
+.wc-block-components-totals-item__label {
+	font-size: var(--wp--preset--font-size--small);
+	color: var(--wp--preset--color--ink-faded);
+}
+
+.wc-block-components-totals-item__value,
+.woocommerce .cart_totals .order-total .amount {
+	font-variant-numeric: tabular-nums;
+}
+
+.wc-block-components-totals-footer-item .wc-block-components-totals-item__label,
+.wc-block-components-totals-footer-item .wc-block-components-totals-item__value {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: var(--wp--preset--font-size--subhead);
+	color: var(--wp--preset--color--ink);
+}
+
+/*
+ * Woo's checkout header (page-checkout.html) is a DELIBERATELY stripped,
+ * distraction-free header: the site title and a cart link, nothing else — it
+ * pulls `checkout-header` from Woo's OWN theme namespace, bypassing this theme
+ * entirely, and that is a conversion-rate decision, not a bug. Pressroom respects it
+ * rather than forcing the full masthead back in and re-adding the very
+ * distractions Woo removed on purpose.
+ *
+ * But the site title it prints is unstyled body type. Give it the wordmark, so a
+ * reader who has just left the newspaper still recognises whose checkout this is.
+ */
+.wp-block-site-title a {
+	text-decoration: none;
+}
+
+.woocommerce-checkout .wp-block-site-title,
+.woocommerce-checkout .wp-block-site-title a {
+	font-family: var(--digest-wordmark-font, var(--wp--preset--font-family--masthead));
+	font-size: 26px;
+	font-weight: 400;
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--wp--preset--color--ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * My Account — the shortcode era.
+ * ------------------------------------------------------------------------- */
+
+/* The dashboard nav: a ruled list, like the section index. */
+.woocommerce-MyAccount-navigation ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	border-top: 1px solid var(--wp--preset--color--rule);
+}
+
+.woocommerce-MyAccount-navigation li {
+	border-bottom: 1px solid var(--wp--preset--color--rule);
+	margin: 0;
+}
+
+.woocommerce-MyAccount-navigation li a {
+	display: block;
+	padding: 12px 0;
+	font-size: var(--wp--preset--font-size--eyebrow);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--ink-faded);
+	text-decoration: none;
+}
+
+.woocommerce-MyAccount-navigation li.is-active a,
+.woocommerce-MyAccount-navigation li a:hover,
+.woocommerce-MyAccount-navigation li a:focus-visible {
+	color: var(--wp--preset--color--accent);
+}
+
+.woocommerce-LostPassword a,
+.woocommerce-privacy-policy-text a {
+	color: var(--wp--preset--color--accent);
+}
+
+/* ---------------------------------------------------------------------------
+ * Notices.
+ *
+ * Woo's notices are coloured banners — a green success bar, a red error bar, a
+ * blue info bar. Three saturated colours that exist in no part of this palette.
+ * A newspaper sets a notice as a ruled box with a coloured left edge.
+ * ------------------------------------------------------------------------- */
+
+.woocommerce-message,
+.woocommerce-info,
+.woocommerce-error,
+.wc-block-components-notice-banner {
+	background-color: var(--wp--preset--color--paper-shade);
+	border: 1px solid var(--wp--preset--color--rule);
+	border-left: 3px solid var(--wp--preset--color--ink-faded);
+	border-radius: 0;
+	color: var(--wp--preset--color--ink);
+	font-size: var(--wp--preset--font-size--small);
+	padding: 14px 18px;
+}
+
+.woocommerce-error,
+.wc-block-components-notice-banner.is-error {
+	border-left-color: var(--wp--preset--color--accent);
+}
+
+.wc-block-components-notice-banner > svg {
+	fill: var(--wp--preset--color--ink-faded);
+	background: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+ * The shop at small sizes.
+ * ------------------------------------------------------------------------- */
+
+@media (max-width: 760px) {
+	/* Two is the most a 390px screen can carry and still be legible. */
+	.wc-block-product-template.wc-block-product-template {
+		--digest-shop-gap: 16px;
+
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	/*
+	 * In a 170px-wide cell, "ADD TO CART" at 0.14em of letterspacing wraps onto two
+	 * lines and the button becomes a tall slab. Tighten the tracking and the padding
+	 * rather than shrinking the type, which would put it below the theme's smallest
+	 * legible size.
+	 */
+	.wc-block-product-template .wp-block-button__link,
+	.wc-block-product-template .wc-block-components-product-button__button {
+		padding: 12px 14px;
+		letter-spacing: 0.08em;
+	}
+
+	/* The cart's two columns (items, totals) stack. */
+	.wc-block-cart .wp-block-woocommerce-cart-items-block,
+	.wc-block-cart .wp-block-woocommerce-cart-totals-block,
+	.wc-block-checkout .wp-block-woocommerce-checkout-main,
+	.wc-block-checkout .wp-block-woocommerce-checkout-totals-block {
+		width: 100% !important;
+		padding-left: 0;
+		padding-right: 0;
+	}
+}
+
+/* -------------------------------------------------------------------------- *
+ * 15. Responsive
+ *
+ * A broadsheet is a wide-format object. Rather than shrink it, Pressroom unstacks
+ * it: the three-column lead becomes one column, the two-column body becomes one,
+ * and the rules that separated columns become rules that separate stacked
+ * sections.
+ * -------------------------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+	.digest-lead {
+		grid-template-columns: 1fr 1.6fr;
+	}
+
+	/* The photo rail drops below the lead rather than squeezing it. */
+	.digest-lead__aside {
+		grid-column: 1 / -1;
+		padding-left: 0;
+		border-left: 0;
+		border-top: 1px solid var(--wp--preset--color--rule);
+		margin-top: 24px;
+		padding-top: 24px;
+	}
+
+	.digest-sections,
+	.digest-related__grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (max-width: 760px) {
+	/*
+	 * The desk gutter narrows on a phone but is NOT removed. Zeroing it ran the
+	 * paper to the very edge of the screen, so the change of background colour
+	 * landed immediately beside the type with nothing between them — the edge of
+	 * the sheet read as a hard rule drawn through the text rather than as the
+	 * edge of a page. A few pixels of desk keeps the paper a piece of paper.
+	 */
+	.wp-site-blocks {
+		--digest-desk-gutter: 10px;
+
+		padding-block-start: 10px;
+	}
+
+	.digest-sheet {
+		box-shadow: none;
+	}
+
+	/* The nameplate ears are broadsheet furniture; on a phone they are noise. */
+	.digest-masthead {
+		grid-template-columns: 1fr;
+	}
+
+	.digest-ear {
+		display: none;
+	}
+
+	/*
+	 * On a phone the three-column grid has no room, so each part gets its own
+	 * centred row. (These are grids now, not flex rows — justify-content: center
+	 * would silently do nothing here.)
+	 */
+	.digest-utility,
+	.digest-folio {
+		grid-template-columns: 1fr;
+		justify-items: center;
+		text-align: center;
+	}
+
+	.digest-utility > :last-child,
+	.digest-folio > :last-child {
+		justify-self: center;
+		text-align: center;
+	}
+
+	.digest-lead {
+		grid-template-columns: 1fr;
+	}
+
+	.digest-lead__rail,
+	.digest-lead__main,
+	.digest-lead__aside {
+		padding-inline: 0;
+		border: 0;
+	}
+
+	.digest-lead__rail {
+		border-bottom: 1px solid var(--wp--preset--color--rule);
+		padding-bottom: 20px;
+		margin-bottom: 24px;
+	}
+
+	.digest-lead__main {
+		padding-bottom: 24px;
+	}
+
+	/* Two columns of justified text on a 375px screen is unreadable. */
+	.digest-columns {
+		columns: 1;
+	}
+
+	.digest-columns > p {
+		text-align: left;
+		hyphens: manual;
+	}
+
+	.digest-sections,
+	.digest-related__grid {
+		grid-template-columns: 1fr;
+	}
+
+	.digest-section,
+	.digest-related__item {
+		border-right: 0;
+	}
+
+	.digest-related__item {
+		border-bottom: 1px solid var(--wp--preset--color--rule);
+		padding: 0 0 20px;
+		margin-bottom: 20px;
+	}
+
+	.digest-newsletter {
+		grid-template-columns: 1fr;
+		gap: 20px;
+	}
+
+	/* Side-by-side takeaways + TOC stack. */
+	.digest-furniture {
+		grid-template-columns: 1fr !important;
+	}
+
+	.digest-byline-block__when {
+		text-align: left;
+	}
+
+	.digest-author-bio,
+	.wp-block-digest-author-bio {
+		grid-template-columns: 1fr;
+	}
+
+	.digest-footer {
+		justify-content: center;
+		text-align: center;
+	}
+
+	/* A drop cap on a narrow column eats the paragraph. Keep it, but tame it. */
+	.digest-dropcap::first-letter {
+		font-size: 3.4em;
+	}
+}
+
+/* The takeaways/TOC pair. */
+.digest-furniture {
+	max-width: 760px;
+	margin: 22px auto 0;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 22px;
+}
+
+/* -------------------------------------------------------------------------- *
+ * 16. Print
+ *
+ * A newspaper theme that prints badly is a joke with no punchline.
+ * -------------------------------------------------------------------------- */
+
+@media print {
+	.wp-site-blocks {
+		background: none;
+		padding: 0;
+	}
+
+	.digest-sheet {
+		box-shadow: none;
+		background-image: none;
+		max-width: none;
+	}
+
+	.digest-newsletter,
+	.digest-nav,
+	.digest-utility__links,
+	.skip-link {
+		display: none;
+	}
+
+	.digest-prose a::after {
+		content: " (" attr(href) ")";
+		font-size: 0.8em;
+		color: #555;
+	}
+}

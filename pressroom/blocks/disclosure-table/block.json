@@ -1,0 +1,46 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pressroom/disclosure-table",
+	"title": "Disclosure Table",
+	"category": "pressroom",
+	"icon": "editor-table",
+	"description": "A comparison table whose partner links are always marked rel=\"sponsored nofollow\" and which always prints a disclosure line — because a journal of record discloses.",
+	"keywords": [ "affiliate", "disclosure", "comparison", "gear", "table", "sponsored" ],
+	"textdomain": "pressroom",
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"align": [ "wide" ],
+		"spacing": {
+			"margin": [ "top", "bottom" ]
+		}
+	},
+	"attributes": {
+		"columnOne": {
+			"type": "string",
+			"default": ""
+		},
+		"columnTwo": {
+			"type": "string",
+			"default": ""
+		},
+		"columnThree": {
+			"type": "string",
+			"default": ""
+		},
+		"disclosure": {
+			"type": "string",
+			"default": ""
+		},
+		"rows": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "object"
+			}
+		}
+	},
+	"editorScript": "file:../../assets/js/blocks.js",
+	"style": "pressroom"
+}

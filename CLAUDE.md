@@ -1,4 +1,4 @@
-# Digest — a broadsheet block theme for WordPress
+# Pressroom — a broadsheet block theme for WordPress
 
 One theme, two live publications. `cannabisdigest.net` and `marksmansdigest.com`
 run **byte-identical code**; everything that differs between them is Customizer
@@ -92,12 +92,12 @@ assets/fonts/            4 bundled woff2 (SIL OFL) — no CDN calls
 
 | Thing | Value |
 |---|---|
-| Slug / directory / **text domain** | `shadow-software-digest-theme-for-wordpress` |
+| Slug / directory / **text domain** | `pressroom` |
 | Function prefix | `shadow_digest_` |
 | Constant prefix | `SHADOW_DIGEST_` |
 | Block namespace | `shadow-digest/` |
 | CSS classes | `.digest-*` (cosmetic — deliberately *not* renamed) |
-| Display name | **Digest** |
+| Display name | **Pressroom** |
 
 WordPress requires the text domain to equal the directory name. The function
 prefix does not have to, and does not — 43-character function names are unusable.

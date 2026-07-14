@@ -1,0 +1,35 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pressroom/section-grid",
+	"title": "Section Grid",
+	"category": "pressroom",
+	"icon": "grid-view",
+	"description": "The \"Inside This Week's Edition\" grid: one column per section, each listing its latest headlines. Built from your categories, so a new section appears the moment you use it.",
+	"keywords": [ "sections", "categories", "index", "grid", "edition" ],
+	"textdomain": "pressroom",
+	"supports": {
+		"html": false,
+		"reusable": false,
+		"align": [ "wide", "full" ],
+		"spacing": {
+			"margin": [ "top", "bottom" ]
+		}
+	},
+	"attributes": {
+		"columns": {
+			"type": "number",
+			"default": 6
+		},
+		"perColumn": {
+			"type": "number",
+			"default": 3
+		},
+		"heading": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"editorScript": "file:../../assets/js/blocks.js",
+	"style": "pressroom"
+}

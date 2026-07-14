@@ -59,7 +59,7 @@ jobs:
       - name: The tag matches the theme version
         run: |
           tag="${GITHUB_REF_NAME#v}"
-          ver=$(grep -oP '^Version:\s*\K[0-9.]+' shadow-software-digest-theme-for-wordpress/style.css)
+          ver=$(grep -oP '^Version:\s*\K[0-9.]+' pressroom/style.css)
           echo "tag=$tag  style.css=$ver"
           if [ "$tag" != "$ver" ]; then
             echo "::error::tag $GITHUB_REF_NAME does not match style.css Version: $ver"
@@ -82,7 +82,7 @@ jobs:
               $0 == v      { on = 1; next }
               on && /^= /  { exit }
               on           { print }
-            ' shadow-software-digest-theme-for-wordpress/readme.txt
+            ' pressroom/readme.txt
             echo
             echo '---'
             echo

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Migrate ONE live site from the `digest` slug to
-# `shadow-software-digest-theme-for-wordpress`.
+# `pressroom`.
 #
 # ORDER IS LOAD-BEARING. Do not reorder these steps:
 #
@@ -27,7 +27,7 @@ KEY=/home/shadow/Source/000-creds/1984_ssh_key
 HOST=root@93.95.229.147
 SSH="ssh -i $KEY -o BatchMode=yes -o ConnectTimeout=15"
 
-NEW=shadow-software-digest-theme-for-wordpress
+NEW=pressroom
 OLD=digest
 
 SITE="${1:-}"

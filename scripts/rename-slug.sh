@@ -2,7 +2,7 @@
 #
 # Rename the theme slug, LOCALLY. Does not touch any live site.
 #
-#   digest  ->  shadow-software-digest-theme-for-wordpress
+#   digest  ->  pressroom
 #
 # WHY: `digest` is already taken in the WordPress.org theme directory. Shipping
 # under it means WordPress tries to auto-update our theme with a stranger's on
@@ -10,8 +10,8 @@
 #
 # WHAT CHANGES, AND WHAT DOES NOT:
 #
-#   directory / slug   digest  ->  shadow-software-digest-theme-for-wordpress
-#   text domain        'digest' -> 'shadow-software-digest-theme-for-wordpress'
+#   directory / slug   digest  ->  pressroom
+#   text domain        'digest' -> 'pressroom'
 #                      (WordPress REQUIRES the text domain to equal the dir name)
 #   function prefix    digest_ ->  shadow_digest_
 #   constant prefix    DIGEST_ ->  SHADOW_DIGEST_
@@ -40,7 +40,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 OLD_DIR=digest
-NEW_DIR=shadow-software-digest-theme-for-wordpress
+NEW_DIR=pressroom
 
 if [ ! -d "$OLD_DIR" ]; then
   echo "!! ./$OLD_DIR not found — already renamed?"
@@ -66,8 +66,8 @@ while IFS= read -r -d '' f; do
     -e 's|wp:digest/|wp:shadow-digest/|g' \
     -e 's|/wp:digest/|/wp:shadow-digest/|g' \
     -e "s|'digest/|'shadow-digest/|g" \
-    -e "s/'digest'/'shadow-software-digest-theme-for-wordpress'/g" \
-    -e 's/"digest"/"shadow-software-digest-theme-for-wordpress"/g' \
+    -e "s/'digest'/'pressroom'/g" \
+    -e 's/"digest"/"pressroom"/g' \
     -e 's/\bdigest_/shadow_digest_/g' \
     "$f"
 done
@@ -76,7 +76,7 @@ echo "── 3. the theme headers"
 # Text Domain must equal the directory name.
 sed -i "s|^Text Domain: .*|Text Domain: $NEW_DIR|" "$NEW_DIR/style.css"
 # The block editor category slug and the pattern category slugs.
-sed -i "s|'slug'  => 'shadow-software-digest-theme-for-wordpress',|'slug'  => 'shadow-digest',|" "$NEW_DIR/inc/blocks.php" 2>/dev/null || true
+sed -i "s|'slug'  => 'pressroom',|'slug'  => 'shadow-digest',|" "$NEW_DIR/inc/blocks.php" 2>/dev/null || true
 
 echo "── 4. phpcs config"
 sed -i \

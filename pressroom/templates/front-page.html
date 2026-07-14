@@ -1,0 +1,124 @@
+<!-- wp:template-part {"slug":"masthead","tagName":"div","area":"header"} /-->
+
+<!-- wp:group {"tagName":"main","className":"digest-sheet__inner","layout":{"type":"default"}} -->
+<main class="wp-block-group digest-sheet__inner">
+
+	<!-- THE LEAD GRID: briefs rail | lead story | photo and profile -->
+	<!-- wp:group {"className":"digest-lead","layout":{"type":"default"}} -->
+	<div class="wp-block-group digest-lead">
+
+		<!-- Left rail: the briefs. -->
+		<!-- wp:group {"className":"digest-lead__rail","layout":{"type":"default"}} -->
+		<div class="wp-block-group digest-lead__rail">
+
+			<!-- wp:heading {"level":2,"className":"digest-rail__title"} -->
+			<h2 class="wp-block-heading digest-rail__title">Along the Line</h2>
+			<!-- /wp:heading -->
+
+			<!-- wp:query {"queryId":10,"query":{"perPage":4,"pages":1,"offset":1,"postType":"post","order":"desc","orderBy":"date","inherit":false,"sticky":"exclude"}} -->
+			<div class="wp-block-query">
+
+				<!-- wp:post-template -->
+
+					<!-- wp:group {"className":"digest-brief","layout":{"type":"default"}} -->
+					<div class="wp-block-group digest-brief">
+						<!-- wp:post-terms {"term":"category","className":"digest-kicker"} /-->
+						<!-- wp:post-title {"level":3,"isLink":true,"className":"digest-brief__head"} /-->
+						<!-- wp:post-excerpt {"excerptLength":16,"showMoreOnNewLine":false,"className":"digest-brief__sum"} /-->
+					</div>
+					<!-- /wp:group -->
+
+				<!-- /wp:post-template -->
+
+			</div>
+			<!-- /wp:query -->
+
+		</div>
+		<!-- /wp:group -->
+
+		<!-- Centre: the lead story. -->
+		<!-- wp:group {"tagName":"article","className":"digest-lead__main","layout":{"type":"default"}} -->
+		<article class="wp-block-group digest-lead__main">
+
+			<!-- wp:query {"queryId":11,"query":{"perPage":1,"pages":1,"offset":0,"postType":"post","order":"desc","orderBy":"date","inherit":false,"sticky":"exclude"}} -->
+			<div class="wp-block-query">
+
+				<!-- wp:post-template -->
+
+					<!--
+						The lead's headline furniture — label, title, deck, byline — is wrapped so
+						the featured image can sit BEHIND it as a backdrop, exactly as it does on
+						an article page (templates/single.html). The image is the first child and
+						is lifted out of the flow by CSS; it is not a slab above the headline.
+					-->
+					<!-- wp:group {"className":"digest-lead__hero","layout":{"type":"default"}} -->
+					<div class="wp-block-group digest-lead__hero">
+
+						<!-- wp:post-featured-image {"sizeSlug":"large"} /-->
+
+						<!-- wp:paragraph {"className":"digest-lead__label"} -->
+						<p class="digest-lead__label">The Long Read</p>
+						<!-- /wp:paragraph -->
+
+						<!-- wp:post-title {"level":2,"isLink":true,"className":"digest-lead__title"} /-->
+
+						<!-- wp:post-excerpt {"excerptLength":34,"showMoreOnNewLine":false,"className":"digest-lead__deck"} /-->
+
+						<!-- wp:group {"className":"digest-byline","layout":{"type":"flex","justifyContent":"center","flexWrap":"wrap"}} -->
+						<div class="wp-block-group digest-byline">
+							<!-- wp:post-author-name {"isLink":true} /-->
+							<!-- wp:post-date /-->
+						</div>
+						<!-- /wp:group -->
+
+					</div>
+					<!-- /wp:group -->
+
+					<!-- wp:pressroom/lead-body {"paragraphs":4} /-->
+
+				<!-- /wp:post-template -->
+
+			</div>
+			<!-- /wp:query -->
+
+		</article>
+		<!-- /wp:group -->
+
+		<!-- Right: the photo and the secondary story. -->
+		<!-- wp:group {"tagName":"aside","className":"digest-lead__aside","layout":{"type":"default"}} -->
+		<aside class="wp-block-group digest-lead__aside">
+
+			<!-- wp:query {"queryId":12,"query":{"perPage":1,"pages":1,"offset":5,"postType":"post","order":"desc","orderBy":"date","inherit":false,"sticky":"exclude"}} -->
+			<div class="wp-block-query">
+
+				<!-- wp:post-template -->
+
+					<!-- wp:post-featured-image {"aspectRatio":"4/5","sizeSlug":"large","isLink":true} /-->
+
+					<!-- wp:post-terms {"term":"category","className":"digest-kicker"} /-->
+
+					<!-- wp:post-title {"level":3,"isLink":true,"fontFamily":"display","style":{"typography":{"fontSize":"27px","lineHeight":"1.08"}}} /-->
+
+					<!-- wp:post-excerpt {"excerptLength":28,"showMoreOnNewLine":false,"moreText":"Read the profile →"} /-->
+
+				<!-- /wp:post-template -->
+
+			</div>
+			<!-- /wp:query -->
+
+		</aside>
+		<!-- /wp:group -->
+
+	</div>
+	<!-- /wp:group -->
+
+	<!-- THE NEWSLETTER -->
+	<!-- wp:template-part {"slug":"newsletter","tagName":"div"} /-->
+
+	<!-- INSIDE THIS WEEK'S EDITION -->
+	<!-- wp:pressroom/section-grid {"columns":6,"perColumn":3,"heading":"Inside This Week's Edition"} /-->
+
+</main>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","tagName":"div","area":"footer"} /-->

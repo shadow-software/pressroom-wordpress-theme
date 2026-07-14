@@ -1,6 +1,6 @@
 <?php
 /**
- * Migrate a live site from the `digest` slug to `shadow-software-digest-theme-for-wordpress`.
+ * Migrate a live site from the `digest` slug to `pressroom`.
  *
  * Run on the SERVER, against ONE site:
  *   wp eval-file migrate-slug.php --allow-root
@@ -19,7 +19,7 @@
  * both live sites silently disappears, and the only symptom is a shorter page.
  *
  * The same is true of theme_mods: they are stored under the option key
- * `theme_mods_digest`. A renamed theme reads `theme_mods_shadow-software-digest-theme-for-wordpress`,
+ * `theme_mods_digest`. A renamed theme reads `theme_mods_pressroom`,
  * finds nothing, and every site falls back to the theme's defaults — which means
  * both publications turn oxblood and lose their founding year, their city, their
  * motto and their newsletter name.
@@ -34,7 +34,7 @@ $dry_run = in_array( '--dry-run', (array) ( $args ?? array() ), true )
 	|| in_array( '--dry-run', (array) ( $_SERVER['argv'] ?? array() ), true );
 
 $old_slug = 'digest';
-$new_slug = 'shadow-software-digest-theme-for-wordpress';
+$new_slug = 'pressroom';
 $old_ns   = 'wp:digest/';
 $new_ns   = 'wp:shadow-digest/';
 

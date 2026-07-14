@@ -1,0 +1,22 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pressroom/folio",
+	"title": "Folio Rule",
+	"category": "pressroom",
+	"icon": "editor-insertmore",
+	"description": "Volume, today's date and the motto, between two rules. The date is always today, in the site's own locale.",
+	"keywords": ["masthead", "dateline", "volume", "rule"],
+	"textdomain": "pressroom",
+	"supports": {
+		"html": false,
+		"reusable": false,
+		"multiple": false,
+		"align": false,
+		"spacing": {
+			"margin": [ "top", "bottom" ]
+		}
+	},
+	"attributes": {},
+	"style": "pressroom"
+}

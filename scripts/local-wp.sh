@@ -34,8 +34,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WP="$ROOT/.local-wp"
 PORT=8080
-THEME_SRC="$ROOT/shadow-software-digest-theme-for-wordpress"
-THEME_DST="$WP/wp-content/themes/shadow-software-digest-theme-for-wordpress"
+THEME_SRC="$ROOT/pressroom"
+THEME_DST="$WP/wp-content/themes/pressroom"
 
 # The guardrails. These are the difference between "a bug" and "an outage".
 PHP_FLAGS=(
@@ -109,7 +109,7 @@ PHP
 
   echo "── linking the theme (a symlink, so edits are live)"
   ln -sfn "$THEME_SRC" "$THEME_DST"
-  wp_cli theme activate shadow-software-digest-theme-for-wordpress
+  wp_cli theme activate pressroom
 
   echo "── seeding content that EXERCISES THE BUG"
   # The article page is the one that brought the server down. It must exist here,

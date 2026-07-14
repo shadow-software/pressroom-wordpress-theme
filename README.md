@@ -1,10 +1,10 @@
-# Digest
+# Pressroom
 
 **A broadsheet block theme for WordPress.** A blackletter nameplate, a folio rule,
 a three-column lead grid, and the editorial furniture a long read actually needs.
 
 <p align="center">
-  <img src="docs/img/front-page.png" alt="The Digest front page: a blackletter nameplate flanked by two ears, a folio rule carrying the volume, date and motto, and a three-column lead grid with a drop cap." width="100%">
+  <img src="docs/img/front-page.png" alt="The Pressroom front page: a blackletter nameplate flanked by two ears, a folio rule carrying the volume, date and motto, and a three-column lead grid with a drop cap." width="100%">
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@ a three-column lead grid, and the editorial furniture a long read actually needs
 
 ---
 
-Digest dresses a WordPress site as a newspaper — not with a picture of one, but
+Pressroom dresses a WordPress site as a newspaper — not with a picture of one, but
 with its typography. The front page is a real broadsheet lead grid: a rail of
 briefs, a lead story set in two justified columns with a drop cap that falls on
 the first paragraph, and a photograph with the day's secondary story beside it.
@@ -39,7 +39,7 @@ References, a Disclosure Table whose partner links are always `rel="sponsored
 nofollow"`, and the Byline / Author Bio / Editorial Standards trust signals a
 journal of record is judged on.
 
-**It gets out of the way.** Digest emits `NewsArticle`, `Organization`,
+**It gets out of the way.** Pressroom emits `NewsArticle`, `Organization`,
 `BreadcrumbList` and `FAQPage` schema — but goes silent the moment Yoast, Rank
 Math, SEOPress or All in One SEO is active, because two competing graphs on one
 page is worse than none. It renders a newsletter form and posts it to an endpoint
@@ -136,11 +136,11 @@ array. **If you find yourself typing a brand string into a template, stop.**
 
 | Thing | Value |
 |---|---|
-| Slug / directory / text domain | `shadow-software-digest-theme-for-wordpress` |
+| Slug / directory / text domain | `pressroom` |
 | Function prefix | `shadow_digest_` |
 | Constant prefix | `SHADOW_DIGEST_` |
 | Block namespace | `shadow-digest/` |
-| Display name | **Digest** |
+| Display name | **Pressroom** |
 
 WordPress requires the text domain to equal the directory name. The function
 prefix does not have to, and does not — 43-character function names are unusable.
@@ -168,5 +168,5 @@ WordPress 6.6+ · PHP 8.0+ · no plugins, no page builder, no build step.
 ## License
 
 GPL-2.0-or-later. Bundled fonts (UnifrakturMaguntia, Libre Caslon Display, Source
-Serif 4) are SIL OFL 1.1 — see [`readme.txt`](shadow-software-digest-theme-for-wordpress/readme.txt)
+Serif 4) are SIL OFL 1.1 — see [`readme.txt`](pressroom/readme.txt)
 for full attribution.

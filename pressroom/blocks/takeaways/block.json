@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pressroom/takeaways",
+	"title": "Key Takeaways",
+	"category": "pressroom",
+	"icon": "yes-alt",
+	"description": "The three or four things a reader should leave with, set in a bordered box beside the table of contents.",
+	"keywords": [ "takeaways", "summary", "key points", "bullets" ],
+	"textdomain": "pressroom",
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"spacing": {
+			"margin": [ "top", "bottom" ]
+		}
+	},
+	"attributes": {
+		"label": {
+			"type": "string",
+			"default": ""
+		},
+		"items": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "string"
+			}
+		}
+	},
+	"editorScript": "file:../../assets/js/blocks.js",
+	"style": "pressroom"
+}

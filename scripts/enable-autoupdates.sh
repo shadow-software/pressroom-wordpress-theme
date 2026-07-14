@@ -36,7 +36,7 @@ KEY=/home/shadow/Source/000-creds/1984_ssh_key
 HOST=root@93.95.229.147
 SSH="ssh -i $KEY -o BatchMode=yes -o ConnectTimeout=15"
 
-THEME=shadow-software-digest-theme-for-wordpress
+THEME=pressroom
 
 for SITE in cannabisdigest.net marksmansdigest.com; do
   echo "════════ $SITE"
