@@ -57,7 +57,7 @@ const BANNED_CALLS = array(
  */
 const BANNED_FILTERS = array( 'the_content' );
 
-$theme = $argv[1] ?? dirname( __DIR__ ) . '/pressroom';
+$theme = $argv[1] ?? dirname( __DIR__ ) . '/broadside';
 
 if ( ! is_dir( $theme ) ) {
 	fwrite( STDERR, "guard: not a directory: {$theme}\n" );

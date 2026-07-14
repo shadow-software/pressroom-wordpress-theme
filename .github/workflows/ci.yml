@@ -49,6 +49,12 @@ jobs:
       - name: The guard itself still catches the outage bug
         run: ./scripts/guard-selftest.sh
 
+      # WordPress.org rejected the submission on this: the theme called
+      # register_block_type(), and "Custom blocks" are plugin territory. The 17
+      # blocks now live in broadside-blocks/. This makes sure they stay there.
+      - name: The theme does not do plugin things
+        run: ./scripts/guard-no-plugin-territory.sh
+
   lint:
     name: Lint (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
@@ -66,16 +72,16 @@ jobs:
           tools: composer
 
       - name: PHP syntax
-        run: find pressroom -name '*.php' -print0 | xargs -0 -n1 -P4 php -l
+        run: find broadside -name '*.php' -print0 | xargs -0 -n1 -P4 php -l
 
       - name: JSON syntax
         run: |
-          for f in $(find pressroom -name '*.json'); do
+          for f in $(find broadside -name '*.json'); do
             python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f" || { echo "bad JSON: $f"; exit 1; }
           done
 
       - name: JavaScript syntax
-        run: node --check pressroom/assets/js/blocks.js
+        run: node --check broadside/assets/js/blocks.js
 
   phpcs:
     name: WordPress Coding Standards + Theme Review
@@ -124,8 +130,8 @@ jobs:
       - name: Required files exist
         run: |
           fail=0
-          for f in pressroom/style.css pressroom/index.php pressroom/readme.txt \
-                   pressroom/screenshot.png pressroom/LICENSE pressroom/theme.json; do
+          for f in broadside/style.css broadside/index.php broadside/readme.txt \
+                   broadside/screenshot.png broadside/LICENSE broadside/theme.json; do
             [ -f "$f" ] || { echo "::error::missing required file: $f"; fail=1; }
           done
           exit $fail
@@ -133,15 +139,15 @@ jobs:
       - name: Screenshot is exactly 1200x900
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq file
-          dims=$(file pressroom/screenshot.png | grep -oE '[0-9]+ x [0-9]+' | head -1)
+          dims=$(file broadside/screenshot.png | grep -oE '[0-9]+ x [0-9]+' | head -1)
           echo "screenshot: $dims"
           [ "$dims" = "1200 x 900" ] || { echo "::error::screenshot.png must be 1200x900, got $dims"; exit 1; }
 
       - name: Version is in lockstep across style.css, functions.php and readme.txt
         run: |
-          v_style=$(grep -oP '^Version:\s*\K[0-9.]+' pressroom/style.css)
-          v_func=$(grep -oP "DIGEST_VERSION', '\K[0-9.]+" pressroom/functions.php)
-          v_readme=$(grep -oP '^Stable tag:\s*\K[0-9.]+' pressroom/readme.txt)
+          v_style=$(grep -oP '^Version:\s*\K[0-9.]+' broadside/style.css)
+          v_func=$(grep -oP "DIGEST_VERSION', '\K[0-9.]+" broadside/functions.php)
+          v_readme=$(grep -oP '^Stable tag:\s*\K[0-9.]+' broadside/readme.txt)
           echo "style.css=$v_style functions.php=$v_func readme.txt=$v_readme"
           if [ "$v_style" != "$v_func" ] || [ "$v_style" != "$v_readme" ]; then
             echo "::error::version mismatch — these three must always agree, or asset caches never bust"
@@ -150,7 +156,7 @@ jobs:
 
       - name: No bundled minified or third-party code
         run: |
-          if find pressroom -name '*.min.js' -o -name '*.min.css' | grep -q .; then
+          if find broadside -name '*.min.js' -o -name '*.min.css' | grep -q .; then
             echo "::error::the Theme Directory requires unminified source"
             exit 1
           fi

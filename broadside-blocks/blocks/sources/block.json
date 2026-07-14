@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "broadside/sources",
+	"title": "Sources & References",
+	"category": "broadside",
+	"icon": "book",
+	"description": "The receipts — a numbered list of what the reporting rests on. Links are allowed.",
+	"keywords": [ "sources", "references", "citations", "bibliography" ],
+	"textdomain": "broadside-blocks",
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"spacing": {
+			"margin": [ "top", "bottom" ]
+		}
+	},
+	"attributes": {
+		"label": {
+			"type": "string",
+			"default": ""
+		},
+		"items": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "string"
+			}
+		}
+	},
+	"editorScript": "file:../../assets/js/blocks.js",
+	"style": "broadside"
+}

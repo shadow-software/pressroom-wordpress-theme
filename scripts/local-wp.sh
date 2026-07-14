@@ -34,8 +34,16 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WP="$ROOT/.local-wp"
 PORT=8080
-THEME_SRC="$ROOT/pressroom"
-THEME_DST="$WP/wp-content/themes/pressroom"
+THEME_SRC="$ROOT/broadside"
+THEME_DST="$WP/wp-content/themes/broadside"
+
+# The 17 blocks live in a companion PLUGIN now, because the Theme Directory
+# forbids a theme from calling register_block_type(). The sandbox must install
+# BOTH, or the masthead, the folio, the byline and every editorial block render
+# nothing — and every test would still pass, because a missing block is not an
+# error. That silence is exactly why the sandbox installs the plugin too.
+PLUGIN_SRC="$ROOT/broadside-blocks"
+PLUGIN_DST="$WP/wp-content/plugins/broadside-blocks"
 
 # The guardrails. These are the difference between "a bug" and "an outage".
 PHP_FLAGS=(
@@ -46,8 +54,32 @@ PHP_FLAGS=(
   -d log_errors=1
 )
 
+# The 10-second execution cap above is for the SERVER, and it is the whole point of
+# this sandbox: it turns a runaway recursion into a stack trace in ten seconds
+# instead of a machine that has to be power-cycled. Do not raise it there.
+#
+# It is exactly wrong for wp-cli. Seeding is a one-off setup job — it installs
+# WooCommerce, creates the shop pages, and writes 7 products with variations and
+# images — and it takes about eight seconds of honest work. Against a 10-second
+# ceiling that is not a margin, it is a coin toss, and the coin came up tails the
+# moment activating the blocks plugin added a beat to the run: PHP killed the
+# seeder mid-flight, `set -e` killed the script, and local-wp.sh exited BEFORE it
+# ever flushed the rewrite rules or started the server. Every route then returned
+# HTTP 000, which reads like "the theme is catastrophically broken" and is in fact
+# "the web server was never started".
+#
+# So the CLI gets its own limits. A recursion in a render callback cannot hang
+# wp-cli — wp-cli does not render pages.
+CLI_FLAGS=(
+  -d max_execution_time=0
+  -d memory_limit=512M
+  -d error_reporting=E_ALL
+  -d display_errors=1
+  -d log_errors=1
+)
+
 wp_cli() {
-  php "${PHP_FLAGS[@]}" "$(command -v wp)" --path="$WP" --allow-root "$@"
+  php "${CLI_FLAGS[@]}" "$(command -v wp)" --path="$WP" --allow-root "$@"
 }
 
 cmd_down() {
@@ -109,7 +141,14 @@ PHP
 
   echo "── linking the theme (a symlink, so edits are live)"
   ln -sfn "$THEME_SRC" "$THEME_DST"
-  wp_cli theme activate pressroom
+  wp_cli theme activate broadside
+
+  echo "── linking and activating the blocks plugin"
+  # Without this the theme renders, returns 200, and is WRONG: no nameplate, no
+  # folio, no byline, no editorial blocks. WordPress does not error on a block it
+  # cannot find — it silently omits it. A liveness check would pass on the wreck.
+  ln -sfn "$PLUGIN_SRC" "$PLUGIN_DST"
+  wp_cli plugin activate broadside-blocks
 
   echo "── seeding content that EXERCISES THE BUG"
   # The article page is the one that brought the server down. It must exist here,

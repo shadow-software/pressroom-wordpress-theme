@@ -21,7 +21,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SLUG="pressroom"
+SLUG="broadside"
 SRC="$ROOT/$SLUG"
 OUT="$ROOT/build"
 
@@ -139,6 +139,14 @@ else
 fi
 
 echo
+echo "── the theme does not do plugin things (this is what got it rejected)"
+if "$ROOT/scripts/guard-no-plugin-territory.sh" "$DIR" >/dev/null 2>&1; then
+	okay "no register_block_type(), no custom post types, no shortcodes"
+else
+	note "plugin-territory code is in the package — the blocks belong in broadside-blocks/"
+fi
+
+echo
 echo "── text domain matches the directory name (WordPress requires this)"
 if grep -q "Text Domain: *$SLUG" "$DIR/style.css"; then
 	okay "text domain = $SLUG"
@@ -170,7 +178,7 @@ if [ -z "$NAME" ]; then
 else
 	okay "Theme Name: $NAME"
 
-	# Forbidden words. Matched case-insensitively as whole words, so "Pressroom"
+	# Forbidden words. Matched case-insensitively as whole words, so "Broadside"
 	# is fine and "Press Theme" is not.
 	for word in wordpress theme; do
 		if printf '%s' "$NAME" | grep -qiE "(^|[^a-z])${word}([^a-z]|$)"; then
@@ -203,6 +211,23 @@ if curl -s -o /dev/null --max-time 8 "https://wordpress.org/themes/$SLUG/" 2>/de
 else
 	echo "   · no network; slug availability not checked"
 fi
+
+# A 404 on wordpress.org is NECESSARY BUT NOT SUFFICIENT, and this check learned
+# that the hard way. "Pressroom" 404s on the Directory — and is also an established
+# commercial news theme by QuanticaLabs, sold on ThemeForest. The .org check passed
+# it happily. The scanner did not:
+#
+#     ERROR: "Pressroom" currently has 500+ active installations. Please check for
+#            name collisions outside of WordPress.org before approval.
+#
+# A script cannot do that search — it needs the open web, and a judgement call about
+# whether a hit is really a WordPress theme. So this does the honest thing and says
+# what it cannot verify, rather than printing a green tick that means less than it
+# looks like. A check that quietly under-tests is worse than no check: it buys
+# confidence it has not earned.
+echo "   · NOTE: a .org 404 does not prove the name is free. \"Pressroom\" was a"
+echo "     404 here AND a 500+ install commercial theme. Search the open web for"
+echo "     \"$NAME WordPress theme\" before you submit."
 
 echo
 if [ "$fail" -ne 0 ]; then

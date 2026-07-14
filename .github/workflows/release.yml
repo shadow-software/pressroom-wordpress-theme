@@ -59,7 +59,7 @@ jobs:
       - name: The tag matches the theme version
         run: |
           tag="${GITHUB_REF_NAME#v}"
-          ver=$(grep -oP '^Version:\s*\K[0-9.]+' pressroom/style.css)
+          ver=$(grep -oP '^Version:\s*\K[0-9.]+' broadside/style.css)
           echo "tag=$tag  style.css=$ver"
           if [ "$tag" != "$ver" ]; then
             echo "::error::tag $GITHUB_REF_NAME does not match style.css Version: $ver"
@@ -76,13 +76,13 @@ jobs:
         run: |
           ver="${GITHUB_REF_NAME#v}"
           {
-            echo "## Pressroom ${ver}"
+            echo "## Broadside ${ver}"
             echo
             awk -v v="= ${ver} =" '
               $0 == v      { on = 1; next }
               on && /^= /  { exit }
               on           { print }
-            ' pressroom/readme.txt
+            ' broadside/readme.txt
             echo
             echo '---'
             echo
@@ -97,7 +97,7 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" \
             build/*.zip \
-            --title "Pressroom ${GITHUB_REF_NAME#v}" \
+            --title "Broadside ${GITHUB_REF_NAME#v}" \
             --notes-file NOTES.md
 
       - name: Show the log on failure

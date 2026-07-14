@@ -36,10 +36,10 @@ for entry in "${ROUTES[@]}"; do
   desc="${entry##*|}"
 
   start=$(date +%s%N)
-  code=$(curl -s -o /tmp/pressroom-smoke.html -w "%{http_code}" --max-time 20 "$BASE$path" 2>/dev/null)
+  code=$(curl -s -o /tmp/broadside-smoke.html -w "%{http_code}" --max-time 20 "$BASE$path" 2>/dev/null)
   end=$(date +%s%N)
   ms=$(( (end - start) / 1000000 ))
-  size=$(wc -c < /tmp/pressroom-smoke.html 2>/dev/null || echo 0)
+  size=$(wc -c < /tmp/broadside-smoke.html 2>/dev/null || echo 0)
 
   status="ok"
 
@@ -64,7 +64,7 @@ for entry in "${ROUTES[@]}"; do
   esac
 
   # A page that renders a PHP error is a failure even if it returns 200.
-  if grep -qiE "fatal error|allowed memory size|maximum execution time" /tmp/pressroom-smoke.html 2>/dev/null; then
+  if grep -qiE "fatal error|allowed memory size|maximum execution time" /tmp/broadside-smoke.html 2>/dev/null; then
     status="PHP FATAL IN OUTPUT"
     FAIL=1
   fi

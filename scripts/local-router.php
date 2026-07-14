@@ -33,7 +33,7 @@ if ( strpos( $__path, "\0" ) !== false || strpos( $__path, '..' ) !== false ) {
 }
 
 $__root  = realpath( __DIR__ . '/../.local-wp' );
-$__theme = realpath( __DIR__ . '/../pressroom' );
+$__theme = realpath( __DIR__ . '/../broadside' );
 
 // The theme is mounted into the docroot as a symlink so edits are live, which
 // means realpath() on one of its assets resolves back out to the repo. Such a

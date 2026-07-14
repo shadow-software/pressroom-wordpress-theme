@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Migrate ONE live site from the `digest` slug to
-# `pressroom`.
+# `broadside`.
 #
 # ORDER IS LOAD-BEARING. Do not reorder these steps:
 #
@@ -27,7 +27,7 @@ KEY=/home/shadow/Source/000-creds/1984_ssh_key
 HOST=root@93.95.229.147
 SSH="ssh -i $KEY -o BatchMode=yes -o ConnectTimeout=15"
 
-NEW=pressroom
+NEW=broadside
 OLD=digest
 
 SITE="${1:-}"

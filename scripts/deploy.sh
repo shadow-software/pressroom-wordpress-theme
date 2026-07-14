@@ -73,10 +73,10 @@ echo "════ GATE 1/5 — lint"
 fail=0
 while IFS= read -r f; do
   php -l "$f" >/dev/null 2>&1 || { red "   PHP syntax error: $f"; fail=1; }
-done < <(find "$ROOT/pressroom" -name '*.php')
+done < <(find "$ROOT/broadside" -name '*.php')
 while IFS= read -r f; do
   python3 -c "import json,sys;json.load(open(sys.argv[1]))" "$f" 2>/dev/null || { red "   bad JSON: $f"; fail=1; }
-done < <(find "$ROOT/pressroom" -name '*.json')
+done < <(find "$ROOT/broadside" -name '*.json')
 [ "$fail" -eq 0 ] || { red "✗ lint failed — not deploying"; exit 1; }
 echo "   ✓ clean"
 
@@ -86,7 +86,7 @@ echo "════ GATE 2/5 — nothing renders post content (THE outage bug)"
 # it could not reliably tell a live do_blocks() call from a comment about one.
 # It now tokenizes the PHP, and CI runs the identical script, so the gate that
 # blesses a deploy and the gate that blesses a commit cannot drift apart.
-if ! php "$ROOT/scripts/guard-no-content-render.php" "$ROOT/pressroom"; then
+if ! php "$ROOT/scripts/guard-no-content-render.php" "$ROOT/broadside"; then
   red "✗ Not deploying. Read docs/INCIDENT-2026-07-13-vps-outage.md."
   exit 1
 fi
@@ -104,35 +104,35 @@ echo "   ✓ running on :8080"
 
 echo
 echo "════ GATE 4/5 — every template renders (liveness)"
-"$ROOT/scripts/local-smoke.sh" >/tmp/pressroom-smoke.log 2>&1 || {
+"$ROOT/scripts/local-smoke.sh" >/tmp/broadside-smoke.log 2>&1 || {
   red "✗ smoke test failed:"
-  tail -20 /tmp/pressroom-smoke.log
+  tail -20 /tmp/broadside-smoke.log
   exit 1
 }
 echo "   ✓ all templates render"
 
 echo
 echo "════ GATE 5/5 — the pages are CORRECT (not merely alive)"
-php "$ROOT/scripts/local-assert.php" >/tmp/pressroom-assert.log 2>&1 || {
+php "$ROOT/scripts/local-assert.php" >/tmp/broadside-assert.log 2>&1 || {
   red "✗ correctness assertions failed:"
-  grep -E "✗|FAILED" /tmp/pressroom-assert.log | head -10
+  grep -E "✗|FAILED" /tmp/broadside-assert.log | head -10
   echo
   red "  A page can return 200 in 100ms and still be wrong. The re-entrancy"
   red "  guard makes the recursion render fast-but-wrong rather than hang, which"
   red "  is precisely why liveness checks alone cannot be trusted here."
   exit 1
 }
-echo "   ✓ $(grep -oE '[0-9]+ assertions passed' /tmp/pressroom-assert.log)"
+echo "   ✓ $(grep -oE '[0-9]+ assertions passed' /tmp/broadside-assert.log)"
 
 # ------------------------------------------------------------------ deploy ----
 
 echo
 echo "════ DEPLOYING to $SITE (one site only)"
-rsync -az --delete -e "$SSH" "$ROOT/pressroom/" "$HOST:/var/www/$SITE/public/wp-content/themes/pressroom/"
-$SSH "$HOST" "chown -R nobody:nogroup /var/www/$SITE/public/wp-content/themes/pressroom"
+rsync -az --delete -e "$SSH" "$ROOT/broadside/" "$HOST:/var/www/$SITE/public/wp-content/themes/broadside/"
+$SSH "$HOST" "chown -R nobody:nogroup /var/www/$SITE/public/wp-content/themes/broadside"
 echo "   ✓ uploaded"
 
-$SSH "$HOST" "cd /var/www/$SITE/public && wp theme activate pressroom --allow-root" >/dev/null
+$SSH "$HOST" "cd /var/www/$SITE/public && wp theme activate broadside --allow-root" >/dev/null
 echo "   ✓ activated"
 
 # ------------------------------------------------------------------ verify ----
@@ -149,7 +149,7 @@ probe() {
   local url="$1" label="$2"
   local start end ms code
   start=$(date +%s%N)
-  code=$(curl -s -o /tmp/pressroom-live.html -w "%{http_code}" --max-time 20 "$url" 2>/dev/null || echo 000)
+  code=$(curl -s -o /tmp/broadside-live.html -w "%{http_code}" --max-time 20 "$url" 2>/dev/null || echo 000)
   end=$(date +%s%N)
   ms=$(( (end - start) / 1000000 ))
 

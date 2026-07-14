@@ -16,7 +16,7 @@
 		the fix is to drop it rather than pin WPCS back to 2.x.
 	</description>
 
-	<file>pressroom</file>
+	<file>broadside</file>
 
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>
@@ -46,11 +46,11 @@
 		the theme's own text domain, which must match the directory name. The
 		Theme Directory rejects a mismatch outright.
 	-->
-	<config name="text_domain" value="pressroom"/>
+	<config name="text_domain" value="broadside"/>
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="pressroom"/>
+				<element value="broadside"/>
 			</property>
 		</properties>
 	</rule>

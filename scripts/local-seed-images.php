@@ -246,7 +246,7 @@ foreach ( $posts as $post ) {
 		'_wp_attachment_image_alt',
 		sprintf(
 			/* translators: %s: article headline. */
-			__( 'Editorial illustration for "%s"', 'pressroom' ),
+			__( 'Editorial illustration for "%s"', 'broadside' ),
 			$post->post_title
 		)
 	);

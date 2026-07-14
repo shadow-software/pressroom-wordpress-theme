@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "broadside/faq",
+	"title": "FAQ",
+	"category": "broadside",
+	"icon": "editor-help",
+	"description": "Questions and answers, which also emit FAQPage structured data so search and answer engines can quote them directly.",
+	"keywords": [ "faq", "questions", "answers", "schema", "aeo" ],
+	"textdomain": "broadside-blocks",
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"spacing": {
+			"margin": [ "top", "bottom" ]
+		}
+	},
+	"attributes": {
+		"title": {
+			"type": "string",
+			"default": ""
+		},
+		"items": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "object"
+			}
+		}
+	},
+	"editorScript": "file:../../assets/js/blocks.js",
+	"style": "broadside"
+}

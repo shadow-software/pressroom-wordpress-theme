@@ -1,0 +1,859 @@
+# Copyright (C) 2026 Shadow Software LLC
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Broadside Blocks 1.2.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/broadside-blocks\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-07-14T15:15:18+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: broadside-blocks\n"
+
+#. Plugin Name of the plugin
+#: broadside-blocks.php
+msgid "Broadside Blocks"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: broadside-blocks.php
+msgid "https://github.com/shadow-software/broadside-wordpress-theme"
+msgstr ""
+
+#. Description of the plugin
+#: broadside-blocks.php
+msgid "The editorial blocks and masthead furniture for the Broadside theme — a short-answer box, key takeaways, a self-building table of contents, an FAQ that emits FAQPage schema, a sources list, a disclosure table, and the nameplate, folio rule and bylines a broadsheet needs."
+msgstr ""
+
+#. Author of the plugin
+#: broadside-blocks.php
+msgid "Shadow Software LLC"
+msgstr ""
+
+#. Author URI of the plugin
+#: broadside-blocks.php
+msgid "https://shadowsoftware.com/"
+msgstr ""
+
+#: broadside-blocks.php:114
+msgid "Broadside Blocks needs the Broadside theme. Its blocks render the theme’s masthead, folio and Customizer settings, so under another theme they render nothing at all. Activate Broadside, or deactivate this plugin."
+msgstr ""
+
+#. translators: %d: the year the publication was founded.
+#: inc-blocks-masthead.php:190
+#, php-format
+msgid "Founded %d"
+msgstr ""
+
+#. translators: 1: the current year in Roman numerals, 2: the current year in digits.
+#: inc-blocks-masthead.php:202
+#, php-format
+msgid "© %1$s · All Rights Reserved"
+msgstr ""
+
+#. translators: %s: the author's name, linked to their archive.
+#: inc-blocks-masthead.php:263
+#, php-format
+msgid "By %s"
+msgstr ""
+
+#. translators: %s: the publication date.
+#: inc-blocks-masthead.php:278
+#, php-format
+msgid "Published %s"
+msgstr ""
+
+#. translators: %d: the estimated reading time in minutes.
+#: inc-blocks-masthead.php:291
+#, php-format
+msgid "%d-minute read"
+msgid_plural "%d-minute read"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc-blocks-masthead.php:338
+msgid "About the Author"
+msgstr ""
+
+#: inc-blocks-masthead.php:376
+msgid "Pressroom"
+msgstr ""
+
+#: inc-blocks-masthead.php:381
+msgid "Masthead title"
+msgstr ""
+
+#: inc-blocks-masthead.php:392
+msgid "Printed after the name in the byline — “Chief Correspondent”, “Science Editor”, “Contributing Writer”."
+msgstr ""
+
+#: inc-blocks.php:167
+msgid "Pressroom — editorial"
+msgstr ""
+
+#: inc-blocks.php:204
+#: assets/js/blocks.js:174
+#: assets/js/blocks.js:193
+msgid "The Short Answer"
+msgstr ""
+
+#: inc-blocks.php:239
+#: assets/js/blocks.js:246
+#: assets/js/blocks.js:257
+#: assets/js/blocks.js:262
+msgid "Key Takeaways"
+msgstr ""
+
+#: inc-blocks.php:285
+#: assets/js/blocks.js:345
+#: assets/js/blocks.js:360
+msgid "In This Article"
+msgstr ""
+
+#: inc-blocks.php:301
+msgid "Table of contents"
+msgstr ""
+
+#: inc-blocks.php:484
+#: assets/js/blocks.js:411
+#: assets/js/blocks.js:456
+msgid "Frequently Asked Questions"
+msgstr ""
+
+#: inc-blocks.php:636
+#: assets/js/blocks.js:583
+#: assets/js/blocks.js:599
+msgid "Sources & References"
+msgstr ""
+
+#: inc-blocks.php:758
+msgid "Continue the full report →"
+msgstr ""
+
+#: inc-blocks.php:828
+msgid "Continue Reading"
+msgstr ""
+
+#: inc-blocks.php:987
+#: assets/js/blocks.js:679
+#: assets/js/blocks.js:730
+msgid "What to check"
+msgstr ""
+
+#: inc-blocks.php:990
+#: assets/js/blocks.js:680
+#: assets/js/blocks.js:740
+msgid "Why it matters"
+msgstr ""
+
+#: inc-blocks.php:993
+#: assets/js/blocks.js:681
+#: assets/js/blocks.js:750
+msgid "Partner"
+msgstr ""
+
+#: inc-blocks.php:1007
+msgid "(opens in a new tab, sponsored link)"
+msgstr ""
+
+#. translators: %s: the site name.
+#: inc-blocks.php:1029
+#, php-format
+msgid "Affiliate disclosure: %s may earn a commission on purchases made through partner links. Commissions never influence which products we recommend; testing and editorial are handled independently of commercial partnerships."
+msgstr ""
+
+#: assets/js/blocks.js:124
+msgid "Up"
+msgstr ""
+
+#: assets/js/blocks.js:137
+msgid "Down"
+msgstr ""
+
+#: assets/js/blocks.js:150
+msgid "Remove"
+msgstr ""
+
+#: assets/js/blocks.js:185
+msgid "Short Answer"
+msgstr ""
+
+#: assets/js/blocks.js:187
+#: assets/js/blocks.js:260
+#: assets/js/blocks.js:358
+#: assets/js/blocks.js:597
+#: assets/js/blocks.js:777
+msgid "Label"
+msgstr ""
+
+#: assets/js/blocks.js:188
+msgid "The small heading above the answer."
+msgstr ""
+
+#: assets/js/blocks.js:219
+msgid "Answer the article’s question in two or three sentences. Write it so it can be quoted on its own."
+msgstr ""
+
+#: assets/js/blocks.js:271
+msgid "Add a takeaway"
+msgstr ""
+
+#. translators: %d: the takeaway's position in the list, e.g. "Takeaway 2".
+#: assets/js/blocks.js:273
+#, js-format
+msgid "Takeaway %d"
+msgstr ""
+
+#: assets/js/blocks.js:274
+msgid "Three or four takeaways read best. One sentence each."
+msgstr ""
+
+#: assets/js/blocks.js:302
+msgid "Add takeaways in the block settings, on the right."
+msgstr ""
+
+#: assets/js/blocks.js:356
+msgid "Table of Contents"
+msgstr ""
+
+#: assets/js/blocks.js:385
+msgid "Built automatically from the headings in this post when it is published."
+msgstr ""
+
+#: assets/js/blocks.js:451
+msgid "FAQ"
+msgstr ""
+
+#: assets/js/blocks.js:454
+msgid "Heading"
+msgstr ""
+
+#: assets/js/blocks.js:469
+msgid "These questions also become FAQPage structured data, so search engines can quote them. Write answers that stand on their own."
+msgstr ""
+
+#: assets/js/blocks.js:481
+msgid "Question"
+msgstr ""
+
+#: assets/js/blocks.js:490
+msgid "Answer"
+msgstr ""
+
+#: assets/js/blocks.js:509
+msgid "Remove question"
+msgstr ""
+
+#: assets/js/blocks.js:517
+msgid "Add a question"
+msgstr ""
+
+#: assets/js/blocks.js:538
+msgid "Add questions in the block settings, on the right."
+msgstr ""
+
+#: assets/js/blocks.js:554
+msgid "Untitled question"
+msgstr ""
+
+#: assets/js/blocks.js:594
+msgid "Sources"
+msgstr ""
+
+#: assets/js/blocks.js:611
+msgid "Add a source"
+msgstr ""
+
+#. translators: %d: the source's position in the list, e.g. "Source 3".
+#: assets/js/blocks.js:613
+#, js-format
+msgid "Source %d"
+msgstr ""
+
+#: assets/js/blocks.js:614
+msgid "Cite what the reporting rests on. Links are allowed."
+msgstr ""
+
+#: assets/js/blocks.js:642
+msgid "Add sources in the block settings, on the right."
+msgstr ""
+
+#: assets/js/blocks.js:725
+msgid "Columns"
+msgstr ""
+
+#: assets/js/blocks.js:728
+msgid "First column"
+msgstr ""
+
+#: assets/js/blocks.js:738
+msgid "Second column"
+msgstr ""
+
+#: assets/js/blocks.js:748
+msgid "Third column"
+msgstr ""
+
+#: assets/js/blocks.js:760
+msgid "Rows"
+msgstr ""
+
+#: assets/js/blocks.js:765
+msgid "Partner links are always marked rel=\"sponsored nofollow\" and a disclosure line is always printed — if you leave the disclosure empty, Pressroom writes one for you."
+msgstr ""
+
+#: assets/js/blocks.js:786
+msgid "Detail"
+msgstr ""
+
+#: assets/js/blocks.js:796
+msgid "Partner name"
+msgstr ""
+
+#: assets/js/blocks.js:805
+msgid "Partner URL"
+msgstr ""
+
+#: assets/js/blocks.js:824
+msgid "Remove row"
+msgstr ""
+
+#: assets/js/blocks.js:832
+msgid "Add a row"
+msgstr ""
+
+#: assets/js/blocks.js:838
+msgid "Disclosure"
+msgstr ""
+
+#: assets/js/blocks.js:840
+msgid "Disclosure line"
+msgstr ""
+
+#: assets/js/blocks.js:841
+msgid "Leave empty and Pressroom prints a standard affiliate disclosure naming your publication."
+msgstr ""
+
+#: assets/js/blocks.js:900
+msgid "Add rows in the block settings, on the right."
+msgstr ""
+
+#: assets/js/blocks.js:938
+msgid "A standard affiliate disclosure will be printed here."
+msgstr ""
+
+#: blocks/author-bio/block.json
+msgctxt "block title"
+msgid "Author Bio"
+msgstr ""
+
+#: blocks/author-bio/block.json
+msgctxt "block description"
+msgid "The “About the author” panel at the foot of an article. Prints nothing if the author has written no bio."
+msgstr ""
+
+#: blocks/author-bio/block.json
+#: blocks/byline/block.json
+msgctxt "block keyword"
+msgid "author"
+msgstr ""
+
+#: blocks/author-bio/block.json
+msgctxt "block keyword"
+msgid "bio"
+msgstr ""
+
+#: blocks/author-bio/block.json
+msgctxt "block keyword"
+msgid "eeat"
+msgstr ""
+
+#: blocks/author-bio/block.json
+#: blocks/byline/block.json
+msgctxt "block keyword"
+msgid "byline"
+msgstr ""
+
+#: blocks/byline/block.json
+msgctxt "block title"
+msgid "Byline"
+msgstr ""
+
+#: blocks/byline/block.json
+msgctxt "block description"
+msgid "Author, avatar, publication date and reading time, between two rules."
+msgstr ""
+
+#: blocks/byline/block.json
+msgctxt "block keyword"
+msgid "date"
+msgstr ""
+
+#: blocks/byline/block.json
+msgctxt "block keyword"
+msgid "reading time"
+msgstr ""
+
+#: blocks/colophon/block.json
+msgctxt "block title"
+msgid "Colophon"
+msgstr ""
+
+#: blocks/colophon/block.json
+msgctxt "block description"
+msgid "The footer line: the wordmark, the domain and founding year, and the copyright in Roman numerals. All of it derived — there is no year to forget to update."
+msgstr ""
+
+#: blocks/colophon/block.json
+msgctxt "block keyword"
+msgid "footer"
+msgstr ""
+
+#: blocks/colophon/block.json
+msgctxt "block keyword"
+msgid "copyright"
+msgstr ""
+
+#: blocks/colophon/block.json
+msgctxt "block keyword"
+msgid "colophon"
+msgstr ""
+
+#: blocks/colophon/block.json
+msgctxt "block keyword"
+msgid "founded"
+msgstr ""
+
+#: blocks/disclosure-table/block.json
+msgctxt "block title"
+msgid "Disclosure Table"
+msgstr ""
+
+#: blocks/disclosure-table/block.json
+msgctxt "block description"
+msgid "A comparison table whose partner links are always marked rel=\"sponsored nofollow\" and which always prints a disclosure line — because a journal of record discloses."
+msgstr ""
+
+#: blocks/disclosure-table/block.json
+msgctxt "block keyword"
+msgid "affiliate"
+msgstr ""
+
+#: blocks/disclosure-table/block.json
+#: blocks/standards/block.json
+msgctxt "block keyword"
+msgid "disclosure"
+msgstr ""
+
+#: blocks/disclosure-table/block.json
+msgctxt "block keyword"
+msgid "comparison"
+msgstr ""
+
+#: blocks/disclosure-table/block.json
+msgctxt "block keyword"
+msgid "gear"
+msgstr ""
+
+#: blocks/disclosure-table/block.json
+msgctxt "block keyword"
+msgid "table"
+msgstr ""
+
+#: blocks/disclosure-table/block.json
+msgctxt "block keyword"
+msgid "sponsored"
+msgstr ""
+
+#: blocks/faq/block.json
+msgctxt "block title"
+msgid "FAQ"
+msgstr ""
+
+#: blocks/faq/block.json
+msgctxt "block description"
+msgid "Questions and answers, which also emit FAQPage structured data so search and answer engines can quote them directly."
+msgstr ""
+
+#: blocks/faq/block.json
+msgctxt "block keyword"
+msgid "faq"
+msgstr ""
+
+#: blocks/faq/block.json
+msgctxt "block keyword"
+msgid "questions"
+msgstr ""
+
+#: blocks/faq/block.json
+msgctxt "block keyword"
+msgid "answers"
+msgstr ""
+
+#: blocks/faq/block.json
+msgctxt "block keyword"
+msgid "schema"
+msgstr ""
+
+#: blocks/faq/block.json
+#: blocks/short-answer/block.json
+msgctxt "block keyword"
+msgid "aeo"
+msgstr ""
+
+#: blocks/folio/block.json
+msgctxt "block title"
+msgid "Folio Rule"
+msgstr ""
+
+#: blocks/folio/block.json
+msgctxt "block description"
+msgid "Volume, today's date and the motto, between two rules. The date is always today, in the site's own locale."
+msgstr ""
+
+#: blocks/folio/block.json
+#: blocks/nameplate/block.json
+#: blocks/utility-bar/block.json
+msgctxt "block keyword"
+msgid "masthead"
+msgstr ""
+
+#: blocks/folio/block.json
+msgctxt "block keyword"
+msgid "dateline"
+msgstr ""
+
+#: blocks/folio/block.json
+msgctxt "block keyword"
+msgid "volume"
+msgstr ""
+
+#: blocks/folio/block.json
+msgctxt "block keyword"
+msgid "rule"
+msgstr ""
+
+#: blocks/lead-body/block.json
+msgctxt "block title"
+msgid "Lead Story Body"
+msgstr ""
+
+#: blocks/lead-body/block.json
+msgctxt "block description"
+msgid "The opening paragraphs of the lead story, set in two justified columns with a drop cap — the way a broadsheet sets its front page. Links on to the full article."
+msgstr ""
+
+#: blocks/lead-body/block.json
+msgctxt "block keyword"
+msgid "lead"
+msgstr ""
+
+#: blocks/lead-body/block.json
+msgctxt "block keyword"
+msgid "front page"
+msgstr ""
+
+#: blocks/lead-body/block.json
+msgctxt "block keyword"
+msgid "columns"
+msgstr ""
+
+#: blocks/lead-body/block.json
+msgctxt "block keyword"
+msgid "excerpt"
+msgstr ""
+
+#: blocks/lead-body/block.json
+msgctxt "block keyword"
+msgid "opening"
+msgstr ""
+
+#: blocks/nameplate/block.json
+msgctxt "block title"
+msgid "Nameplate"
+msgstr ""
+
+#: blocks/nameplate/block.json
+msgctxt "block description"
+msgid "The publication's name in blackletter, flanked by its two ears. Reads the site title, so it is right by construction."
+msgstr ""
+
+#: blocks/nameplate/block.json
+msgctxt "block keyword"
+msgid "logo"
+msgstr ""
+
+#: blocks/nameplate/block.json
+msgctxt "block keyword"
+msgid "title"
+msgstr ""
+
+#: blocks/nameplate/block.json
+msgctxt "block keyword"
+msgid "wordmark"
+msgstr ""
+
+#: blocks/newsletter/block.json
+msgctxt "block title"
+msgid "Newsletter Box"
+msgstr ""
+
+#: blocks/newsletter/block.json
+msgctxt "block description"
+msgid "The dark signup panel. Pressroom renders the form and hands the address to whatever endpoint you name in the Customizer — it stores nothing and sends nothing."
+msgstr ""
+
+#: blocks/newsletter/block.json
+msgctxt "block keyword"
+msgid "newsletter"
+msgstr ""
+
+#: blocks/newsletter/block.json
+msgctxt "block keyword"
+msgid "subscribe"
+msgstr ""
+
+#: blocks/newsletter/block.json
+msgctxt "block keyword"
+msgid "signup"
+msgstr ""
+
+#: blocks/newsletter/block.json
+msgctxt "block keyword"
+msgid "email"
+msgstr ""
+
+#: blocks/related/block.json
+msgctxt "block title"
+msgid "Continue Reading"
+msgstr ""
+
+#: blocks/related/block.json
+msgctxt "block description"
+msgid "Three more stories from the same section as this one, never including the story the reader is already on."
+msgstr ""
+
+#: blocks/related/block.json
+msgctxt "block keyword"
+msgid "related"
+msgstr ""
+
+#: blocks/related/block.json
+msgctxt "block keyword"
+msgid "continue"
+msgstr ""
+
+#: blocks/related/block.json
+msgctxt "block keyword"
+msgid "more"
+msgstr ""
+
+#: blocks/related/block.json
+msgctxt "block keyword"
+msgid "recirculation"
+msgstr ""
+
+#: blocks/section-grid/block.json
+msgctxt "block title"
+msgid "Section Grid"
+msgstr ""
+
+#: blocks/section-grid/block.json
+msgctxt "block description"
+msgid "The \"Inside This Week's Edition\" grid: one column per section, each listing its latest headlines. Built from your categories, so a new section appears the moment you use it."
+msgstr ""
+
+#: blocks/section-grid/block.json
+msgctxt "block keyword"
+msgid "sections"
+msgstr ""
+
+#: blocks/section-grid/block.json
+msgctxt "block keyword"
+msgid "categories"
+msgstr ""
+
+#: blocks/section-grid/block.json
+msgctxt "block keyword"
+msgid "index"
+msgstr ""
+
+#: blocks/section-grid/block.json
+msgctxt "block keyword"
+msgid "grid"
+msgstr ""
+
+#: blocks/section-grid/block.json
+msgctxt "block keyword"
+msgid "edition"
+msgstr ""
+
+#: blocks/short-answer/block.json
+msgctxt "block title"
+msgid "Short Answer"
+msgstr ""
+
+#: blocks/short-answer/block.json
+msgctxt "block description"
+msgid "A direct, quotable answer at the top of the article — the two sentences a reader (or a search engine) should get without reading two thousand words first."
+msgstr ""
+
+#: blocks/short-answer/block.json
+msgctxt "block keyword"
+msgid "answer"
+msgstr ""
+
+#: blocks/short-answer/block.json
+#: blocks/takeaways/block.json
+msgctxt "block keyword"
+msgid "summary"
+msgstr ""
+
+#: blocks/short-answer/block.json
+msgctxt "block keyword"
+msgid "snippet"
+msgstr ""
+
+#: blocks/short-answer/block.json
+msgctxt "block keyword"
+msgid "tldr"
+msgstr ""
+
+#: blocks/sources/block.json
+msgctxt "block title"
+msgid "Sources & References"
+msgstr ""
+
+#: blocks/sources/block.json
+msgctxt "block description"
+msgid "The receipts — a numbered list of what the reporting rests on. Links are allowed."
+msgstr ""
+
+#: blocks/sources/block.json
+msgctxt "block keyword"
+msgid "sources"
+msgstr ""
+
+#: blocks/sources/block.json
+msgctxt "block keyword"
+msgid "references"
+msgstr ""
+
+#: blocks/sources/block.json
+msgctxt "block keyword"
+msgid "citations"
+msgstr ""
+
+#: blocks/sources/block.json
+msgctxt "block keyword"
+msgid "bibliography"
+msgstr ""
+
+#: blocks/standards/block.json
+msgctxt "block title"
+msgid "Editorial Standards"
+msgstr ""
+
+#: blocks/standards/block.json
+msgctxt "block description"
+msgid "The small italic note at the foot of every article — your fact-checking policy, an age warning, a link to your ethics page."
+msgstr ""
+
+#: blocks/standards/block.json
+msgctxt "block keyword"
+msgid "standards"
+msgstr ""
+
+#: blocks/standards/block.json
+msgctxt "block keyword"
+msgid "ethics"
+msgstr ""
+
+#: blocks/standards/block.json
+msgctxt "block keyword"
+msgid "policy"
+msgstr ""
+
+#: blocks/takeaways/block.json
+msgctxt "block title"
+msgid "Key Takeaways"
+msgstr ""
+
+#: blocks/takeaways/block.json
+msgctxt "block description"
+msgid "The three or four things a reader should leave with, set in a bordered box beside the table of contents."
+msgstr ""
+
+#: blocks/takeaways/block.json
+msgctxt "block keyword"
+msgid "takeaways"
+msgstr ""
+
+#: blocks/takeaways/block.json
+msgctxt "block keyword"
+msgid "key points"
+msgstr ""
+
+#: blocks/takeaways/block.json
+msgctxt "block keyword"
+msgid "bullets"
+msgstr ""
+
+#: blocks/toc/block.json
+msgctxt "block title"
+msgid "Table of Contents"
+msgstr ""
+
+#: blocks/toc/block.json
+msgctxt "block description"
+msgid "Builds itself from the headings in this post. Rename a heading and the contents follow — there is nothing to keep in sync by hand."
+msgstr ""
+
+#: blocks/toc/block.json
+msgctxt "block keyword"
+msgid "contents"
+msgstr ""
+
+#: blocks/toc/block.json
+msgctxt "block keyword"
+msgid "toc"
+msgstr ""
+
+#: blocks/toc/block.json
+msgctxt "block keyword"
+msgid "outline"
+msgstr ""
+
+#: blocks/toc/block.json
+msgctxt "block keyword"
+msgid "jump links"
+msgstr ""
+
+#: blocks/toc/block.json
+msgctxt "block keyword"
+msgid "in this article"
+msgstr ""
+
+#: blocks/utility-bar/block.json
+msgctxt "block title"
+msgid "Utility Bar"
+msgstr ""
+
+#: blocks/utility-bar/block.json
+msgctxt "block description"
+msgid "The thin uppercase strip above the nameplate: founding year, city, strapline. Every word of it comes from the Customizer."
+msgstr ""
+
+#: blocks/utility-bar/block.json
+msgctxt "block keyword"
+msgid "header"
+msgstr ""
+
+#: blocks/utility-bar/block.json
+msgctxt "block keyword"
+msgid "strapline"
+msgstr ""

@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "broadside/related",
+	"title": "Continue Reading",
+	"category": "broadside",
+	"icon": "list-view",
+	"description": "Three more stories from the same section as this one, never including the story the reader is already on.",
+	"keywords": [ "related", "continue", "more", "recirculation" ],
+	"textdomain": "broadside-blocks",
+	"supports": {
+		"html": false,
+		"reusable": false,
+		"multiple": false,
+		"spacing": {
+			"margin": [ "top", "bottom" ]
+		}
+	},
+	"attributes": {
+		"count": {
+			"type": "number",
+			"default": 3
+		},
+		"heading": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"style": "broadside"
+}

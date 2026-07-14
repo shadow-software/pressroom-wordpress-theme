@@ -44,13 +44,13 @@ $canary = wp_insert_post(
 		'post_author'   => $author_id,
 		'post_category' => array( $cat_id ),
 		'post_excerpt'  => 'A quiet revival of long-range match shooting is drawing a new generation to a century-old discipline.',
-		'post_content'  => '<!-- wp:pressroom/short-answer {"answer":"Long-range shooting is a test of reading wind honestly, not of equipment."} /-->
+		'post_content'  => '<!-- wp:broadside/short-answer {"answer":"Long-range shooting is a test of reading wind honestly, not of equipment."} /-->
 
 <!-- wp:group {"className":"digest-furniture"} -->
 <div class="wp-block-group digest-furniture">
-<!-- wp:pressroom/takeaways {"items":["Wind reading, not equipment, separates competitors.","Mirage tells you more than a flag, and it is free.","The discipline cannot be rushed or faked."]} /-->
+<!-- wp:broadside/takeaways {"items":["Wind reading, not equipment, separates competitors.","Mirage tells you more than a flag, and it is free.","The discipline cannot be rushed or faked."]} /-->
 
-<!-- wp:pressroom/toc /-->
+<!-- wp:broadside/toc /-->
 </div>
 <!-- /wp:group -->
 
@@ -88,11 +88,11 @@ $canary = wp_insert_post(
 <p>Real, measurable, and at a thousand yards smaller than the error in your wind call.</p>
 <!-- /wp:paragraph -->
 
-<!-- wp:pressroom/disclosure-table {"rows":[{"label":"Mirage","detail":"Shows the wind between you and the target.","partner":"Example Optics","url":"https://example.com"},{"label":"Position","detail":"Build it so the rifle returns to the target on its own.","partner":"","url":""}]} /-->
+<!-- wp:broadside/disclosure-table {"rows":[{"label":"Mirage","detail":"Shows the wind between you and the target.","partner":"Example Optics","url":"https://example.com"},{"label":"Position","detail":"Build it so the rifle returns to the target on its own.","partner":"","url":""}]} /-->
 
-<!-- wp:pressroom/faq {"items":[{"question":"Do I need an expensive rifle to start?","answer":"No. A modern match rifle out-shoots its owner for a long time, and most clubs will lend a newcomer one."},{"question":"What is mirage?","answer":"The visible shimmer of heated air, which reveals the wind between you and the target."}]} /-->
+<!-- wp:broadside/faq {"items":[{"question":"Do I need an expensive rifle to start?","answer":"No. A modern match rifle out-shoots its owner for a long time, and most clubs will lend a newcomer one."},{"question":"What is mirage?","answer":"The visible shimmer of heated air, which reveals the wind between you and the target."}]} /-->
 
-<!-- wp:pressroom/sources {"items":["Interviews at twelve ranges, November 2025 to June 2026.","Ballistic figures cross-checked against published tables."]} /-->',
+<!-- wp:broadside/sources {"items":["Interviews at twelve ranges, November 2025 to June 2026.","Ballistic figures cross-checked against published tables."]} /-->',
 	)
 );
 
