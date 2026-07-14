@@ -3,7 +3,7 @@ Contributors: shadowsoftware
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
@@ -154,6 +154,10 @@ GPLv2 or later.
 
 == Upgrade Notice ==
 
+= 1.3.1 =
+Housekeeping. Broadside Blocks now has its own repository and its own release zips,
+and the two are back on the same version number. Nothing on your site changes.
+
 = 1.3.0 =
 New: a masthead device — an engraved ornament printed faintly behind the nameplate.
 Set one under Customizer → Broadside → Masthead. Nothing changes if you don't.
@@ -177,6 +181,12 @@ The front page's lead photograph is no longer lazy-loaded. If you run Broadside 
 a site that is measured on Core Web Vitals, this release is worth taking.
 
 == Changelog ==
+
+= 1.3.1 =
+* Broadside Blocks now lives in its own repository, with its own CI and its own
+  release zips. The theme and the plugin ship together, so they are back on the same
+  version number — a reader should never have to work out which pairs with which.
+* Nothing on your site changes. This is repository housekeeping.
 
 = 1.3.0 =
 * **New: the masthead device.** An engraved ornament — a furled flag, a botanical

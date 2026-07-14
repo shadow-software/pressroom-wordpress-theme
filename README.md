@@ -1,7 +1,33 @@
-# Broadside
+<p align="center">
+  <img src=".github/assets/banner.png" alt="Broadside — a broadsheet theme for WordPress, by Shadow Software" width="880">
+</p>
 
-**A broadsheet block theme for WordPress.** A blackletter nameplate, a folio rule,
-a three-column lead grid, and the editorial furniture a long read actually needs.
+<h1 align="center">Broadside</h1>
+
+<p align="center">
+  <strong>A broadsheet block theme for WordPress.</strong><br>
+  A blackletter nameplate, a folio rule, a three-column lead grid, and the
+  editorial furniture a long read actually needs.
+</p>
+
+<p align="center">
+  <a href="https://github.com/shadow-software/broadside-blocks-for-wordpress"><img alt="Companion plugin" src="https://img.shields.io/badge/ships%20with-Broadside%20Blocks-b34747?style=flat-square"></a>
+  <a href="https://github.com/shadow-software/broadside-theme-for-wordpress/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/shadow-software/broadside-theme-for-wordpress?style=flat-square&color=b34747"></a>
+  <a href="LICENSE"><img alt="Licence" src="https://img.shields.io/badge/licence-GPL--2.0--or--later-b34747?style=flat-square"></a>
+  <a href="https://shadowsoftware.com/"><img alt="Shadow Software" src="https://img.shields.io/badge/by-Shadow%20Software-8a8a8a?style=flat-square"></a>
+</p>
+
+---
+
+> ### 📰 Broadside ships with [**Broadside Blocks**](https://github.com/shadow-software/broadside-blocks-for-wordpress)
+>
+> The nameplate, the folio rule, the bylines and every editorial block live in a
+> companion plugin — WordPress forbids a theme from registering blocks, and it is
+> right to: **anything you would lose by switching themes belongs in a plugin.**
+>
+> Install both. WordPress 6.5+ offers the plugin automatically when you activate
+> the theme (`Requires Plugins: broadside-blocks`). Without it you still get the
+> paper, the type and the grid — but no masthead and no editorial furniture.
 
 <p align="center">
   <img src="docs/img/front-page.png" alt="The Broadside front page: a blackletter nameplate flanked by two ears, a folio rule carrying the volume, date and motto, and a three-column lead grid with a drop cap." width="100%">
@@ -170,3 +196,29 @@ WordPress 6.6+ · PHP 8.0+ · no plugins, no page builder, no build step.
 GPL-2.0-or-later. Bundled fonts (UnifrakturMaguntia, Libre Caslon Display, Source
 Serif 4) are SIL OFL 1.1 — see [`readme.txt`](broadside/readme.txt)
 for full attribution.
+
+---
+
+## Also by Shadow Software
+
+**WordPress & WooCommerce**
+
+| | |
+|---|---|
+| [**Broadside**](https://github.com/shadow-software/broadside-theme-for-wordpress) | A broadsheet block theme for WordPress — blackletter masthead, folio rule, three-column lead grid. |
+| [**Broadside Blocks**](https://github.com/shadow-software/broadside-blocks-for-wordpress) | The editorial furniture that ships with it — short answer, takeaways, contents, FAQ schema, sources. |
+| [**Crypto for WooCommerce**](https://github.com/shadow-software/crypto-for-woocommerce) | Free, self-custodial crypto payments — ETH, USDC, USDT & Bitcoin, confirmed on-chain. [On WordPress.org →](https://wordpress.org/plugins/shadow-software-crypto-for-woocommerce/) |
+| [**AGT for WooCommerce**](https://github.com/shadow-software/agt-for-woocommerce) | Sync your WooCommerce store with your American Gun Trader dealer listings. |
+
+**n8n**
+
+We run our automation on [n8n](https://n8n.io), and publish the nodes we had to build for it:
+
+| | |
+|---|---|
+| [**n8n-nodes-huggingface-space**](https://github.com/shadow-software/n8n-nodes-huggingface-space) | Run inference on any Hugging Face Gradio Space from n8n — images, video, music, speech, text and moderation, with a curated model catalog and automatic fallbacks. |
+| [**n8n-nodes-custom-exec-node**](https://github.com/shadow-software/n8n-nodes-custom-exec-node) | Brings back `bash` in n8n, which v2.0 removed. |
+
+<p align="center">
+  <sub><a href="https://shadowsoftware.com/">shadowsoftware.com</a> · GPL-2.0-or-later · © 2026 Shadow Software LLC</sub>
+</p>
