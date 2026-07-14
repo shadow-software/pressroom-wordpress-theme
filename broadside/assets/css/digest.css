@@ -350,6 +350,122 @@
 	align-items: end;
 	gap: 18px;
 	padding: 20px 0 12px;
+
+	/* The device is printed by ::before, which needs a corner to sit in. */
+	position: relative;
+	isolation: isolate;
+}
+
+/*
+ * THE MASTHEAD DEVICE — an engraving printed behind the nameplate.
+ *
+ * A newspaper does not put a photograph behind its nameplate. It puts a DEVICE: an
+ * ornament cut on steel and printed in the same ink as the type — a furled flag, a
+ * botanical plate, a coat of arms. So this is deliberately NOT the article page's
+ * photographic hero treatment (§8), even though both are "an image behind text",
+ * and it is worth saying why, because the obvious move is to reuse that CSS.
+ *
+ * The hero backdrop is a PHOTOGRAPH: it is desaturated, flattened and faded because
+ * it is fighting to become quiet enough to sit behind a headline. A device is
+ * already quiet. It is line-work on paper, it has no colour of its own to remove,
+ * and treating it like a photo — grayscale(), contrast(), brightness() — would only
+ * muddy an image that is already ink.
+ *
+ * Instead it is treated as INK. The asset is a PNG whose line-work is its ALPHA
+ * channel: transparent paper, opaque line. It is not drawn as an image at all but
+ * used as a MASK on a block of the theme's own ink colour, so it prints in whatever
+ * colour the publication's ink is, on whatever colour its paper is. One file works
+ * on cream and on a dark style variation; one file works for a shooting-sports
+ * monthly in oxblood and a cannabis weekly in green.
+ *
+ * It is a WATERMARK, not a picture. It renders at 22% by default and the Customizer
+ * caps the useful range around 35% — past that it stops being furniture behind the
+ * nameplate and starts being a background image with a headline on top of it, which
+ * is the exact mistake the 1.0.10 hero fixed on the article page.
+ */
+.digest-masthead::before {
+	content: '';
+	position: absolute;
+	inset: -8% -4% -14%;
+	z-index: -1;
+	pointer-events: none;
+
+	/* Nothing to draw, nothing drawn. `none` collapses this to a no-op. */
+	background-color: var(--wp--preset--color--ink);
+
+	/*
+	 * TWO mask layers, intersected:
+	 *   1. the device itself — its line-work is its alpha;
+	 *   2. a soft-edged rectangle that fades the whole thing out at the boundaries.
+	 *
+	 * Layer 2 is why the device never shows a hard rectangular edge where the PNG
+	 * ends. Both layers must be listed on every mask-* longhand, in the same order.
+	 */
+	-webkit-mask-image:
+		var(--digest-masthead-device, none),
+		radial-gradient(120% 100% at 50% 55%, #000 42%, transparent 88%);
+	mask-image:
+		var(--digest-masthead-device, none),
+		radial-gradient(120% 100% at 50% 55%, #000 42%, transparent 88%);
+
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	mask-repeat: no-repeat, no-repeat;
+	-webkit-mask-position: center, center;
+	mask-position: center, center;
+
+	/*
+	 * `auto 100%` — fit the device to the masthead's HEIGHT, let it be as wide as
+	 * its own proportions make it, and centre it.
+	 *
+	 * Both of the obvious answers are wrong, and each was tried and photographed:
+	 *
+	 *   contain    fits the whole device inside a box far wider than it is tall, so
+	 *              it sizes to the height and lands as a narrow strip stranded in
+	 *              the middle — the flags printed THROUGH the wordmark.
+	 *   100% auto  stretches the device to the full width; a square source then
+	 *              becomes as tall as the masthead is wide, and you see a giant
+	 *              fragment of two stripes instead of an engraving.
+	 *
+	 * The device is drawn as a self-contained symmetrical ornament with an empty
+	 * middle. It should be reproduced WHOLE, at the height of the masthead, sitting
+	 * behind the nameplate exactly as it was drawn — not stretched to fill anything.
+	 */
+	-webkit-mask-size: auto 150%, 100% 100%;
+	mask-size: auto 150%, 100% 100%;
+
+	/*
+	 * Dissolve the device into the paper at every edge, so it reads as a watermark
+	 * printed into the sheet rather than a picture pasted onto it — and, more
+	 * practically, so its hard-cropped top and bottom edges never announce
+	 * themselves as the edges of a rectangle.
+	 */
+	-webkit-mask-composite: source-in;
+	mask-composite: intersect;
+
+	opacity: var(--digest-masthead-device-opacity, 0.22);
+}
+
+/*
+ * A device is decoration. A reader who has asked for more contrast is asking for
+ * the type to win, and the honest answer is to take the ornament away entirely
+ * rather than to make it fainter and call that an accommodation.
+ */
+@media (prefers-contrast: more) {
+	.digest-masthead::before {
+		display: none;
+	}
+}
+
+/*
+ * On a phone the masthead is barely wider than the nameplate itself, so a device
+ * whose whole design is "ornament at the flanks, type in the middle" has no flanks
+ * left to sit in — it would print underneath the lettering instead of around it.
+ * Below the point where the ears drop away, so does the device.
+ */
+@media (max-width: 782px) {
+	.digest-masthead::before {
+		display: none;
+	}
 }
 
 /*

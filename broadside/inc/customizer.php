@@ -95,6 +95,43 @@ function shadow_digest_settings(): array {
 		 * ----------------------------------------------------------------
 		 */
 
+		/*
+		 * The masthead device: an engraved ornament printed BEHIND the nameplate.
+		 *
+		 * A real broadsheet does not put a photograph behind its nameplate; it puts
+		 * an engraving — a device, cut on steel, printed in the same ink as the type.
+		 * So this is deliberately not the article page's photographic backdrop. It is
+		 * line-work, it is monochrome, and it is tinted with the theme's own ink
+		 * colour rather than carrying a colour of its own.
+		 *
+		 * Ship it as a PNG whose INK IS ITS ALPHA — transparent paper, opaque line —
+		 * and the same file then works on cream, on a dark style variation, and on
+		 * either publication, taking its colour from the theme rather than fighting it.
+		 *
+		 * Empty by default. A theme that shipped a flag would be a theme with a
+		 * nationality, and this one dresses two publications that have nothing in
+		 * common. See the DRY rule in CLAUDE.md.
+		 */
+		'shadow_digest_masthead_device'    => array(
+			'default'   => '',
+			'sanitize'  => 'esc_url_raw',
+			'type'      => 'image',
+			'section'   => 'shadow_digest_masthead',
+			'label'     => __( 'Masthead device', 'broadside' ),
+			'help'      => __( 'An engraved ornament printed faintly behind the nameplate — a furled flag, a botanical plate, a coat of arms. Use a PNG with a transparent background and dark line-work: the theme tints it with the ink colour and fades it into the paper. Leave empty for no device.', 'broadside' ),
+			'transport' => 'refresh',
+		),
+
+		'shadow_digest_masthead_device_opacity' => array(
+			'default'   => 22,
+			'sanitize'  => 'absint',
+			'type'      => 'number',
+			'section'   => 'shadow_digest_masthead',
+			'label'     => __( 'Masthead device — strength (%)', 'broadside' ),
+			'help'      => __( 'How strongly the device prints. The default is deliberately faint: it is a watermark behind the nameplate, not a picture. Above about 35% it starts to compete with the type.', 'broadside' ),
+			'transport' => 'postMessage',
+		),
+
 		'shadow_digest_ear_left_title'     => array(
 			'default'   => __( 'Weekend Field Report', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
@@ -489,6 +526,25 @@ function shadow_digest_customize_register( WP_Customize_Manager $wp_customize ):
 			continue;
 		}
 
+		// An image, stored as a URL. WP_Customize_Image_Control gives the media
+		// library, which is the only sane way to choose a picture — a URL field
+		// would mean uploading somewhere else first and pasting a path.
+		if ( 'image' === $args['type'] ) {
+			$wp_customize->add_control(
+				new WP_Customize_Image_Control(
+					$wp_customize,
+					$id,
+					array(
+						'label'       => $args['label'],
+						'description' => $args['help'] ?? '',
+						'section'     => $args['section'],
+						'settings'    => $id,
+					)
+				)
+			);
+			continue;
+		}
+
 		if ( 'number' === $args['type'] ) {
 			$control['input_attrs'] = array(
 				'min'  => 1000,
@@ -565,6 +621,21 @@ function shadow_digest_custom_properties(): string {
 
 	$css .= '--digest-wordmark-font:' . $wordmark . ';';
 	$css .= '--digest-texture:' . $texture . ';';
+
+	/*
+	 * The masthead device. `none` when unset, so the CSS rule that draws it costs
+	 * nothing and matches nothing on a site that has not chosen one.
+	 *
+	 * esc_url() on the way out as well as esc_url_raw() on the way in: this string
+	 * is being interpolated into a CSS url(), which is a different context from the
+	 * database, and one escape does not cover the other.
+	 */
+	$device  = (string) shadow_digest_get( 'shadow_digest_masthead_device' );
+	$opacity = (int) shadow_digest_get( 'shadow_digest_masthead_device_opacity' );
+	$opacity = max( 0, min( 100, $opacity ) );
+
+	$css .= '--digest-masthead-device:' . ( '' !== $device ? "url('" . esc_url( $device ) . "')" : 'none' ) . ';';
+	$css .= '--digest-masthead-device-opacity:' . ( $opacity / 100 ) . ';';
 
 	$css .= '}';
 

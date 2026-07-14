@@ -3,7 +3,7 @@ Contributors: shadowsoftware
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.2.1
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
@@ -154,6 +154,10 @@ GPLv2 or later.
 
 == Upgrade Notice ==
 
+= 1.3.0 =
+New: a masthead device — an engraved ornament printed faintly behind the nameplate.
+Set one under Customizer → Broadside → Masthead. Nothing changes if you don't.
+
 = 1.2.1 =
 Fixes headlines printing `&apos;` and `&quot;` as visible text, and the same
 entities leaking into the structured data that search engines read.
@@ -173,6 +177,24 @@ The front page's lead photograph is no longer lazy-loaded. If you run Broadside 
 a site that is measured on Core Web Vitals, this release is worth taking.
 
 == Changelog ==
+
+= 1.3.0 =
+* **New: the masthead device.** An engraved ornament — a furled flag, a botanical
+  plate, a coat of arms — printed faintly behind the nameplate, the way a real
+  broadsheet prints one. Set it under Customizer → Broadside → Masthead, with a
+  strength control; leave it empty and the masthead is exactly as it was.
+* This is deliberately NOT the article page's photographic backdrop, though both
+  are "an image behind text". A photograph has to be beaten into submission to sit
+  behind a headline — desaturated, flattened, faded. An engraving is already quiet:
+  it is ink. So the device is not drawn as a picture at all. Supply a PNG whose
+  line-work is its transparency, and the theme uses it as a MASK on its own ink
+  colour — which means one file prints correctly on cream paper, on a dark style
+  variation, and in whatever colour a given publication's ink happens to be.
+* It removes itself where it would do harm: under `prefers-contrast: more`, and on
+  phones, where a masthead is barely wider than the nameplate and an ornament
+  designed to sit at the flanks has no flanks left to sit in.
+* No device ships with the theme. A theme that shipped a flag would be a theme with
+  a nationality, and this one dresses two publications that have nothing in common.
 
 = 1.2.1 =
 * **Fixed: headlines printed `&apos;` and `&quot;` as visible text.** A title whose

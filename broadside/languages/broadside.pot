@@ -2,21 +2,21 @@
 # This file is distributed under the GNU General Public License v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Broadside 1.2.1\n"
+"Project-Id-Version: Broadside 1.3.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/theme/broadside\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-14T16:06:07+00:00\n"
+"POT-Creation-Date: 2026-07-14T16:41:06+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: broadside\n"
 
 #. Theme Name of the theme
 #: style.css
-#: inc/customizer.php:411
+#: inc/customizer.php:448
 msgid "Broadside"
 msgstr ""
 
@@ -92,296 +92,312 @@ msgstr ""
 msgid "Printed at the end of the folio rule. Leave empty to omit it."
 msgstr ""
 
-#: inc/customizer.php:99
+#: inc/customizer.php:120
+msgid "Masthead device"
+msgstr ""
+
+#: inc/customizer.php:121
+msgid "An engraved ornament printed faintly behind the nameplate — a furled flag, a botanical plate, a coat of arms. Use a PNG with a transparent background and dark line-work: the theme tints it with the ink colour and fades it into the paper. Leave empty for no device."
+msgstr ""
+
+#: inc/customizer.php:130
+msgid "Masthead device — strength (%)"
+msgstr ""
+
+#: inc/customizer.php:131
+msgid "How strongly the device prints. The default is deliberately faint: it is a watermark behind the nameplate, not a picture. Above about 35% it starts to compete with the type."
+msgstr ""
+
+#: inc/customizer.php:136
 msgid "Weekend Field Report"
 msgstr ""
 
-#: inc/customizer.php:103
+#: inc/customizer.php:140
 msgid "Left ear — heading"
 msgstr ""
 
-#: inc/customizer.php:104
+#: inc/customizer.php:141
 msgid "The small block to the left of the nameplate. Traditionally a weather or conditions report."
 msgstr ""
 
-#: inc/customizer.php:109
+#: inc/customizer.php:146
 msgid ""
 "Clear, wind 4–7 mph out of the west.\n"
 "Ideal conditions across the Northeast ranges."
 msgstr ""
 
-#: inc/customizer.php:113
+#: inc/customizer.php:150
 msgid "Left ear — text"
 msgstr ""
 
-#: inc/customizer.php:114
-#: inc/customizer.php:134
+#: inc/customizer.php:151
+#: inc/customizer.php:171
 msgid "Two short lines read best. Line breaks are preserved."
 msgstr ""
 
-#: inc/customizer.php:119
+#: inc/customizer.php:156
 msgid "One Hundredth Year"
 msgstr ""
 
-#: inc/customizer.php:123
+#: inc/customizer.php:160
 msgid "Right ear — heading"
 msgstr ""
 
-#: inc/customizer.php:124
+#: inc/customizer.php:161
 msgid "The small block to the right of the nameplate. Traditionally the volume or anniversary."
 msgstr ""
 
-#: inc/customizer.php:129
+#: inc/customizer.php:166
 msgid ""
 "A century in the service of\n"
 "precision, heritage & sport."
 msgstr ""
 
-#: inc/customizer.php:133
+#: inc/customizer.php:170
 msgid "Right ear — text"
 msgstr ""
 
-#: inc/customizer.php:139
+#: inc/customizer.php:176
 msgid "Vol. C"
 msgstr ""
 
-#: inc/customizer.php:143
+#: inc/customizer.php:180
 msgid "Volume"
 msgstr ""
 
-#: inc/customizer.php:144
+#: inc/customizer.php:181
 msgid "Left-hand side of the folio rule. Paired with the issue number."
 msgstr ""
 
-#: inc/customizer.php:149
+#: inc/customizer.php:186
 msgid "No. 28"
 msgstr ""
 
-#: inc/customizer.php:153
+#: inc/customizer.php:190
 msgid "Issue number"
 msgstr ""
 
-#: inc/customizer.php:154
+#: inc/customizer.php:191
 msgid "Printed after the volume: “Vol. C · No. 28”."
 msgstr ""
 
-#: inc/customizer.php:163
+#: inc/customizer.php:200
 msgid "Nameplate typeface"
 msgstr ""
 
-#: inc/customizer.php:164
+#: inc/customizer.php:201
 msgid "Blackletter is the traditional newspaper nameplate. Choose the display serif for a cleaner, more modern masthead — or upload a custom logo under Site Identity to replace the type entirely."
 msgstr ""
 
-#: inc/customizer.php:166
+#: inc/customizer.php:203
 msgid "Blackletter (UnifrakturMaguntia)"
 msgstr ""
 
-#: inc/customizer.php:167
+#: inc/customizer.php:204
 msgid "Display serif (Libre Caslon)"
 msgstr ""
 
-#: inc/customizer.php:182
+#: inc/customizer.php:219
 msgid "Accent"
 msgstr ""
 
-#: inc/customizer.php:183
+#: inc/customizer.php:220
 msgid "Rules, kickers, the drop cap, links and the subscribe button. Pick something dark enough to pass contrast on the paper background — the theme warns you below if it does not."
 msgstr ""
 
-#: inc/customizer.php:192
+#: inc/customizer.php:229
 msgid "Accent, soft"
 msgstr ""
 
-#: inc/customizer.php:193
+#: inc/customizer.php:230
 msgid "Used only on the dark newsletter panel, where the main accent would be too dark to read. Pick a lighter tint of the accent."
 msgstr ""
 
-#: inc/customizer.php:202
+#: inc/customizer.php:239
 msgid "Kicker"
 msgstr ""
 
-#: inc/customizer.php:203
+#: inc/customizer.php:240
 msgid "The small uppercase category labels above headlines — “Legislation”, “History”, “Profile”."
 msgstr ""
 
-#: inc/customizer.php:212
+#: inc/customizer.php:249
 msgid "Paper"
 msgstr ""
 
-#: inc/customizer.php:213
+#: inc/customizer.php:250
 msgid "The colour of the printed sheet itself."
 msgstr ""
 
-#: inc/customizer.php:222
+#: inc/customizer.php:259
 msgid "Desk"
 msgstr ""
 
-#: inc/customizer.php:223
+#: inc/customizer.php:260
 msgid "The darker surface the sheet sits on, visible around the page edges."
 msgstr ""
 
-#: inc/customizer.php:232
+#: inc/customizer.php:269
 msgid "Tinted panel"
 msgstr ""
 
-#: inc/customizer.php:233
+#: inc/customizer.php:270
 msgid "Background of the short-answer box and the author bio. A barely-there tint of the accent reads best."
 msgstr ""
 
-#: inc/customizer.php:242
+#: inc/customizer.php:279
 msgid "Halftone paper texture"
 msgstr ""
 
-#: inc/customizer.php:243
+#: inc/customizer.php:280
 msgid "A faint dot screen over the sheet, like newsprint under a loupe. Costs nothing — it is a CSS gradient, not an image."
 msgstr ""
 
-#: inc/customizer.php:257
+#: inc/customizer.php:294
 msgid "Show the newsletter box"
 msgstr ""
 
-#: inc/customizer.php:258
+#: inc/customizer.php:295
 msgid "The dark panel on the front page and beneath each article."
 msgstr ""
 
-#: inc/customizer.php:262
+#: inc/customizer.php:299
 msgid "The Weekly Dispatch"
 msgstr ""
 
-#: inc/customizer.php:266
+#: inc/customizer.php:303
 msgid "Newsletter name"
 msgstr ""
 
-#: inc/customizer.php:267
+#: inc/customizer.php:304
 msgid "Set in the display serif, large. Example: “The Weekly Dispatch”."
 msgstr ""
 
-#: inc/customizer.php:272
+#: inc/customizer.php:309
 msgid "The Flagship Newsletter · Every Thursday"
 msgstr ""
 
-#: inc/customizer.php:276
+#: inc/customizer.php:313
 msgid "Newsletter eyebrow"
 msgstr ""
 
-#: inc/customizer.php:277
+#: inc/customizer.php:314
 msgid "The small line above the newsletter name."
 msgstr ""
 
-#: inc/customizer.php:282
+#: inc/customizer.php:319
 msgid "Field notes, match results, and the week in marksmanship — reported and written by the newsroom, delivered to your inbox before dawn on Thursday."
 msgstr ""
 
-#: inc/customizer.php:286
+#: inc/customizer.php:323
 msgid "Newsletter description"
 msgstr ""
 
-#: inc/customizer.php:287
+#: inc/customizer.php:324
 msgid "One or two sentences. Set in italic beside the signup field."
 msgstr ""
 
-#: inc/customizer.php:292
+#: inc/customizer.php:329
 msgid "Free weekly. Unsubscribe anytime."
 msgstr ""
 
-#: inc/customizer.php:296
+#: inc/customizer.php:333
 msgid "Fine print"
 msgstr ""
 
-#: inc/customizer.php:297
+#: inc/customizer.php:334
 msgid "Sits under the signup field. A good place for your unsubscribe promise."
 msgstr ""
 
-#: inc/customizer.php:306
+#: inc/customizer.php:343
 msgid "Subscriber count"
 msgstr ""
 
-#: inc/customizer.php:307
+#: inc/customizer.php:344
 msgid "Shown as “Join 48,000 readers”. Leave empty to hide the line — an honest empty is better than an invented number."
 msgstr ""
 
-#: inc/customizer.php:316
+#: inc/customizer.php:353
 msgid "Form endpoint"
 msgstr ""
 
-#: inc/customizer.php:317
+#: inc/customizer.php:354
 msgid "Where the signup form posts. Broadside stores no subscribers and sends no mail — it renders the form and hands the address to whatever service you name here (a webhook, an automation, a mailing-list provider). Leave empty and the form is not rendered at all."
 msgstr ""
 
-#: inc/customizer.php:325
+#: inc/customizer.php:362
 msgid "Email field name"
 msgstr ""
 
-#: inc/customizer.php:326
+#: inc/customizer.php:363
 msgid "The name attribute of the email input. Whatever your endpoint expects — most want “email”."
 msgstr ""
 
-#: inc/customizer.php:340
+#: inc/customizer.php:377
 msgid "Drop cap on the opening paragraph"
 msgstr ""
 
-#: inc/customizer.php:341
+#: inc/customizer.php:378
 msgid "Applied automatically to the first paragraph of every article."
 msgstr ""
 
-#: inc/customizer.php:349
+#: inc/customizer.php:386
 msgid "Show reading time"
 msgstr ""
 
-#: inc/customizer.php:350
+#: inc/customizer.php:387
 msgid "Estimated from the word count at 220 words a minute."
 msgstr ""
 
-#: inc/customizer.php:358
+#: inc/customizer.php:395
 msgid "Editorial standards note"
 msgstr ""
 
-#: inc/customizer.php:359
+#: inc/customizer.php:396
 msgid "Printed in small italics at the foot of every article, above the related stories. A good place for your fact-checking policy, an age warning, or a link to your ethics page. Basic links and emphasis are allowed. Leave empty to omit it."
 msgstr ""
 
-#: inc/customizer.php:412
+#: inc/customizer.php:449
 msgid "Everything that makes this publication yours. Broadside hard-codes no brand: the name, the colours, the founding year and the section list all live here, so the same theme can dress two entirely different journals."
 msgstr ""
 
-#: inc/customizer.php:419
+#: inc/customizer.php:456
 msgid "Identity"
 msgstr ""
 
-#: inc/customizer.php:420
+#: inc/customizer.php:457
 msgid "Who the publication is, and what it prints on its folio rule."
 msgstr ""
 
-#: inc/customizer.php:423
+#: inc/customizer.php:460
 msgid "Masthead"
 msgstr ""
 
-#: inc/customizer.php:424
+#: inc/customizer.php:461
 msgid "The nameplate and the two “ears” either side of it."
 msgstr ""
 
-#: inc/customizer.php:427
+#: inc/customizer.php:464
 msgid "Colour & paper"
 msgstr ""
 
-#: inc/customizer.php:428
+#: inc/customizer.php:465
 msgid "The accent colour does most of the work. Everything else is the paper it is printed on."
 msgstr ""
 
-#: inc/customizer.php:431
+#: inc/customizer.php:468
 msgid "Newsletter"
 msgstr ""
 
-#: inc/customizer.php:432
+#: inc/customizer.php:469
 msgid "Broadside renders the signup form. It does not store subscribers or send mail — point the form at your own service."
 msgstr ""
 
-#: inc/customizer.php:435
+#: inc/customizer.php:472
 msgid "Article furniture"
 msgstr ""
 
-#: inc/customizer.php:436
+#: inc/customizer.php:473
 msgid "The details of the long-read layout."
 msgstr ""
 
