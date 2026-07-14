@@ -27,23 +27,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Reject any live do_blocks() call
-        run: |
-          if grep -rnE '^[^*/]*[^a-z_]do_blocks\s*\(' shadow-software-digest-theme-for-wordpress --include='*.php' | grep -vE '^\s*\*|//'; then
-            echo "::error::A live do_blocks() call is present in the theme."
-            echo "::error::This is the construct that caused the 2026-07-13 outage."
-            echo "::error::Nothing in this theme may render post content. Read the blocks in raw."
-            exit 1
-          fi
-          echo "OK — no render callback renders post content."
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
 
-      - name: Reject apply_filters( 'the_content' ) in a render path
-        run: |
-          if grep -rnE "apply_filters\(\s*'the_content'" shadow-software-digest-theme-for-wordpress --include='*.php' | grep -vE '^\s*\*|//'; then
-            echo "::error::apply_filters('the_content') renders the post — same recursion hazard."
-            exit 1
-          fi
-          echo "OK."
+      # This guard used to be two greps. Both were wrong in the same way: grep -n
+      # prefixes each hit with "file:line:", so the follow-up `grep -vE '^\s*\*'`
+      # meant to drop comment lines never matched anything, because the "*" was no
+      # longer at the start of the line. The result was a build that failed on
+      # every single run — flagging, of all things, the comment that warns people
+      # not to call apply_filters( 'the_content' ). A red build that is always red
+      # protects nothing; people stop reading it.
+      #
+      # The guard now tokenizes the PHP. A mention in a comment or a string is a
+      # T_COMMENT / T_CONSTANT_ENCAPSED_STRING and is ignored; a genuine call is
+      # caught even when split across lines. It is unit-tested against both.
+      - name: No call renders post content
+        run: php scripts/guard-no-content-render.php
+
+      - name: The guard itself still catches the outage bug
+        run: ./scripts/guard-selftest.sh
 
   lint:
     name: Lint (PHP ${{ matrix.php }})
@@ -110,6 +114,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # package.sh --check runs the PHP content-render guard over the staged
+      # package, so this job needs a PHP binary even though it lints no PHP.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
       - name: Required files exist
         run: |
           fail=0
@@ -144,6 +155,14 @@ jobs:
             exit 1
           fi
           echo "OK."
+
+      # Verify the bytes that would actually be UPLOADED, not the working tree
+      # they are copied from. These are the checks the Theme Review team runs.
+      # It caught .distignore and .stylelintrc.json shipping inside every
+      # hand-made zip: they live in the theme directory, but .distignore's rules
+      # are anchored to the repo root, so they could never match themselves.
+      - name: The submission package is shippable
+        run: ./scripts/package.sh --check
 
   # ---------------------------------------------------------------------------
   # The test that would have prevented the outage: actually run the theme, on a

@@ -3,7 +3,7 @@ Contributors: shadowsoftware
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.0.11
+Stable tag: 1.0.12
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
@@ -144,6 +144,22 @@ Shadow Software LLC and licensed GPLv2 or later. It contains no third-party
 imagery.
 
 == Changelog ==
+
+= 1.0.12 =
+* The front page's lead story now carries its featured image as a BACKDROP behind
+  the headline — the same treatment an article page gives it (1.0.10), so the two
+  finally match. The lead previously had no image at all, which meant the biggest
+  story on the paper was the only one with nothing to look at.
+* Story cards respond to the cursor. Hovering a card warms its photograph and pulls
+  its headline to the accent — quietly; a broadsheet does not lift, scale or bounce.
+  This is confined to `@media (hover: hover)`, so a phone does not leave a card
+  stuck in its hover state after a tap, which is what a plain :hover rule would do.
+* The paper now reaches the bottom of the screen. The sheet was drawn exactly as
+  tall as the content sitting on it, so a short page — My Account is a login card
+  and a footer — stopped part-way down and left the rest of the viewport as bare
+  desk, reading like a page that had failed to finish loading. It now fills the
+  viewport (using `dvh`, so mobile browser chrome does not produce a scrollbar that
+  scrolls to nothing) while a long page stays free to be longer.
 
 = 1.0.11 =
 * **Fixed: the cart and the checkout were rendering with no masthead at all.**

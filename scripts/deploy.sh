@@ -81,15 +81,15 @@ done < <(find "$ROOT/shadow-software-digest-theme-for-wordpress" -name '*.json')
 echo "   ✓ clean"
 
 echo
-echo "════ GATE 2/5 — no live do_blocks() in a render path (THE outage bug)"
-# Match an assignment or return from do_blocks(); ignore it appearing in comments.
-if grep -rnE '^[^*/]*[^a-z_]do_blocks\s*\(' "$ROOT/shadow-software-digest-theme-for-wordpress" --include='*.php' | grep -vE '^\s*\*|//'; then
-  red "✗ a live do_blocks() call is present in the theme."
-  red "  This is the exact construct that caused the 2026-07-13 outage."
-  red "  Nothing in this theme should render post content. Not deploying."
+echo "════ GATE 2/5 — nothing renders post content (THE outage bug)"
+# This was a grep. The grep was wrong — see the header of the guard script — and
+# it could not reliably tell a live do_blocks() call from a comment about one.
+# It now tokenizes the PHP, and CI runs the identical script, so the gate that
+# blesses a deploy and the gate that blesses a commit cannot drift apart.
+if ! php "$ROOT/scripts/guard-no-content-render.php" "$ROOT/shadow-software-digest-theme-for-wordpress"; then
+  red "✗ Not deploying. Read docs/INCIDENT-2026-07-13-vps-outage.md."
   exit 1
 fi
-echo "   ✓ none"
 
 echo
 echo "════ GATE 3/5 — local sandbox is up"

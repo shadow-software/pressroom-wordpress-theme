@@ -45,18 +45,32 @@
 
 				<!-- wp:post-template -->
 
-					<!-- wp:paragraph {"className":"digest-lead__label"} -->
-					<p class="digest-lead__label">The Long Read</p>
-					<!-- /wp:paragraph -->
+					<!--
+						The lead's headline furniture — label, title, deck, byline — is wrapped so
+						the featured image can sit BEHIND it as a backdrop, exactly as it does on
+						an article page (templates/single.html). The image is the first child and
+						is lifted out of the flow by CSS; it is not a slab above the headline.
+					-->
+					<!-- wp:group {"className":"digest-lead__hero","layout":{"type":"default"}} -->
+					<div class="wp-block-group digest-lead__hero">
 
-					<!-- wp:post-title {"level":2,"isLink":true,"className":"digest-lead__title"} /-->
+						<!-- wp:post-featured-image {"sizeSlug":"large"} /-->
 
-					<!-- wp:post-excerpt {"excerptLength":34,"showMoreOnNewLine":false,"className":"digest-lead__deck"} /-->
+						<!-- wp:paragraph {"className":"digest-lead__label"} -->
+						<p class="digest-lead__label">The Long Read</p>
+						<!-- /wp:paragraph -->
 
-					<!-- wp:group {"className":"digest-byline","layout":{"type":"flex","justifyContent":"center","flexWrap":"wrap"}} -->
-					<div class="wp-block-group digest-byline">
-						<!-- wp:post-author-name {"isLink":true} /-->
-						<!-- wp:post-date /-->
+						<!-- wp:post-title {"level":2,"isLink":true,"className":"digest-lead__title"} /-->
+
+						<!-- wp:post-excerpt {"excerptLength":34,"showMoreOnNewLine":false,"className":"digest-lead__deck"} /-->
+
+						<!-- wp:group {"className":"digest-byline","layout":{"type":"flex","justifyContent":"center","flexWrap":"wrap"}} -->
+						<div class="wp-block-group digest-byline">
+							<!-- wp:post-author-name {"isLink":true} /-->
+							<!-- wp:post-date /-->
+						</div>
+						<!-- /wp:group -->
+
 					</div>
 					<!-- /wp:group -->
 

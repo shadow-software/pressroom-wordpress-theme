@@ -53,6 +53,39 @@
 	background-color: var(--wp--preset--color--paper-shade);
 	padding-block: clamp(0px, 3vw, 34px) 70px;
 	padding-inline: var(--digest-desk-gutter);
+
+	/*
+	 * THE PAPER MUST REACH THE BOTTOM OF THE SCREEN.
+	 *
+	 * The sheet is drawn by ::before with `inset-block: 0`, so it is exactly as
+	 * tall as the content sitting on it — and no taller. On a SHORT page that is a
+	 * real, visible fault: My Account is a login card and a footer, so the paper
+	 * stopped part-way down the screen and the rest of the viewport was bare desk.
+	 * It reads as a page that failed to finish loading rather than as a design.
+	 *
+	 * `100dvh` — the DYNAMIC viewport height — with a `100vh` line above it as the
+	 * fallback for anything that does not support dvh. On mobile Safari and Chrome
+	 * 100vh is the viewport with the URL bar HIDDEN, so a 100vh box is taller than
+	 * what you can actually see and the page gains a scrollbar that scrolls to
+	 * nothing. dvh tracks the visible viewport as the browser chrome collapses,
+	 * which is what a human means by "the bottom of the screen".
+	 *
+	 * `min-height`, not `height`: a long page must still be free to be longer.
+	 *
+	 * NOT `display: flex`. The obvious way to push the footer down is to make this
+	 * a flex column and let <main> absorb the slack. It does fill the viewport —
+	 * and it also turns the masthead and the footer into flex ITEMS, which
+	 * collapses their own internal layout: the footer's three parts (wordmark,
+	 * dateline, copyright) piled onto a single line and the nameplate lost its
+	 * centring. That was caught by looking at the screenshot, not by reasoning
+	 * about it.
+	 *
+	 * The content does not need stretching. Only the PAPER needs to be tall, and
+	 * the paper is a pseudo-element — so stretch that (see ::before) and leave the
+	 * document's own flow completely alone.
+	 */
+	min-height: 100vh;
+	min-height: 100dvh;
 }
 
 /*
@@ -505,6 +538,91 @@
 
 .digest-lead__main {
 	padding-inline: 26px;
+}
+
+/*
+ * The lead's hero: the featured image as a BACKDROP behind the headline.
+ *
+ * The same treatment, and the same argument, as the article page's hero (§8): the
+ * photograph is not a slab stacked above the headline, it is the ground the
+ * headline is printed on. Here it also has a second job — the front page's lead
+ * had no image at all, so the strongest story on the paper was the only one with
+ * nothing to look at.
+ *
+ * Kept deliberately in step with .digest-single .digest-article__header. If you
+ * change the treatment there, change it here, or the front page and the article
+ * it links to will fade their photographs differently and the reader will notice
+ * even if they cannot say why.
+ */
+.digest-lead__hero {
+	position: relative;
+	isolation: isolate;
+
+	/*
+	 * Room for the backdrop to BE a backdrop. Less than this and the image is a
+	 * band behind the type rather than a ground beneath it — the same mistake the
+	 * article hero made at 44px (see §8).
+	 */
+	padding: 54px 22px 24px;
+
+	/* Pull the backdrop out to the column's edges, past the column's own padding,
+	   so it bleeds to the rules on either side rather than floating inside them. */
+	margin-inline: -26px;
+	margin-top: -14px;
+}
+
+.digest-lead__hero .wp-block-post-featured-image {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	margin: 0;
+	overflow: hidden;
+
+	/* Load-bearing for the same reason as on the article page: a constrained
+	   layout puts a max-width on every child, and max-width beats inset: 0. */
+	max-width: none;
+}
+
+.digest-lead__hero .wp-block-post-featured-image img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+
+	/* Thin the ink, pull the colour out of the palette's way, flatten it so no
+	   dark passage fights the black type. Identical to the article hero. */
+	opacity: 0.2;
+	filter: grayscale(0.7) contrast(0.75) brightness(1.06);
+
+	/*
+	 * Dissolve on all four sides. Fading only downward leaves a hard rectangle
+	 * across the top and down both flanks — which is just a smaller slab.
+	 */
+	-webkit-mask-image:
+		linear-gradient(to bottom, transparent 0%, #000 22%, #000 58%, transparent 100%),
+		linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+	mask-image:
+		linear-gradient(to bottom, transparent 0%, #000 22%, #000 58%, transparent 100%),
+		linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+	-webkit-mask-composite: source-in;
+	mask-composite: intersect;
+}
+
+/*
+ * A lead story with no featured image must not hold open a pocket of empty
+ * padding where the backdrop would have been.
+ */
+.digest-lead__hero:not(:has(.wp-block-post-featured-image img)) {
+	padding: 0;
+	margin-inline: 0;
+	margin-top: 0;
+}
+
+@media (prefers-contrast: more) {
+	.digest-lead__hero .wp-block-post-featured-image {
+		display: none;
+	}
 }
 
 .digest-lead__aside {
@@ -1682,7 +1800,89 @@ body:has(.digest-single) .wp-site-blocks::before {
 }
 
 /* -------------------------------------------------------------------------- *
- * 12. Accessibility
+ * 12. Hover — the story cards
+ *
+ * WHAT WAS ACTUALLY WRONG: nothing had a hover state. Not the briefs, not the
+ * related cards, not the lead's photo. There was no `transition`, no `transform`
+ * and no `:hover` on any card anywhere in this stylesheet — so this is not a
+ * desktop regression being repaired, it is an effect being written for the first
+ * time, and the "working" mobile behaviour was the browser's own grey tap
+ * highlight on the link, which every touch device draws for free.
+ *
+ * That distinction matters for how it is built. A hover rule written plainly
+ * would ALSO fire on a phone — a tap leaves the card stuck in its hover state
+ * until you touch something else, because a touch device has no way to un-hover.
+ * `@media (hover: hover)` is what confines it to a device that actually has a
+ * pointer, and is the honest fix for "mobile and desktop behave differently".
+ *
+ * The effect itself is deliberately quiet. A broadsheet does not lift, scale or
+ * bounce; ink does not do that. Hovering a card darkens its photograph a shade
+ * (the image is otherwise faded into the paper), and pulls the headline to the
+ * accent — the same two moves the theme already makes on every other link.
+ * -------------------------------------------------------------------------- */
+
+@media (hover: hover) and (pointer: fine) {
+	/*
+	 * The photograph. The lead's backdrop and the aside's plate are both printed
+	 * faint, so "come forward" is the natural gesture: the ink thickens slightly
+	 * and the grey drains back toward the true photograph.
+	 */
+	.digest-lead__hero .wp-block-post-featured-image img,
+	.digest-lead__aside .wp-block-post-featured-image img,
+	.digest-related__item img {
+		transition:
+			opacity 180ms ease,
+			filter 180ms ease;
+	}
+
+	.digest-lead__main:hover .wp-block-post-featured-image img,
+	.digest-lead__main:focus-within .wp-block-post-featured-image img {
+		opacity: 0.32;
+		filter: grayscale(0.45) contrast(0.85) brightness(1.02);
+	}
+
+	.digest-lead__aside:hover .wp-block-post-featured-image img,
+	.digest-lead__aside:focus-within .wp-block-post-featured-image img,
+	.digest-related__item:hover img,
+	.digest-related__item:focus-visible img {
+		filter: brightness(0.94) contrast(1.04);
+	}
+
+	/*
+	 * The headline. Every other link in this theme goes to the accent on hover;
+	 * these are the only ones that did not, which is the whole inconsistency.
+	 */
+	.digest-lead__title a,
+	.digest-brief__head,
+	.digest-brief__head a,
+	.digest-related__head,
+	.digest-lead__aside .wp-block-post-title a {
+		transition: color 140ms ease;
+	}
+
+	.digest-lead__title a:hover,
+	.digest-lead__title a:focus-visible,
+	.digest-brief:hover .digest-brief__head,
+	.digest-brief:hover .digest-brief__head a,
+	.digest-brief__head a:focus-visible,
+	.digest-related__item:hover .digest-related__head,
+	.digest-related__item:focus-visible .digest-related__head,
+	.digest-lead__aside:hover .wp-block-post-title a,
+	.digest-lead__aside .wp-block-post-title a:focus-visible {
+		color: var(--wp--preset--color--accent);
+	}
+}
+
+/*
+ * A reader who has asked the OS for less motion still gets the colour change —
+ * it carries the meaning ("this is a link") — but none of the easing. The global
+ * prefers-reduced-motion block in §13 already zeroes every transition-duration,
+ * so there is deliberately nothing to add here; this comment exists so the next
+ * person does not "fix" its absence.
+ */
+
+/* -------------------------------------------------------------------------- *
+ * 13. Accessibility
  * -------------------------------------------------------------------------- */
 
 /*
@@ -1746,7 +1946,7 @@ html {
 }
 
 /* -------------------------------------------------------------------------- *
- * 13. WooCommerce
+ * 14. WooCommerce
  *
  * OPTIONAL. Everything below matches nothing at all unless WooCommerce is
  * installed — the theme itself has no shop, declares no dependency on one, and
@@ -2584,7 +2784,7 @@ body:is(.woocommerce, .woocommerce-page) :is(input, textarea, select):focus,
 }
 
 /* -------------------------------------------------------------------------- *
- * 14. Responsive
+ * 15. Responsive
  *
  * A broadsheet is a wide-format object. Rather than shrink it, Digest unstacks
  * it: the three-column lead becomes one column, the two-column body becomes one,
@@ -2745,7 +2945,7 @@ body:is(.woocommerce, .woocommerce-page) :is(input, textarea, select):focus,
 }
 
 /* -------------------------------------------------------------------------- *
- * 15. Print
+ * 16. Print
  *
  * A newspaper theme that prints badly is a joke with no punchline.
  * -------------------------------------------------------------------------- */
