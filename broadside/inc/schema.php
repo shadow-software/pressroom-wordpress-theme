@@ -150,6 +150,12 @@ function shadow_digest_schema_publisher(): array {
 		$node['foundingDate'] = (string) $founded;
 	}
 
+	$legal = shadow_digest_publisher_legal();
+
+	if ( '' !== $legal ) {
+		$node['legalName'] = $legal;
+	}
+
 	$logo_id = (int) get_theme_mod( 'custom_logo' );
 
 	if ( $logo_id ) {

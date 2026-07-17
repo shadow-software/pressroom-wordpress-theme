@@ -1,0 +1,13 @@
+{
+  "name": "shadow-software-digest-theme",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "playwright:install": "playwright install chromium",
+    "shoot": "node scripts/shoot.mjs",
+    "shoot:headed": "HEADED=1 node scripts/shoot.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0"
+  }
+}

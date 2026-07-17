@@ -49,8 +49,18 @@ function shadow_digest_settings(): array {
 			'transport' => 'postMessage',
 		),
 
+		'shadow_digest_publisher_legal'         => array(
+			'default'   => '',
+			'sanitize'  => 'sanitize_text_field',
+			'type'      => 'text',
+			'section'   => 'shadow_digest_identity',
+			'label'     => __( 'Legal publisher', 'broadside' ),
+			'help'      => __( 'The legal entity behind the publication — printed in the footer and emitted as schema.org legalName when no SEO plugin overrides it.', 'broadside' ),
+			'transport' => 'postMessage',
+		),
+
 		'shadow_digest_founded'                 => array(
-			'default'   => '1926',
+			'default'   => '2019',
 			'sanitize'  => 'shadow_digest_sanitize_year',
 			'type'      => 'number',
 			'section'   => 'shadow_digest_identity',
@@ -60,7 +70,7 @@ function shadow_digest_settings(): array {
 		),
 
 		'shadow_digest_city'                    => array(
-			'default'   => __( 'New York', 'broadside' ),
+			'default'   => '',
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
 			'section'   => 'shadow_digest_identity',
@@ -70,7 +80,7 @@ function shadow_digest_settings(): array {
 		),
 
 		'shadow_digest_motto'                   => array(
-			'default'   => __( 'Steady Hands, Straight Talk', 'broadside' ),
+			'default'   => '',
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
 			'section'   => 'shadow_digest_identity',
@@ -133,7 +143,7 @@ function shadow_digest_settings(): array {
 		),
 
 		'shadow_digest_ear_left_title'          => array(
-			'default'   => __( 'Weekend Field Report', 'broadside' ),
+			'default'   => '',
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
 			'section'   => 'shadow_digest_masthead',
@@ -143,7 +153,7 @@ function shadow_digest_settings(): array {
 		),
 
 		'shadow_digest_ear_left_body'           => array(
-			'default'   => __( "Clear, wind 4–7 mph out of the west.\nIdeal conditions across the Northeast ranges.", 'broadside' ),
+			'default'   => '',
 			'sanitize'  => 'shadow_digest_sanitize_multiline',
 			'type'      => 'textarea',
 			'section'   => 'shadow_digest_masthead',
@@ -153,7 +163,7 @@ function shadow_digest_settings(): array {
 		),
 
 		'shadow_digest_ear_right_title'         => array(
-			'default'   => __( 'One Hundredth Year', 'broadside' ),
+			'default'   => __( 'Est. 2019', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
 			'section'   => 'shadow_digest_masthead',
@@ -163,7 +173,7 @@ function shadow_digest_settings(): array {
 		),
 
 		'shadow_digest_ear_right_body'          => array(
-			'default'   => __( "A century in the service of\nprecision, heritage & sport.", 'broadside' ),
+			'default'   => __( "Founded in 2019 to serve\nreaders with independent reporting.", 'broadside' ),
 			'sanitize'  => 'shadow_digest_sanitize_multiline',
 			'type'      => 'textarea',
 			'section'   => 'shadow_digest_masthead',
@@ -173,7 +183,7 @@ function shadow_digest_settings(): array {
 		),
 
 		'shadow_digest_volume'                  => array(
-			'default'   => __( 'Vol. C', 'broadside' ),
+			'default'   => __( 'Vol. VII', 'broadside' ),
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
 			'section'   => 'shadow_digest_masthead',
@@ -296,7 +306,7 @@ function shadow_digest_settings(): array {
 		),
 
 		'shadow_digest_newsletter_name'         => array(
-			'default'   => __( 'The Weekly Dispatch', 'broadside' ),
+			'default'   => '',
 			'sanitize'  => 'sanitize_text_field',
 			'type'      => 'text',
 			'section'   => 'shadow_digest_newsletter',
@@ -316,7 +326,7 @@ function shadow_digest_settings(): array {
 		),
 
 		'shadow_digest_newsletter_blurb'        => array(
-			'default'   => __( 'Field notes, match results, and the week in marksmanship — reported and written by the newsroom, delivered to your inbox before dawn on Thursday.', 'broadside' ),
+			'default'   => '',
 			'sanitize'  => 'shadow_digest_sanitize_multiline',
 			'type'      => 'textarea',
 			'section'   => 'shadow_digest_newsletter',
@@ -385,6 +395,36 @@ function shadow_digest_settings(): array {
 			'section'  => 'shadow_digest_article',
 			'label'    => __( 'Show reading time', 'broadside' ),
 			'help'     => __( 'Estimated from the word count at 220 words a minute.', 'broadside' ),
+		),
+
+		'shadow_digest_lead_ad_image'           => array(
+			'default'   => '',
+			'sanitize'  => 'esc_url_raw',
+			'type'      => 'image',
+			'section'   => 'shadow_digest_masthead',
+			'label'     => __( 'Homepage lead-column promo image', 'broadside' ),
+			'help'      => __( 'Optional. When set, prints at the top of the front-page right column above the aside story. Leave empty to omit.', 'broadside' ),
+			'transport' => 'refresh',
+		),
+
+		'shadow_digest_lead_ad_link'            => array(
+			'default'   => '',
+			'sanitize'  => 'esc_url_raw',
+			'type'      => 'url',
+			'section'   => 'shadow_digest_masthead',
+			'label'     => __( 'Homepage lead-column promo link', 'broadside' ),
+			'help'      => __( 'Destination URL for the promo image. Opens in a new tab.', 'broadside' ),
+			'transport' => 'refresh',
+		),
+
+		'shadow_digest_lead_ad_alt'             => array(
+			'default'   => '',
+			'sanitize'  => 'sanitize_text_field',
+			'type'      => 'text',
+			'section'   => 'shadow_digest_masthead',
+			'label'     => __( 'Homepage lead-column promo alt text', 'broadside' ),
+			'help'      => __( 'Describe the promo for screen readers.', 'broadside' ),
+			'transport' => 'postMessage',
 		),
 
 		'shadow_digest_standards'               => array(

@@ -166,6 +166,51 @@ function shadow_digest_founded(): int {
 }
 
 /**
+ * The legal entity that publishes the site.
+ *
+ * @since 1.3.5
+ * @return string
+ */
+function shadow_digest_publisher_legal(): string {
+	return (string) shadow_digest_get( 'shadow_digest_publisher_legal' );
+}
+
+/**
+ * Optional homepage lead-column promo (image + outbound link).
+ *
+ * @since 1.3.5
+ * @return void
+ */
+function shadow_digest_lead_ad(): void {
+	$image = (string) shadow_digest_get( 'shadow_digest_lead_ad_image' );
+	$link  = (string) shadow_digest_get( 'shadow_digest_lead_ad_link' );
+
+	if ( '' === $image || '' === $link ) {
+		return;
+	}
+
+	$alt = (string) shadow_digest_get( 'shadow_digest_lead_ad_alt' );
+	?>
+	<div class="digest-lead-ad">
+		<a
+			class="digest-lead-ad__link"
+			href="<?php echo esc_url( $link ); ?>"
+			target="_blank"
+			rel="noopener noreferrer sponsored"
+		>
+			<img
+				class="digest-lead-ad__image"
+				src="<?php echo esc_url( $image ); ?>"
+				alt="<?php echo esc_attr( $alt ); ?>"
+				loading="lazy"
+				decoding="async"
+			/>
+		</a>
+	</div>
+	<?php
+}
+
+/**
  * Echo the utility bar — the thin uppercase strip above the nameplate.
  *
  * @since 1.0.0

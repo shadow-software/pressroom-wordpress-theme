@@ -14,30 +14,30 @@
 # three commands and a node_modules dance, it would not get run, and the whole
 # point of it is that it gets run every single time.
 #
-# Playwright is resolved from wherever it already is (a repo-local install, a
-# global one, or the npm cache via npx) — it is NOT vendored into the repo, and
-# no install happens without you asking for it.
+# Playwright uses the repo-local install (npm install) or a transient npx fetch —
+# Playwright-managed Chromium in ~/.cache/ms-playwright, never system Google Chrome.
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-# Playwright's browsers live in ~/.cache/ms-playwright and are shared across every
-# project on the machine. The node package is the only thing we need to locate.
+# Playwright is resolved from the repo-local install — never system Google Chrome.
+# Browsers live in ~/.cache/ms-playwright and are shared across projects.
 if [ -d "$ROOT/node_modules/playwright" ]; then
-  RUN=( node )
-elif npm ls -g playwright --depth=0 >/dev/null 2>&1; then
-  RUN=( node )
-  export NODE_PATH="$(npm root -g)"
+  :
+elif command -v npx >/dev/null 2>&1; then
+  # Transient fallback: fetch playwright for this run only (no node_modules write).
+  exec npx --yes -p playwright node "$ROOT/scripts/shoot.mjs" "$@"
 else
   cat <<'EOF'
-Playwright is not installed, and this script will not install it for you.
+Playwright is not installed. Install it locally:
 
-  npm install --no-save playwright
+  npm install
+  npm run playwright:install
 
-(The browsers themselves are already in ~/.cache/ms-playwright and are shared
-across projects — this only fetches the node package. node_modules/ is gitignored.)
+(The browsers themselves live in ~/.cache/ms-playwright and are shared
+across projects — npm install only fetches the node package. node_modules/ is gitignored.)
 EOF
   exit 1
 fi
@@ -53,4 +53,4 @@ if [[ " $* " != *" --live "* && " $* " != *" --site "* ]]; then
   fi
 fi
 
-exec "${RUN[@]}" "$ROOT/scripts/shoot.mjs" "$@"
+exec node "$ROOT/scripts/shoot.mjs" "$@"

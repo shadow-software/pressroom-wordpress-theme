@@ -84,7 +84,7 @@
 		</article>
 		<!-- /wp:group -->
 
-		<!-- Right: the photo and the secondary story. -->
+		<!-- Right: the secondary story, then the promo beneath it. -->
 		<!-- wp:group {"tagName":"aside","className":"digest-lead__aside","layout":{"type":"default"}} -->
 		<aside class="wp-block-group digest-lead__aside">
 
@@ -93,18 +93,26 @@
 
 				<!-- wp:post-template -->
 
-					<!-- wp:post-featured-image {"aspectRatio":"4/5","sizeSlug":"large","isLink":true} /-->
+					<!-- wp:group {"className":"digest-aside-story digest-snip","layout":{"type":"default"}} -->
+					<div class="wp-block-group digest-aside-story digest-snip">
 
-					<!-- wp:post-terms {"term":"category","className":"digest-kicker"} /-->
+						<!-- wp:post-featured-image {"sizeSlug":"large","className":"digest-snip__media"} /-->
 
-					<!-- wp:post-title {"level":3,"isLink":true,"fontFamily":"display","style":{"typography":{"fontSize":"27px","lineHeight":"1.08"}}} /-->
+						<!-- wp:post-terms {"term":"category","className":"digest-kicker"} /-->
 
-					<!-- wp:post-excerpt {"excerptLength":28,"showMoreOnNewLine":false,"moreText":"Read the profile →"} /-->
+						<!-- wp:post-title {"level":3,"isLink":true,"fontFamily":"display","style":{"typography":{"fontSize":"27px","lineHeight":"1.08"}}} /-->
+
+						<!-- wp:post-excerpt {"excerptLength":28,"showMoreOnNewLine":false,"moreText":"Read the profile →"} /-->
+
+					</div>
+					<!-- /wp:group -->
 
 				<!-- /wp:post-template -->
 
 			</div>
 			<!-- /wp:query -->
+
+			<!-- wp:broadside/lead-promo /-->
 
 		</aside>
 		<!-- /wp:group -->

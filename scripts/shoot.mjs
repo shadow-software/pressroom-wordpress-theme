@@ -22,6 +22,7 @@
  */
 
 import { chromium } from 'playwright';
+import { defaultLaunchOptions } from './browser-session.mjs';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -163,87 +164,90 @@ async function main() {
 	if ( ! only && existsSync( OUT ) ) await rm( OUT, { recursive: true, force: true } );
 	await mkdir( OUT, { recursive: true } );
 
-	const browser = await chromium.launch();
+	const browser = await chromium.launch( defaultLaunchOptions() );
 	const shot = [];
 
-	for ( const origin of origins ) {
-		const dir = path.join( OUT, label( origin ) );
-		await mkdir( dir, { recursive: true } );
+	try {
+		for ( const origin of origins ) {
+			const dir = path.join( OUT, label( origin ) );
+			await mkdir( dir, { recursive: true } );
 
-		console.log( `\n\x1b[1m${ origin }\x1b[0m` );
+			console.log( `\n\x1b[1m${ origin }\x1b[0m` );
 
-		// Does this origin have a shop at all? Ask once, rather than failing six
-		// routes one at a time.
-		let hasWoo = false;
-		{
-			const ctx = await browser.newContext();
-			const p = await ctx.newPage();
-			try {
-				const r = await p.goto( `${ origin }/shop/`, { waitUntil: 'domcontentloaded', timeout: 20000 } );
-				hasWoo = !! r && r.status() < 400;
-			} catch { hasWoo = false; }
-			await ctx.close();
-		}
+			// Does this origin have a shop at all? Ask once, rather than failing six
+			// routes one at a time.
+			let hasWoo = false;
+			{
+				const ctx = await browser.newContext();
+				const p = await ctx.newPage();
+				try {
+					const r = await p.goto( `${ origin }/shop/`, { waitUntil: 'domcontentloaded', timeout: 20000 } );
+					hasWoo = !! r && r.status() < 400;
+				} catch { hasWoo = false; }
+				await ctx.close();
+			}
 
-		for ( const vp of VIEWPORTS ) {
-			// One context per viewport, so the cart cookie survives across the
-			// routes within it but a mobile run never inherits a desktop cart.
-			const ctx = await browser.newContext( {
-				viewport: { width: vp.width, height: vp.height },
-				deviceScaleFactor: 2,
-				isMobile: vp.name === 'mobile',
-				hasTouch: vp.name === 'mobile',
-			} );
-			const page = await ctx.newPage();
+			for ( const vp of VIEWPORTS ) {
+				// One context per viewport, so the cart cookie survives across the
+				// routes within it but a mobile run never inherits a desktop cart.
+				const ctx = await browser.newContext( {
+					viewport: { width: vp.width, height: vp.height },
+					deviceScaleFactor: 2,
+					isMobile: vp.name === 'mobile',
+					hasTouch: vp.name === 'mobile',
+				} );
+				const page = await ctx.newPage();
 
-			let cartFilled = false;
+				let cartFilled = false;
 
-			for ( const route of routes ) {
-				const file = path.join( dir, `${ route.slug }-${ vp.name }.png` );
-				const rel = path.relative( OUT, file );
+				for ( const route of routes ) {
+					const file = path.join( dir, `${ route.slug }-${ vp.name }.png` );
+					const rel = path.relative( OUT, file );
 
-				if ( route.woo && ! hasWoo ) {
-					console.log( `  \x1b[90m·\x1b[0m ${ route.slug.padEnd( 17 ) } ${ vp.name.padEnd( 7 ) } \x1b[90mno shop on this site — skipped\x1b[0m` );
-					shot.push( { origin, route, vp, rel: null, note: 'no shop on this site' } );
-					continue;
-				}
+					if ( route.woo && ! hasWoo ) {
+						console.log( `  \x1b[90m·\x1b[0m ${ route.slug.padEnd( 17 ) } ${ vp.name.padEnd( 7 ) } \x1b[90mno shop on this site — skipped\x1b[0m` );
+						shot.push( { origin, route, vp, rel: null, note: 'no shop on this site' } );
+						continue;
+					}
 
-				// Fill the cart lazily, and only once per viewport — but BEFORE the
-				// first route that needs it.
-				if ( route.needsCart && ! cartFilled ) {
-					cartFilled = await fillCart( page, origin );
-					if ( ! cartFilled ) {
-						console.log( `  \x1b[33m!\x1b[0m ${ route.slug.padEnd( 17 ) } ${ vp.name.padEnd( 7 ) } \x1b[33mcould not add to cart\x1b[0m` );
+					// Fill the cart lazily, and only once per viewport — but BEFORE the
+					// first route that needs it.
+					if ( route.needsCart && ! cartFilled ) {
+						cartFilled = await fillCart( page, origin );
+						if ( ! cartFilled ) {
+							console.log( `  \x1b[33m!\x1b[0m ${ route.slug.padEnd( 17 ) } ${ vp.name.padEnd( 7 ) } \x1b[33mcould not add to cart\x1b[0m` );
+						}
+					}
+
+					try {
+						const res = await page.goto( origin + route.path, { waitUntil: 'networkidle', timeout: 45000 } );
+						const code = res ? res.status() : 0;
+
+						await settle( page );
+						await page.screenshot( { path: file, fullPage } );
+
+						const bad = code >= 400 && route.slug !== '404';
+						const mark = bad ? '\x1b[31m✗\x1b[0m' : '\x1b[32m✓\x1b[0m';
+						console.log( `  ${ mark } ${ route.slug.padEnd( 17 ) } ${ vp.name.padEnd( 7 ) } ${ code }` );
+
+						shot.push( { origin, route, vp, rel, code } );
+					} catch ( e ) {
+						console.log( `  \x1b[31m✗\x1b[0m ${ route.slug.padEnd( 17 ) } ${ vp.name.padEnd( 7 ) } \x1b[31m${ e.message.split( '\n' )[ 0 ] }\x1b[0m` );
+						shot.push( { origin, route, vp, rel: null, note: e.message.split( '\n' )[ 0 ] } );
 					}
 				}
 
-				try {
-					const res = await page.goto( origin + route.path, { waitUntil: 'networkidle', timeout: 45000 } );
-					const code = res ? res.status() : 0;
-
-					await settle( page );
-					await page.screenshot( { path: file, fullPage } );
-
-					const bad = code >= 400 && route.slug !== '404';
-					const mark = bad ? '\x1b[31m✗\x1b[0m' : '\x1b[32m✓\x1b[0m';
-					console.log( `  ${ mark } ${ route.slug.padEnd( 17 ) } ${ vp.name.padEnd( 7 ) } ${ code }` );
-
-					shot.push( { origin, route, vp, rel, code } );
-				} catch ( e ) {
-					console.log( `  \x1b[31m✗\x1b[0m ${ route.slug.padEnd( 17 ) } ${ vp.name.padEnd( 7 ) } \x1b[31m${ e.message.split( '\n' )[ 0 ] }\x1b[0m` );
-					shot.push( { origin, route, vp, rel: null, note: e.message.split( '\n' )[ 0 ] } );
-				}
+				await ctx.close();
 			}
-
-			await ctx.close();
 		}
+
+		await writeFile( path.join( OUT, 'index.html' ), contactSheet( shot ), 'utf8' );
+
+		const ok = shot.filter( ( s ) => s.rel ).length;
+		console.log( `\n\x1b[1m${ ok }\x1b[0m shots → \x1b[36m${ path.join( OUT, 'index.html' ) }\x1b[0m` );
+	} finally {
+		await browser.close();
 	}
-
-	await browser.close();
-	await writeFile( path.join( OUT, 'index.html' ), contactSheet( shot ), 'utf8' );
-
-	const ok = shot.filter( ( s ) => s.rel ).length;
-	console.log( `\n\x1b[1m${ ok }\x1b[0m shots → \x1b[36m${ path.join( OUT, 'index.html' ) }\x1b[0m` );
 }
 
 /**

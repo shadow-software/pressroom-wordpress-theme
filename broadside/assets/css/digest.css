@@ -50,7 +50,15 @@
 	 */
 	--digest-desk-gutter: 16px;
 
+	/*
+	 * Desk colour comes from --paper-shade (Customizer). A quiet green-black
+	 * gradient on top of that solid keeps the subscribe-panel ink feeling
+	 * without flattening into a poster.
+	 */
 	background-color: var(--wp--preset--color--paper-shade);
+	background-image:
+		radial-gradient(120% 80% at 50% -10%, rgba(255, 255, 255, 0.04), transparent 55%),
+		linear-gradient(165deg, rgba(20, 26, 20, 0.55) 0%, transparent 42%, rgba(8, 10, 9, 0.45) 100%);
 	padding-block: clamp(0px, 3vw, 34px) 70px;
 	padding-inline: var(--digest-desk-gutter);
 
@@ -756,6 +764,50 @@
 	border-left: 1px solid var(--wp--preset--color--rule);
 }
 
+.digest-lead-ad-wrap {
+	/* Sits beneath the aside story; lift it slightly off the column. */
+	margin-top: 20px;
+	margin-bottom: 0;
+	position: relative;
+	z-index: 1;
+	transform: translateY(-6px);
+}
+
+.digest-lead-ad__link {
+	display: block;
+	border-radius: 14px;
+	overflow: hidden;
+	/* Soft edge falloff — no dark veil over the creative. */
+	box-shadow:
+		0 12px 28px rgba(12, 14, 12, 0.12),
+		0 2px 6px rgba(12, 14, 12, 0.06);
+	isolation: isolate;
+	transition:
+		transform 180ms ease,
+		box-shadow 180ms ease;
+}
+
+.digest-lead-ad__link:hover,
+.digest-lead-ad__link:focus-visible {
+	transform: translateY(-3px);
+	box-shadow:
+		0 18px 36px rgba(12, 14, 12, 0.16),
+		0 4px 10px rgba(12, 14, 12, 0.08);
+	/* Do not darken or grey the ad — keep the brand colour intact. */
+	filter: none;
+}
+
+.digest-lead-ad__image {
+	display: block;
+	width: 100%;
+	height: auto;
+	/* Explicitly clear any inherited snip/hero photo treatments. */
+	opacity: 1;
+	filter: none;
+	-webkit-mask-image: none;
+	mask-image: none;
+}
+
 .digest-rail__title {
 	text-align: center;
 	font-family: var(--wp--preset--font-family--body);
@@ -768,7 +820,7 @@
 	margin: 0 0 14px;
 }
 
-/* A brief in the left rail. */
+/* A brief in the left rail. (No featured-image backdrop — the column is too narrow.) */
 .digest-brief {
 	padding-bottom: 15px;
 	margin-bottom: 15px;
@@ -793,6 +845,87 @@
 	color: var(--wp--preset--color--ink-faded);
 	margin: 5px 0 0;
 	line-height: 1.42;
+}
+
+/*
+ * Shared featured-image BACKDROP for post snippets (briefs, related, archive
+ * cards, index entries, aside story). Same argument as the lead/article hero:
+ * the photograph is the ground the type is printed on, not a slab above it.
+ */
+.digest-snip {
+	position: relative;
+	isolation: isolate;
+}
+
+.digest-snip__media,
+.digest-snip .digest-snip__media,
+.digest-snip > .wp-block-post-featured-image,
+.digest-related__item .digest-snip__media {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	margin: 0 !important;
+	overflow: hidden;
+	max-width: none !important;
+	pointer-events: none;
+}
+
+.digest-snip__media img,
+.digest-snip .wp-block-post-featured-image img,
+.digest-related__item .digest-snip__img,
+.digest-related__item .digest-snip__media img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	opacity: 0.2;
+	filter: grayscale(0.7) contrast(0.75) brightness(1.06);
+	-webkit-mask-image:
+		linear-gradient(to bottom, transparent 0%, #000 22%, #000 58%, transparent 100%),
+		linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+	mask-image:
+		linear-gradient(to bottom, transparent 0%, #000 22%, #000 58%, transparent 100%),
+		linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+	-webkit-mask-composite: source-in;
+	mask-composite: intersect;
+}
+
+.digest-snip:not(:has(img)) {
+	/* No empty padding pocket when a snippet has no photograph. */
+}
+
+.digest-related__item.digest-snip {
+	padding-block: 18px 16px;
+}
+
+.digest-entry.digest-snip {
+	padding: 28px 22px 20px;
+	margin-bottom: 8px;
+}
+
+.digest-card.digest-snip {
+	padding: 22px 16px 16px;
+	min-height: 180px;
+}
+
+.digest-aside-story.digest-snip {
+	padding: 28px 18px 18px;
+	min-height: 220px;
+}
+
+.digest-aside-story .digest-kicker,
+.digest-aside-story .wp-block-post-title,
+.digest-aside-story .wp-block-post-excerpt,
+.digest-entry .digest-kicker,
+.digest-entry .wp-block-post-title,
+.digest-entry .wp-block-post-excerpt,
+.digest-entry .wp-block-post-date,
+.digest-card .digest-kicker,
+.digest-card .wp-block-post-title,
+.digest-card .wp-block-post-excerpt,
+.digest-card .wp-block-post-date {
+	position: relative;
 }
 
 /* The lead story. */
@@ -1814,8 +1947,10 @@ body:has(.digest-single) .wp-site-blocks::before {
 }
 
 .digest-newsletter__button {
-	background-color: var(--wp--preset--color--accent);
-	color: var(--wp--preset--color--paper);
+	/* Soft accent on the dark ink panel — stays readable when the main accent
+	   is the same green-black as the panel itself (subscribe desk colour). */
+	background-color: var(--wp--preset--color--accent-soft);
+	color: var(--wp--preset--color--ink);
 	border: 0;
 	font-family: var(--wp--preset--font-family--body);
 	font-size: var(--wp--preset--font-size--meta);
@@ -1828,7 +1963,8 @@ body:has(.digest-single) .wp-site-blocks::before {
 
 .digest-newsletter__button:hover,
 .digest-newsletter__button:focus-visible {
-	background-color: var(--wp--preset--color--ink-soft);
+	background-color: var(--wp--preset--color--paper);
+	color: var(--wp--preset--color--ink);
 }
 
 .digest-newsletter__note {
@@ -1964,6 +2100,8 @@ body:has(.digest-single) .wp-site-blocks::before {
 	 */
 	.digest-lead__hero .wp-block-post-featured-image img,
 	.digest-lead__aside .wp-block-post-featured-image img,
+	.digest-snip .wp-block-post-featured-image img,
+	.digest-snip__media img,
 	.digest-related__item img {
 		transition:
 			opacity 180ms ease,
@@ -1971,7 +2109,11 @@ body:has(.digest-single) .wp-site-blocks::before {
 	}
 
 	.digest-lead__main:hover .wp-block-post-featured-image img,
-	.digest-lead__main:focus-within .wp-block-post-featured-image img {
+	.digest-lead__main:focus-within .wp-block-post-featured-image img,
+	.digest-snip:hover .wp-block-post-featured-image img,
+	.digest-snip:hover .digest-snip__media img,
+	.digest-snip:focus-within .wp-block-post-featured-image img,
+	.digest-snip:focus-within .digest-snip__media img {
 		opacity: 0.32;
 		filter: grayscale(0.45) contrast(0.85) brightness(1.02);
 	}
@@ -1980,7 +2122,8 @@ body:has(.digest-single) .wp-site-blocks::before {
 	.digest-lead__aside:focus-within .wp-block-post-featured-image img,
 	.digest-related__item:hover img,
 	.digest-related__item:focus-visible img {
-		filter: brightness(0.94) contrast(1.04);
+		opacity: 0.32;
+		filter: grayscale(0.45) contrast(0.85) brightness(1.02);
 	}
 
 	/*

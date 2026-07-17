@@ -853,9 +853,29 @@ function shadow_digest_render_related( array $attributes ): string {
 			? sprintf( '<span class="digest-kicker">%s</span>', esc_html( $terms[0]->name ) )
 			: '';
 
+		$thumb = '';
+		if ( has_post_thumbnail( $post ) ) {
+			$thumb = get_the_post_thumbnail(
+				$post,
+				'medium_large',
+				array(
+					'class'    => 'digest-snip__img',
+					'loading'  => 'lazy',
+					'decoding' => 'async',
+					'alt'      => '',
+				)
+			);
+			if ( is_string( $thumb ) && '' !== $thumb ) {
+				$thumb = '<span class="digest-snip__media" aria-hidden="true">' . $thumb . '</span>';
+			} else {
+				$thumb = '';
+			}
+		}
+
 		$items .= sprintf(
-			'<a class="digest-related__item" href="%1$s">%2$s<span class="digest-related__head">%3$s</span><span class="digest-related__sum">%4$s</span></a>',
+			'<a class="digest-related__item digest-snip" href="%1$s">%2$s%3$s<span class="digest-related__head">%4$s</span><span class="digest-related__sum">%5$s</span></a>',
 			esc_url( (string) get_permalink( $post ) ),
+			$thumb, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- From get_the_post_thumbnail().
 			$kicker, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above.
 			esc_html( shadow_digest_plain_text( get_the_title( $post ) ) ),
 			esc_html( shadow_digest_plain_text( get_the_excerpt( $post ) ) )
@@ -874,9 +894,10 @@ function shadow_digest_render_related( array $attributes ): string {
  * The section grid — "Inside This Week's Edition".
  *
  * One column per category, each listing that category's most recent headlines.
- * It is built from the categories that actually have posts, so a new section
- * appears in the grid the first time an editor files into it, and an abandoned
- * section quietly disappears. There is no list to maintain.
+ * Categories are ranked by the SUM of `_digest_views` across their published
+ * posts (falling back to post count when views are tied), so the grid steers
+ * itself toward what readers actually open. Empty sections never appear; a
+ * new n8n-filed category shows up the moment it has a post.
  *
  * @since 1.0.0
  * @param array<string, mixed> $attributes The block attributes.
@@ -888,14 +909,19 @@ function shadow_digest_render_section_grid( array $attributes ): string {
 	$columns    = max( 1, min( 12, $columns ) );
 	$per_column = max( 1, min( 10, $per_column ) );
 
-	$categories = get_categories(
-		array(
-			'orderby'    => 'count',
-			'order'      => 'DESC',
-			'number'     => $columns,
-			'hide_empty' => true,
-		)
-	);
+	// Prefer the theme helper when present (view-ranked); fall back to count.
+	if ( function_exists( 'shadow_digest_categories_by_views' ) ) {
+		$categories = shadow_digest_categories_by_views( $columns );
+	} else {
+		$categories = get_categories(
+			array(
+				'orderby'    => 'count',
+				'order'      => 'DESC',
+				'number'     => $columns,
+				'hide_empty' => true,
+			)
+		);
+	}
 
 	if ( empty( $categories ) || is_wp_error( $categories ) ) {
 		return '';

@@ -1,0 +1,126 @@
+<?php
+/**
+ * Post-view counters and view-ranked category helpers.
+ *
+ * Each singular article view increments `_digest_views` on that post. The
+ * section grid ("Inside This Week's Edition") and any other reader-facing
+ * category list then ranks categories by the SUM of those views across their
+ * published posts — so the paper steers itself toward what people actually
+ * read, while n8n keeps filing into whatever categories the RSS beat produces.
+ *
+ * @package Broadside
+ * @since   1.3.4
+ */
+
+declare( strict_types = 1 );
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Meta key for the per-post view counter.
+ */
+const SHADOW_DIGEST_VIEWS_META = '_digest_views';
+
+/**
+ * Increment the view counter once per request on a published singular post.
+ *
+ * Skips logged-in editors/admins, previews, feeds, REST, and bots with an empty
+ * or obvious crawler UA — we want reader signal, not self-traffic or scrapers.
+ *
+ * @since 1.3.4
+ */
+function shadow_digest_track_post_view(): void {
+	if ( is_admin() || wp_doing_ajax() || wp_doing_cron() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return;
+	}
+
+	if ( ! is_singular( 'post' ) || is_preview() ) {
+		return;
+	}
+
+	if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) {
+		return;
+	}
+
+	$post_id = (int) get_queried_object_id();
+	if ( $post_id < 1 || 'publish' !== get_post_status( $post_id ) ) {
+		return;
+	}
+
+	$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? (string) $_SERVER['HTTP_USER_AGENT'] : '';
+	if ( '' === $ua || preg_match( '/bot|crawl|spider|slurp|facebookexternalhit|preview/i', $ua ) ) {
+		return;
+	}
+
+	$current = (int) get_post_meta( $post_id, SHADOW_DIGEST_VIEWS_META, true );
+	update_post_meta( $post_id, SHADOW_DIGEST_VIEWS_META, $current + 1 );
+}
+add_action( 'template_redirect', 'shadow_digest_track_post_view', 20 );
+
+/**
+ * Categories ranked by total post views (then by post count), hide-empty.
+ *
+ * @since 1.3.4
+ * @param int $limit Max categories to return.
+ * @return array<int, WP_Term>
+ */
+function shadow_digest_categories_by_views( int $limit = 6 ): array {
+	$limit = max( 1, min( 24, $limit ) );
+
+	$categories = get_categories(
+		array(
+			'hide_empty' => true,
+			'number'     => 100,
+		)
+	);
+
+	if ( empty( $categories ) || is_wp_error( $categories ) ) {
+		return array();
+	}
+
+	$scored = array();
+
+	foreach ( $categories as $category ) {
+		$posts = get_posts(
+			array(
+				'category'            => (int) $category->term_id,
+				'numberposts'         => -1,
+				'post_status'         => 'publish',
+				'fields'              => 'ids',
+				'no_found_rows'       => true,
+				'ignore_sticky_posts' => true,
+			)
+		);
+
+		$views = 0;
+		foreach ( $posts as $post_id ) {
+			$views += (int) get_post_meta( (int) $post_id, SHADOW_DIGEST_VIEWS_META, true );
+		}
+
+		$scored[] = array(
+			'term'  => $category,
+			'views' => $views,
+			'count' => count( $posts ),
+		);
+	}
+
+	usort(
+		$scored,
+		static function ( array $a, array $b ): int {
+			if ( $a['views'] !== $b['views'] ) {
+				return $b['views'] <=> $a['views'];
+			}
+			if ( $a['count'] !== $b['count'] ) {
+				return $b['count'] <=> $a['count'];
+			}
+			return strcasecmp( $a['term']->name, $b['term']->name );
+		}
+	);
+
+	$out = array();
+	foreach ( array_slice( $scored, 0, $limit ) as $row ) {
+		$out[] = $row['term'];
+	}
+
+	return $out;
+}

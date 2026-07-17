@@ -36,6 +36,7 @@ function shadow_digest_register_masthead_blocks(): void {
 		'nameplate'   => 'shadow_digest_render_nameplate',
 		'folio'       => 'shadow_digest_render_folio',
 		'colophon'    => 'shadow_digest_render_colophon',
+		'lead-promo'  => 'shadow_digest_render_lead_promo',
 		'newsletter'  => 'shadow_digest_render_newsletter_block',
 		'byline'      => 'shadow_digest_render_byline',
 		'author-bio'  => 'shadow_digest_render_author_bio',
@@ -192,6 +193,12 @@ function shadow_digest_render_colophon(): string {
 					)
 				);
 			}
+
+			$legal = function_exists( 'shadow_digest_publisher_legal' ) ? shadow_digest_publisher_legal() : '';
+
+			if ( '' !== $legal ) {
+				printf( ' · %s', esc_html( $legal ) );
+			}
 			?>
 		</span>
 
@@ -209,6 +216,32 @@ function shadow_digest_render_colophon(): string {
 	<?php
 
 	return (string) ob_get_clean();
+}
+
+/**
+ * Render the optional homepage lead-column promo.
+ *
+ * @since 1.3.5
+ * @return string The rendered HTML.
+ */
+function shadow_digest_render_lead_promo(): string {
+	if ( ! function_exists( 'shadow_digest_lead_ad' ) ) {
+		return '';
+	}
+
+	ob_start();
+	shadow_digest_lead_ad();
+	$html = trim( (string) ob_get_clean() );
+
+	if ( '' === $html ) {
+		return '';
+	}
+
+	return sprintf(
+		'<div %1$s>%2$s</div>',
+		get_block_wrapper_attributes( array( 'class' => 'digest-lead-ad-wrap' ) ),
+		$html // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shadow_digest_lead_ad() escapes everything it prints.
+	);
 }
 
 /**
