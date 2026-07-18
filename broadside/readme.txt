@@ -3,7 +3,7 @@ Contributors: shadowsoftware
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.3.5
+Stable tag: 1.3.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: news, blog, one-column, two-columns, three-columns, custom-colors, custom-logo, custom-menu, block-patterns, block-styles, editor-style, featured-images, full-site-editing, rtl-language-support, style-variations, template-editing, translation-ready, wide-blocks, accessibility-ready
@@ -191,6 +191,21 @@ The front page's lead photograph is no longer lazy-loaded. If you run Broadside 
 a site that is measured on Core Web Vitals, this release is worth taking.
 
 == Changelog ==
+
+= 1.3.7 =
+* The front page's right-hand column now holds up to three stories instead of
+  one, and — once a site has at least three qualifying posts — the picks are
+  the most-viewed articles from the last 30 days rather than always the same
+  chronological slot. Falls back to the previous newest-first behaviour on a
+  new or low-traffic site. Uses the view counter already tracked for the
+  section grid; no new tracking, no external service.
+
+= 1.3.6 =
+* The homepage lead-column promo can now optionally crossfade between two
+  creatives. Setting a second promo image via the Customizer stacks it behind
+  the first and fades between them with a pure-CSS animation — no layout
+  shift, no JavaScript, and it respects `prefers-reduced-motion`. A single
+  image still renders statically as before.
 
 = 1.3.3 =
 * Fix: a solid grey band was printed across the masthead on every site with no

@@ -808,6 +808,49 @@
 	mask-image: none;
 }
 
+/*
+ * Two-image crossfade carousel. The first image sets the frame's intrinsic
+ * size; the second stacks on top via absolute positioning so swapping
+ * opacity never shifts layout. Pure CSS — no JS, no CLS.
+ */
+.digest-lead-ad__frame {
+	display: block;
+	position: relative;
+}
+
+.digest-lead-ad--carousel .digest-lead-ad__image--1 {
+	animation: digest-lead-ad-fade-1 16s ease-in-out infinite;
+}
+
+.digest-lead-ad--carousel .digest-lead-ad__image--2 {
+	position: absolute;
+	inset: 0;
+	animation: digest-lead-ad-fade-2 16s ease-in-out infinite;
+}
+
+@keyframes digest-lead-ad-fade-1 {
+	0%, 42% { opacity: 1; }
+	50%, 92% { opacity: 0; }
+	100% { opacity: 1; }
+}
+
+@keyframes digest-lead-ad-fade-2 {
+	0%, 42% { opacity: 0; }
+	50%, 92% { opacity: 1; }
+	100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.digest-lead-ad--carousel .digest-lead-ad__image--1,
+	.digest-lead-ad--carousel .digest-lead-ad__image--2 {
+		animation: none;
+	}
+
+	.digest-lead-ad--carousel .digest-lead-ad__image--2 {
+		opacity: 0;
+	}
+}
+
 .digest-rail__title {
 	text-align: center;
 	font-family: var(--wp--preset--font-family--body);
@@ -912,6 +955,37 @@
 .digest-aside-story.digest-snip {
 	padding: 28px 18px 18px;
 	min-height: 220px;
+}
+
+/*
+ * The aside's query loop can hold up to three picks (see front-page.html).
+ * Only the first keeps the full photo-backdrop treatment — a narrow column
+ * showing three of those in a row is the "why does this feel like a wall of
+ * grey photographs" problem the briefs rail already solved by going text-only
+ * past the top slot. Picks 2+ borrow .digest-brief's compact, photo-less style.
+ */
+.digest-lead__aside .wp-block-post-template > li:not(:first-child) .digest-aside-story {
+	position: static;
+	isolation: auto;
+	padding: 15px 0;
+	margin: 0;
+	min-height: 0;
+	border-top: 1px dotted var(--wp--preset--color--rule);
+}
+
+.digest-lead__aside .wp-block-post-template > li:not(:first-child) .digest-snip__media {
+	display: none;
+}
+
+.digest-lead__aside .wp-block-post-template > li:not(:first-child) .wp-block-post-title {
+	font-size: 18px;
+	line-height: 1.18;
+}
+
+.digest-lead__aside .wp-block-post-template > li:not(:first-child) .wp-block-post-excerpt {
+	font-size: var(--wp--preset--font-size--small);
+	color: var(--wp--preset--color--ink-faded);
+	margin-top: 5px;
 }
 
 .digest-aside-story .digest-kicker,

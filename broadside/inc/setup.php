@@ -398,3 +398,57 @@ function shadow_digest_prioritize_lead_image( array $loading_attrs, string $tag_
 	return $loading_attrs;
 }
 add_filter( 'wp_get_loading_optimization_attributes', 'shadow_digest_prioritize_lead_image', 10, 4 );
+
+/**
+ * Steer the front page's aside picks (query loop id 12) toward posts readers
+ * are actually engaging with, instead of always being the 6th-9th newest.
+ *
+ * Ranks by shadow_digest_posts_by_views() over the last 30 days, excluding
+ * the five posts the rail and lead story already show (offsets 0-4) so the
+ * aside never repeats them. Needs at least 3 qualifying posts with recorded
+ * views to activate; a new or low-traffic site — where "trending" is not yet
+ * a meaningful signal — falls through to the template's own newest-first
+ * query untouched.
+ *
+ * @since 1.3.7
+ *
+ * @param array<string, mixed> $query Args WP_Query will receive.
+ * @param WP_Block              $block The Query block, including its attributes.
+ * @return array<string, mixed> The (possibly rewritten) query args.
+ */
+function shadow_digest_aside_query_vars( array $query, WP_Block $block ): array {
+	$query_id = $block->context['queryId'] ?? null;
+
+	if ( 12 !== $query_id ) {
+		return $query;
+	}
+
+	$already_shown = get_posts(
+		array(
+			'numberposts'         => 5,
+			'post_status'         => 'publish',
+			'fields'              => 'ids',
+			'no_found_rows'       => true,
+			'ignore_sticky_posts' => true,
+			'orderby'             => 'date',
+			'order'               => 'DESC',
+		)
+	);
+
+	$trending = array_diff( shadow_digest_posts_by_views( 12, 30 ), $already_shown );
+	$trending = array_slice( array_values( $trending ), 0, 3 );
+
+	if ( count( $trending ) < 3 ) {
+		return $query;
+	}
+
+	$query['post__in']            = $trending;
+	$query['orderby']             = 'post__in';
+	$query['offset']              = 0;
+	$query['post_type']           = 'post';
+	$query['post_status']         = 'publish';
+	$query['ignore_sticky_posts'] = true;
+
+	return $query;
+}
+add_filter( 'query_loop_block_query_vars', 'shadow_digest_aside_query_vars', 10, 2 );

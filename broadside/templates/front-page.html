@@ -84,11 +84,19 @@
 		</article>
 		<!-- /wp:group -->
 
-		<!-- Right: the secondary story, then the promo beneath it. -->
+		<!-- Right: the secondary story, two more picks, then the promo beneath it. -->
 		<!-- wp:group {"tagName":"aside","className":"digest-lead__aside","layout":{"type":"default"}} -->
 		<aside class="wp-block-group digest-lead__aside">
 
-			<!-- wp:query {"queryId":12,"query":{"perPage":1,"pages":1,"offset":5,"postType":"post","order":"desc","orderBy":"date","inherit":false,"sticky":"exclude"}} -->
+			<!--
+				queryId 12 — the aside's picks. shadow_digest_aside_query_vars()
+				in inc/setup.php swaps this to the three most-viewed posts from
+				the last 30 days (via inc/views.php) once there are at least
+				three to rank, excluding whatever the rail/lead already show.
+				A new or low-traffic site falls through to this chronological
+				query (offset 5) untouched.
+			-->
+			<!-- wp:query {"queryId":12,"query":{"perPage":3,"pages":1,"offset":5,"postType":"post","order":"desc","orderBy":"date","inherit":false,"sticky":"exclude"}} -->
 			<div class="wp-block-query">
 
 				<!-- wp:post-template -->

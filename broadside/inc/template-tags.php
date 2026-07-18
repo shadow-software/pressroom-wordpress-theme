@@ -182,29 +182,50 @@ function shadow_digest_publisher_legal(): string {
  * @return void
  */
 function shadow_digest_lead_ad(): void {
-	$image = (string) shadow_digest_get( 'shadow_digest_lead_ad_image' );
-	$link  = (string) shadow_digest_get( 'shadow_digest_lead_ad_link' );
+	$image   = (string) shadow_digest_get( 'shadow_digest_lead_ad_image' );
+	$image_2 = (string) shadow_digest_get( 'shadow_digest_lead_ad_image_2' );
+	$link    = (string) shadow_digest_get( 'shadow_digest_lead_ad_link' );
 
 	if ( '' === $image || '' === $link ) {
 		return;
 	}
 
-	$alt = (string) shadow_digest_get( 'shadow_digest_lead_ad_alt' );
+	$alt      = (string) shadow_digest_get( 'shadow_digest_lead_ad_alt' );
+	$carousel = '' !== $image_2;
 	?>
-	<div class="digest-lead-ad">
+	<div class="digest-lead-ad<?php echo $carousel ? ' digest-lead-ad--carousel' : ''; ?>">
 		<a
 			class="digest-lead-ad__link"
 			href="<?php echo esc_url( $link ); ?>"
 			target="_blank"
 			rel="noopener noreferrer sponsored"
 		>
-			<img
-				class="digest-lead-ad__image"
-				src="<?php echo esc_url( $image ); ?>"
-				alt="<?php echo esc_attr( $alt ); ?>"
-				loading="lazy"
-				decoding="async"
-			/>
+			<?php if ( $carousel ) : ?>
+				<span class="digest-lead-ad__frame">
+					<img
+						class="digest-lead-ad__image digest-lead-ad__image--1"
+						src="<?php echo esc_url( $image ); ?>"
+						alt="<?php echo esc_attr( $alt ); ?>"
+						decoding="async"
+					/>
+					<img
+						class="digest-lead-ad__image digest-lead-ad__image--2"
+						src="<?php echo esc_url( $image_2 ); ?>"
+						alt=""
+						aria-hidden="true"
+						loading="lazy"
+						decoding="async"
+					/>
+				</span>
+			<?php else : ?>
+				<img
+					class="digest-lead-ad__image"
+					src="<?php echo esc_url( $image ); ?>"
+					alt="<?php echo esc_attr( $alt ); ?>"
+					loading="lazy"
+					decoding="async"
+				/>
+			<?php endif; ?>
 		</a>
 	</div>
 	<?php

@@ -124,3 +124,53 @@ function shadow_digest_categories_by_views( int $limit = 6 ): array {
 
 	return $out;
 }
+
+/**
+ * Post IDs ranked by view count, most-viewed first, restricted to posts
+ * published in the last $window_days.
+ *
+ * Bounded to a recent window on purpose: an all-time ranking lets one old
+ * viral post camp a "what readers are into right now" slot forever. This
+ * is a genuinely different question from shadow_digest_categories_by_views()
+ * (all-time, for the section grid), so it is a separate query rather than a
+ * shared helper with a window parameter bolted on.
+ *
+ * @since 1.3.7
+ * @param int $limit       Max post IDs to return.
+ * @param int $window_days How many days back to consider.
+ * @return array<int, int> Post IDs, most-viewed first.
+ */
+function shadow_digest_posts_by_views( int $limit = 3, int $window_days = 30 ): array {
+	$limit       = max( 1, min( 24, $limit ) );
+	$window_days = max( 1, $window_days );
+
+	// Fetch by date first, THEN sort by view count in PHP rather than an
+	// `orderby => meta_value_num` SQL join: that join is an INNER JOIN on
+	// postmeta, which silently drops every post that has never had
+	// _digest_views written at all — i.e. every post with zero views so
+	// far, which is exactly a brand-new article that deserves a chance to
+	// surface, not exclusion.
+	$posts = get_posts(
+		array(
+			'numberposts'         => 100,
+			'post_status'         => 'publish',
+			'fields'              => 'ids',
+			'no_found_rows'       => true,
+			'ignore_sticky_posts' => true,
+			'date_query'          => array(
+				array( 'after' => $window_days . ' days ago' ),
+			),
+			'orderby'             => 'date',
+			'order'               => 'DESC',
+		)
+	);
+
+	$views = array();
+	foreach ( $posts as $post_id ) {
+		$views[ (int) $post_id ] = (int) get_post_meta( (int) $post_id, SHADOW_DIGEST_VIEWS_META, true );
+	}
+
+	arsort( $views );
+
+	return array_map( 'absint', array_slice( array_keys( $views ), 0, $limit ) );
+}

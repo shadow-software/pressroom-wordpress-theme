@@ -407,6 +407,16 @@ function shadow_digest_settings(): array {
 			'transport' => 'refresh',
 		),
 
+		'shadow_digest_lead_ad_image_2'         => array(
+			'default'   => '',
+			'sanitize'  => 'esc_url_raw',
+			'type'      => 'image',
+			'section'   => 'shadow_digest_masthead',
+			'label'     => __( 'Homepage lead-column promo image — second creative (optional)', 'broadside' ),
+			'help'      => __( 'Optional. When set, the promo crossfades between the two images. Leave empty for a single static image.', 'broadside' ),
+			'transport' => 'refresh',
+		),
+
 		'shadow_digest_lead_ad_link'            => array(
 			'default'   => '',
 			'sanitize'  => 'esc_url_raw',
